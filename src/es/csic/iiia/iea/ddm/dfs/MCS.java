@@ -38,7 +38,7 @@
 
 package es.csic.iiia.iea.ddm.dfs;
 
-import es.csic.iiia.iea.ddm.Factor;
+import es.csic.iiia.iea.ddm.CostFunction;
 import es.csic.iiia.iea.ddm.Variable;
 import java.util.HashSet;
 
@@ -48,7 +48,7 @@ import java.util.HashSet;
  */
 public class MCS extends DFS {
 
-    public MCS(Factor[] factors) {
+    public MCS(CostFunction[] factors) {
         super(factors);
     }
 

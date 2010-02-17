@@ -38,7 +38,8 @@
 
 package es.csic.iiia.iea.ddm.algo;
 
-import es.csic.iiia.iea.ddm.Factor;
+import es.csic.iiia.iea.ddm.CostFunction;
+import es.csic.iiia.iea.ddm.HypercubeCostFunction;
 import es.csic.iiia.iea.ddm.Variable;
 import es.csic.iiia.iea.ddm.cg.CliqueGraph;
 import es.csic.iiia.iea.ddm.dfs.MCS;
@@ -99,25 +100,25 @@ public class JunctionTreeTest {
             {0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
         };
 
-        Factor[][] factors = new Factor[][]{
-            {new Factor( new Variable[]{v[0],v[7]} )},
+        CostFunction[][] factors = new CostFunction[][]{
+            {new HypercubeCostFunction( new Variable[]{v[0],v[7]} )},
             {},
-            {new Factor( new Variable[]{v[1],v[2]} )},
-            {new Factor( new Variable[]{v[2],v[3]} )},
-            {new Factor( new Variable[]{v[3],v[4]} ),
-                     new Factor( new Variable[]{v[1],v[3],v[4]} )},
-            {new Factor( new Variable[]{v[1],v[5]} )},
-            {new Factor( new Variable[]{v[2],v[6]} ),
-                     new Factor( new Variable[]{v[1],v[6],v[7]} ),
-                     new Factor( new Variable[]{v[0],v[6]} )},
-            {new Factor( new Variable[]{v[3],v[7]} )},
-            {new Factor( new Variable[]{v[4],v[8]} ),
-                     new Factor( new Variable[]{v[5],v[8]} ),
-                     new Factor( new Variable[]{v[0],v[8]} )},
-            {new Factor( new Variable[]{v[2],v[5],v[9]} ),
-                     new Factor( new Variable[]{v[5],v[6],v[9]} ),
-                     new Factor( new Variable[]{v[4],v[7],v[9]} ),
-                     new Factor( new Variable[]{v[0],v[8],v[9]} )},
+            {new HypercubeCostFunction( new Variable[]{v[1],v[2]} )},
+            {new HypercubeCostFunction( new Variable[]{v[2],v[3]} )},
+            {new HypercubeCostFunction( new Variable[]{v[3],v[4]} ),
+                     new HypercubeCostFunction( new Variable[]{v[1],v[3],v[4]} )},
+            {new HypercubeCostFunction( new Variable[]{v[1],v[5]} )},
+            {new HypercubeCostFunction( new Variable[]{v[2],v[6]} ),
+                     new HypercubeCostFunction( new Variable[]{v[1],v[6],v[7]} ),
+                     new HypercubeCostFunction( new Variable[]{v[0],v[6]} )},
+            {new HypercubeCostFunction( new Variable[]{v[3],v[7]} )},
+            {new HypercubeCostFunction( new Variable[]{v[4],v[8]} ),
+                     new HypercubeCostFunction( new Variable[]{v[5],v[8]} ),
+                     new HypercubeCostFunction( new Variable[]{v[0],v[8]} )},
+            {new HypercubeCostFunction( new Variable[]{v[2],v[5],v[9]} ),
+                     new HypercubeCostFunction( new Variable[]{v[5],v[6],v[9]} ),
+                     new HypercubeCostFunction( new Variable[]{v[4],v[7],v[9]} ),
+                     new HypercubeCostFunction( new Variable[]{v[0],v[8],v[9]} )},
         };
         
         CliqueGraph result = JunctionTreeAlgo.buildGraph(factors, adjacency);
@@ -131,17 +132,17 @@ public class JunctionTreeTest {
     @Test
     public void testBuildGraph_FactorArr() {
         // And now factors
-        Factor[] factors = new Factor[]{
-            new Factor( new Variable[]{v[0],v[1]} ),
-            new Factor( new Variable[]{v[0],v[1]} ),
-            new Factor( new Variable[]{v[0],v[1]} ),
-            new Factor( new Variable[]{v[0],v[2]} ),
-            new Factor( new Variable[]{v[0],v[2]} ),
-            new Factor( new Variable[]{v[0],v[3]} ),
-            new Factor( new Variable[]{v[0],v[4]} ),
-            new Factor( new Variable[]{v[1],v[2]} ),
-            new Factor( new Variable[]{v[1],v[3]} ),
-            new Factor( new Variable[]{v[3],v[4]} ),
+        CostFunction[] factors = new CostFunction[]{
+            new HypercubeCostFunction( new Variable[]{v[0],v[1]} ),
+            new HypercubeCostFunction( new Variable[]{v[0],v[1]} ),
+            new HypercubeCostFunction( new Variable[]{v[0],v[1]} ),
+            new HypercubeCostFunction( new Variable[]{v[0],v[2]} ),
+            new HypercubeCostFunction( new Variable[]{v[0],v[2]} ),
+            new HypercubeCostFunction( new Variable[]{v[0],v[3]} ),
+            new HypercubeCostFunction( new Variable[]{v[0],v[4]} ),
+            new HypercubeCostFunction( new Variable[]{v[1],v[2]} ),
+            new HypercubeCostFunction( new Variable[]{v[1],v[3]} ),
+            new HypercubeCostFunction( new Variable[]{v[3],v[4]} ),
         };
 
         MCS mcs = new MCS(factors);

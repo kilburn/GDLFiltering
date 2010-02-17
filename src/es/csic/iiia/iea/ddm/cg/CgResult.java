@@ -38,7 +38,7 @@
 
 package es.csic.iiia.iea.ddm.cg;
 
-import es.csic.iiia.iea.ddm.Factor;
+import es.csic.iiia.iea.ddm.CostFunction;
 import es.csic.iiia.iea.ddm.mp.Result;
 
 /**
@@ -46,7 +46,7 @@ import es.csic.iiia.iea.ddm.mp.Result;
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
 public class CgResult implements Result {
-    private Factor factor;
+    private CostFunction factor;
     private int cliqueVariables;
     private int cliqueSize;
 
@@ -56,7 +56,7 @@ public class CgResult implements Result {
         cliqueSize = factor.getSize();
     }
 
-    public Factor getFactor() {
+    public CostFunction getFactor() {
         return factor;
     }
 

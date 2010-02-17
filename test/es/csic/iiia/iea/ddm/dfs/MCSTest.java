@@ -38,7 +38,8 @@
 
 package es.csic.iiia.iea.ddm.dfs;
 
-import es.csic.iiia.iea.ddm.Factor;
+import es.csic.iiia.iea.ddm.CostFunction;
+import es.csic.iiia.iea.ddm.HypercubeCostFunction;
 import es.csic.iiia.iea.ddm.Variable;
 import java.util.Arrays;
 import java.util.Hashtable;
@@ -57,7 +58,7 @@ import static org.junit.Assert.*;
 public class MCSTest {
 
     private Variable[] v;
-    private Factor[] f;
+    private CostFunction[] f;
 
     public MCSTest() {
     }
@@ -79,17 +80,17 @@ public class MCSTest {
         }
 
         // And now factors
-        f = new Factor[]{
-            new Factor( new Variable[]{v[0],v[1]} ),
-            new Factor( new Variable[]{v[0],v[1]} ),
-            new Factor( new Variable[]{v[0],v[1]} ),
-            new Factor( new Variable[]{v[0],v[2]} ),
-            new Factor( new Variable[]{v[0],v[2]} ),
-            new Factor( new Variable[]{v[0],v[3]} ),
-            new Factor( new Variable[]{v[0],v[4]} ),
-            new Factor( new Variable[]{v[1],v[2]} ),
-            new Factor( new Variable[]{v[1],v[3]} ),
-            new Factor( new Variable[]{v[3],v[4]} ),
+        f = new CostFunction[]{
+            new HypercubeCostFunction( new Variable[]{v[0],v[1]} ),
+            new HypercubeCostFunction( new Variable[]{v[0],v[1]} ),
+            new HypercubeCostFunction( new Variable[]{v[0],v[1]} ),
+            new HypercubeCostFunction( new Variable[]{v[0],v[2]} ),
+            new HypercubeCostFunction( new Variable[]{v[0],v[2]} ),
+            new HypercubeCostFunction( new Variable[]{v[0],v[3]} ),
+            new HypercubeCostFunction( new Variable[]{v[0],v[4]} ),
+            new HypercubeCostFunction( new Variable[]{v[1],v[2]} ),
+            new HypercubeCostFunction( new Variable[]{v[1],v[3]} ),
+            new HypercubeCostFunction( new Variable[]{v[3],v[4]} ),
         };
     }
 
@@ -116,19 +117,19 @@ public class MCSTest {
 
     @Test
     public void testAssignFactors() {
-        Hashtable<Variable, Factor[]> expectedResult = new Hashtable<Variable, Factor[]>();
-        expectedResult.put(v[0], new Factor[]{});
-        expectedResult.put(v[1], new Factor[]{f[0], f[1], f[2]});
-        expectedResult.put(v[2], new Factor[]{f[3], f[4], f[7]});
-        expectedResult.put(v[3], new Factor[]{f[5], f[8]});
-        expectedResult.put(v[4], new Factor[]{f[6], f[9]});
+        Hashtable<Variable, CostFunction[]> expectedResult = new Hashtable<Variable, CostFunction[]>();
+        expectedResult.put(v[0], new CostFunction[]{});
+        expectedResult.put(v[1], new CostFunction[]{f[0], f[1], f[2]});
+        expectedResult.put(v[2], new CostFunction[]{f[3], f[4], f[7]});
+        expectedResult.put(v[3], new CostFunction[]{f[5], f[8]});
+        expectedResult.put(v[4], new CostFunction[]{f[6], f[9]});
 
         MCS mcs = new MCS(f);
-        Hashtable<Variable, Factor[]> result = mcs.getFactorAssignments();
-        for (Entry<Variable,Factor[]> e : result.entrySet()) {
+        Hashtable<Variable, CostFunction[]> result = mcs.getFactorAssignments();
+        for (Entry<Variable,CostFunction[]> e : result.entrySet()) {
 
             System.out.print(e.getKey().getName() + ":[");
-            Factor[] fl = e.getValue();
+            CostFunction[] fl = e.getValue();
             for (int i=0; i<fl.length; i++) {
                 if (i>0) System.out.print(", ");
                 System.out.print(fl[i].getName());

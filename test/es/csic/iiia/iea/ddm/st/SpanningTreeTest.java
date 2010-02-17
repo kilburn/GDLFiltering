@@ -38,12 +38,12 @@
 
 package es.csic.iiia.iea.ddm.st;
 
-import es.csic.iiia.iea.ddm.Factor;
+import es.csic.iiia.iea.ddm.CostFunction;
+import es.csic.iiia.iea.ddm.HypercubeCostFunction;
 import es.csic.iiia.iea.ddm.Variable;
 import es.csic.iiia.iea.ddm.algo.JunctionTreeAlgo;
 import es.csic.iiia.iea.ddm.cg.CliqueGraph;
 import es.csic.iiia.iea.ddm.dfs.MCS;
-import es.csic.iiia.iea.ddm.mp.DefaultResults;
 import java.util.Hashtable;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -59,7 +59,7 @@ import static org.junit.Assert.*;
 public class SpanningTreeTest {
 
     private Variable[] v;
-    private Factor[] f;
+    private CostFunction[] f;
     private CliqueGraph cg;
 
     public SpanningTreeTest() {
@@ -81,19 +81,19 @@ public class SpanningTreeTest {
         }
 
         // And now factors
-        f = new Factor[]{
-            new Factor( new Variable[]{v[0],v[1]} ),
-            new Factor( new Variable[]{v[0],v[1]} ),
-            new Factor( new Variable[]{v[0],v[1]} ),
-            new Factor( new Variable[]{v[0],v[2]} ),
-            new Factor( new Variable[]{v[0],v[2]} ),
-            new Factor( new Variable[]{v[0],v[3]} ),
-            new Factor( new Variable[]{v[0],v[4]} ),
-            new Factor( new Variable[]{v[1],v[2]} ),
-            new Factor( new Variable[]{v[1],v[3]} ),
-            new Factor( new Variable[]{v[3],v[4]} ),
+        f = new CostFunction[]{
+            new HypercubeCostFunction( new Variable[]{v[0],v[1]} ),
+            new HypercubeCostFunction( new Variable[]{v[0],v[1]} ),
+            new HypercubeCostFunction( new Variable[]{v[0],v[1]} ),
+            new HypercubeCostFunction( new Variable[]{v[0],v[2]} ),
+            new HypercubeCostFunction( new Variable[]{v[0],v[2]} ),
+            new HypercubeCostFunction( new Variable[]{v[0],v[3]} ),
+            new HypercubeCostFunction( new Variable[]{v[0],v[4]} ),
+            new HypercubeCostFunction( new Variable[]{v[1],v[2]} ),
+            new HypercubeCostFunction( new Variable[]{v[1],v[3]} ),
+            new HypercubeCostFunction( new Variable[]{v[3],v[4]} ),
         };
-        for (Factor fac : f) {
+        for (CostFunction fac : f) {
             fac.setValues(new double[]{2, 1, 1, 0});
         }
 
@@ -130,9 +130,9 @@ public class SpanningTreeTest {
      */
     @Test
     public void testSpanningTreeRunMax() {
-        int summarize = Factor.SUMMARIZE_MAX;
-        int combine = Factor.COMBINE_SUM;
-        int normalize = Factor.NORMALIZE_NONE;
+        int summarize = CostFunction.SUMMARIZE_MAX;
+        int combine = CostFunction.COMBINE_SUM;
+        int normalize = CostFunction.NORMALIZE_NONE;
         cg.setMode(summarize, combine, normalize);
         cg.run(100);
         SpanningTree instance = new SpanningTree(cg);
@@ -150,9 +150,9 @@ public class SpanningTreeTest {
      */
     @Test
     public void testSpanningTreeRunMin() {
-        int summarize = Factor.SUMMARIZE_MIN;
-        int combine = Factor.COMBINE_SUM;
-        int normalize = Factor.NORMALIZE_NONE;
+        int summarize = CostFunction.SUMMARIZE_MIN;
+        int combine = CostFunction.COMBINE_SUM;
+        int normalize = CostFunction.NORMALIZE_NONE;
         cg.setMode(summarize, combine, normalize);
         cg.run(100);
         SpanningTree instance = new SpanningTree(cg);

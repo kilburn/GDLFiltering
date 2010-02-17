@@ -38,7 +38,8 @@
 
 package es.csic.iiia.iea.ddm.algo;
 
-import es.csic.iiia.iea.ddm.Factor;
+import es.csic.iiia.iea.ddm.CostFunction;
+import es.csic.iiia.iea.ddm.HypercubeCostFunction;
 import es.csic.iiia.iea.ddm.Variable;
 import es.csic.iiia.iea.ddm.cg.CliqueGraph;
 import org.junit.After;
@@ -84,11 +85,11 @@ public class MaxSumTest {
      */
     @Test
     public void testBuildGraph2() {
-        Factor f1 = new Factor(new Variable[]{a,c});
-        Factor f2 = new Factor(new Variable[]{c,d});
-        Factor f3 = new Factor(new Variable[]{a,d});
+        CostFunction f1 = new HypercubeCostFunction(new Variable[]{a,c});
+        CostFunction f2 = new HypercubeCostFunction(new Variable[]{c,d});
+        CostFunction f3 = new HypercubeCostFunction(new Variable[]{a,d});
 
-        Factor[] factors = new Factor[]{f1,f2,f3};
+        CostFunction[] factors = new CostFunction[]{f1,f2,f3};
         CliqueGraph cg = MaxSum.buildGraph(factors);
 
         assertEquals(cg.getNodes().size(), 6);

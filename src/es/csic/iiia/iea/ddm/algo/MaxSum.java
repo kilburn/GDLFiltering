@@ -65,14 +65,14 @@ public abstract class MaxSum {
      * @param factors List of factors describing the problem.
      * @return 
      */
-    public static CliqueGraph buildGraph(Factor[] factors) {
+    public static CliqueGraph buildGraph(CostFunction[] factors) {
 
         CliqueGraph cg = new CliqueGraph();
 
         // Build a clique for each factor;
         ArrayList<CgNode> cliques = new ArrayList<CgNode>();
         HashSet<Variable> varSet = new HashSet<Variable>();
-        for(Factor f : factors) {
+        for(CostFunction f : factors) {
             cliques.add(new CgNode(f));
             varSet.addAll(f.getVariableSet());
         }

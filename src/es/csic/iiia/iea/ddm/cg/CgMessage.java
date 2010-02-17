@@ -38,7 +38,7 @@
 
 package es.csic.iiia.iea.ddm.cg;
 
-import es.csic.iiia.iea.ddm.Factor;
+import es.csic.iiia.iea.ddm.CostFunction;
 import es.csic.iiia.iea.ddm.mp.Message;
 
 /**
@@ -46,13 +46,13 @@ import es.csic.iiia.iea.ddm.mp.Message;
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
 public class CgMessage implements Message {
-    private Factor factor;
+    private CostFunction factor;
 
-    public CgMessage(Factor factor) {
+    public CgMessage(CostFunction factor) {
         this.factor = factor;
     }
 
-    public Factor getFactor() {
+    public CostFunction getFactor() {
         return this.factor;
     }
 }

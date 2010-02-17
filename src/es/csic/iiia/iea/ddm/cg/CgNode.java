@@ -38,7 +38,8 @@
 
 package es.csic.iiia.iea.ddm.cg;
 
-import es.csic.iiia.iea.ddm.Factor;
+import es.csic.iiia.iea.ddm.CostFunction;
+import es.csic.iiia.iea.ddm.HypercubeCostFunction;
 import es.csic.iiia.iea.ddm.Variable;
 import es.csic.iiia.iea.ddm.mp.AbstractNode;
 import java.util.ArrayList;
@@ -63,16 +64,16 @@ public class CgNode extends AbstractNode<CgEdge, CgResult> {
     /**
      * Potential of this clique.
      */
-    private Factor potential;
+    private CostFunction potential;
 
-    public Factor getPotential() {
+    public CostFunction getPotential() {
         return potential;
     }
 
     /**
      * Belief of this clique.
      */
-    private Factor belief;
+    private CostFunction belief;
 
     /**
      * Summarize operation to use.
@@ -97,7 +98,7 @@ public class CgNode extends AbstractNode<CgEdge, CgResult> {
     /**
      * Relations assigned to this clique.
      */
-    private ArrayList<Factor> relations;
+    private ArrayList<CostFunction> relations;
 
 
     private boolean converged = false;
@@ -110,7 +111,7 @@ public class CgNode extends AbstractNode<CgEdge, CgResult> {
      */
     public CgNode(Variable variable) {
         super();
-        this.relations = new ArrayList<Factor>(0);
+        this.relations = new ArrayList<CostFunction>(0);
         this.variables = new HashSet<Variable>(1);
         this.addVariable(variable);
     }
@@ -123,9 +124,9 @@ public class CgNode extends AbstractNode<CgEdge, CgResult> {
      *
      * @param potential potential of the clique.
      */
-    public CgNode(Factor potential) {
+    public CgNode(CostFunction potential) {
         super();
-        this.relations = new ArrayList<Factor>(1);
+        this.relations = new ArrayList<CostFunction>(1);
         this.relations.add(potential);
         this.variables = new HashSet<Variable>(potential.getVariableSet());
     }
@@ -135,7 +136,7 @@ public class CgNode extends AbstractNode<CgEdge, CgResult> {
      */
     public CgNode() {
         super();
-        this.relations = new ArrayList<Factor>();
+        this.relations = new ArrayList<CostFunction>();
         this.variables = new HashSet<Variable>();
     }
 
@@ -173,7 +174,7 @@ public class CgNode extends AbstractNode<CgEdge, CgResult> {
      *
      * @param relation relation to add.
      */
-    public void addRelation(Factor relation) {
+    public void addRelation(CostFunction relation) {
         this.relations.add(relation);
         this.variables.addAll(relation.getVariableSet());
     }
@@ -183,7 +184,7 @@ public class CgNode extends AbstractNode<CgEdge, CgResult> {
      *
      * @return clique's relations.
      */
-    public ArrayList<Factor> getRelations() {
+    public ArrayList<CostFunction> getRelations() {
         return relations;
     }
 
@@ -195,21 +196,24 @@ public class CgNode extends AbstractNode<CgEdge, CgResult> {
 
         // Calculate our potential
         potential = null;
-        for (Factor f : relations) {
+        for (CostFunction f : relations) {
             potential = f.combine(potential, combineOperation);
         }
+        if (potential == null) {
+            potential = new HypercubeCostFunction(new Variable[0]);
+        }
 
-        belief = new Factor(variables.toArray(vars), combineOperation);
-        belief = belief.combine(potential, combineOperation);
+        belief = potential.buildCostFunction(variables.toArray(vars), combineOperation);
+        belief = potential.combine(belief, combineOperation);
 
         // Send initial messages
         for (CgEdge e : getEdges()) {
-            Factor msg;
+            CostFunction msg;
             final Variable[] ev = e.getVariables();
             if (potential != null) {
                 msg = belief.summarize(ev, combineOperation);
             } else {
-                msg = new Factor(ev, combineOperation);
+                msg = potential.buildCostFunction(ev, combineOperation);
             }
             e.sendMessage(this, new CgMessage(msg));
         }
@@ -227,15 +231,15 @@ public class CgNode extends AbstractNode<CgEdge, CgResult> {
         long cc = 0;
 
         // Combine incoming messages
-        Factor combi = new Factor(variables.toArray(vars), combineOperation);
+        CostFunction combi = potential.buildCostFunction(variables.toArray(vars), combineOperation);
         for (CgEdge e : getEdges()) {
-            Factor msg = e.getMessage(this).getFactor();
+            CostFunction msg = e.getMessage(this).getFactor();
             combi = combi.combine(msg, combineOperation);
             cc += combi.getSize();
         }
 
         // Compute our belief
-        Factor previousBelief = belief;
+        CostFunction previousBelief = belief;
         this.belief = combi.combine(this.potential, combineOperation);
         cc += belief.getSize();
         this.belief.normalize(normalizationType);
@@ -247,9 +251,9 @@ public class CgNode extends AbstractNode<CgEdge, CgResult> {
             // Instead of multiplying all incoming messages except the one
             // from e, we "substract" the e message from the belief, which
             // has the same result but with fewer operations.
-            Factor inMsg = new Factor(e.getMessage(this).getFactor());
+            CostFunction inMsg = potential  .buildCostFunction(e.getMessage(this).getFactor());
             inMsg.negate(combineOperation);
-            Factor msg = belief.combine(inMsg, combineOperation);
+            CostFunction msg = belief.combine(inMsg, combineOperation);
             cc += msg.getSize();
             msg = msg.summarize(e.getVariables(), summarizeOperation);
             cc += msg.getSize();
@@ -277,7 +281,7 @@ public class CgNode extends AbstractNode<CgEdge, CgResult> {
      *
      * @return belief of this clique.
      */
-    public Factor getBelief() {
+    public CostFunction getBelief() {
         return belief;
     }
 
@@ -289,7 +293,7 @@ public class CgNode extends AbstractNode<CgEdge, CgResult> {
         
         buf.append("[");
         int i=0;
-        for (Factor f : relations){
+        for (CostFunction f : relations){
             if (i++>0) buf.append(",");
             buf.append(f.getName());
         }

@@ -64,9 +64,4 @@ public class CgResults extends DefaultResults<CgResult> {
         return max;
     }
 
-    public double getMinCost() {
-        this.toString();
-        return getResults().get(0).getFactor().getMinValue();
-    }
-
 }

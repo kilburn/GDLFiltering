@@ -38,7 +38,7 @@
 
 package es.csic.iiia.iea.ddm.algo;
 
-import es.csic.iiia.iea.ddm.Factor;
+import es.csic.iiia.iea.ddm.CostFunction;
 import es.csic.iiia.iea.ddm.cg.CgNode;
 import es.csic.iiia.iea.ddm.cg.CliqueGraph;
 import java.util.Random;
@@ -59,7 +59,7 @@ public class RandomNoiseAdder {
 
     public void addNoise(CliqueGraph cg) {
         for (CgNode n : cg.getNodes()) {
-            for (Factor f : n.getRelations()) {
+            for (CostFunction f : n.getRelations()) {
                 double[] values = f.getValues();
                 for (int i=0; i<values.length; i++) {
                     values[i] += variance*random.nextGaussian() - variance/2;

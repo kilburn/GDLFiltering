@@ -38,7 +38,8 @@
 
 package es.csic.iiia.iea.ddm.io;
 
-import es.csic.iiia.iea.ddm.Factor;
+import es.csic.iiia.iea.ddm.CostFunction;
+import es.csic.iiia.iea.ddm.HypercubeCostFunction;
 import es.csic.iiia.iea.ddm.Variable;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -63,15 +64,15 @@ public class DatasetReader {
     Matcher f = Pattern.compile("(?i)^F\\s+").matcher("");
 
     private HashMap<String, Variable> variables;
-    private ArrayList<Factor> factors;
-    private Factor lastFactor;
+    private ArrayList<CostFunction> factors;
+    private CostFunction lastFactor;
 
     public DatasetReader() {
         this.variables = new HashMap<String, Variable>();
-        this.factors = new ArrayList<Factor>();
+        this.factors = new ArrayList<CostFunction>();
     }
 
-    public Factor[] read(InputStream problem) {
+    public CostFunction[] read(InputStream problem) {
 
         try {
 
@@ -98,7 +99,7 @@ public class DatasetReader {
             ex.printStackTrace();
         }
 
-        return factors.toArray(new Factor[]{});
+        return factors.toArray(new CostFunction[]{});
     }
 
     private void parseLine(String line) {
@@ -140,7 +141,7 @@ public class DatasetReader {
             vars[i-1] = variables.get(parts[i]);
         }
 
-        lastFactor = new Factor(vars);
+        lastFactor = new HypercubeCostFunction(vars);
         factors.add(lastFactor);
     }
 

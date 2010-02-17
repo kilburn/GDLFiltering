@@ -38,7 +38,7 @@
 
 package es.csic.iiia.iea.ddm.cli;
 
-import es.csic.iiia.iea.ddm.Factor;
+import es.csic.iiia.iea.ddm.CostFunction;
 import gnu.getopt.Getopt;
 import java.io.File;
 import java.io.IOException;
@@ -82,9 +82,9 @@ public class Cli {
                 case 'c':
                     arg = g.getOptarg();
                     if (arg.equals("sum"))
-                        cli.setCombineOperation(Factor.COMBINE_SUM);
+                        cli.setCombineOperation(CostFunction.COMBINE_SUM);
                     else if (arg.equals("prod"))
-                        cli.setCombineOperation(Factor.COMBINE_PRODUCT);
+                        cli.setCombineOperation(CostFunction.COMBINE_PRODUCT);
                     else {
                         System.err.println("Error: invalid combine operation \"" + arg + "\"");
                         System.exit(0);
@@ -123,9 +123,9 @@ public class Cli {
                 case 's':
                     arg = g.getOptarg();
                     if (arg.equals("min"))
-                        cli.setSummarizeOperation(Factor.SUMMARIZE_MIN);
+                        cli.setSummarizeOperation(CostFunction.SUMMARIZE_MIN);
                     else if (arg.equals("max"))
-                        cli.setSummarizeOperation(Factor.SUMMARIZE_MAX);
+                        cli.setSummarizeOperation(CostFunction.SUMMARIZE_MAX);
                     else {
                         System.err.println("Error: invalid summarize operation \"" + arg + "\"");
                         System.exit(0);
@@ -155,11 +155,11 @@ public class Cli {
                 case 'n':
                     arg = g.getOptarg();
                     if (arg.equals("none"))
-                        cli.setNormalization(Factor.NORMALIZE_NONE);
+                        cli.setNormalization(CostFunction.NORMALIZE_NONE);
                     else if (arg.equals("sum1"))
-                        cli.setNormalization(Factor.NORMALIZE_SUM1);
+                        cli.setNormalization(CostFunction.NORMALIZE_SUM1);
                     else if (arg.equals("sum0"))
-                        cli.setNormalization(Factor.NORMALIZE_SUM0);
+                        cli.setNormalization(CostFunction.NORMALIZE_SUM0);
                     else {
                         System.err.println("Error: invalid heuristic \"" + arg + "\"");
                         System.exit(0);

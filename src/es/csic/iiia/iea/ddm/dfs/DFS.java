@@ -40,10 +40,12 @@ package es.csic.iiia.iea.ddm.dfs;
 
 import es.csic.iiia.iea.ddm.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.Set;
 
 /**
  *
@@ -51,7 +53,7 @@ import java.util.Random;
  */
 public abstract class DFS {
 
-    private Factor[] factors;
+    private CostFunction[] factors;
     private Variable[] variables;
     private HashSet<Variable> remainingVariables;
     private int[] nPlacedNeighs;
@@ -63,7 +65,7 @@ public abstract class DFS {
     private char[][] adjacency = null;
     private Hashtable<Variable, Integer> variableDepths;
 
-    public DFS(Factor[] factors) {
+    public DFS(CostFunction[] factors) {
         this.factors = factors;
         this.initialize();
     }
@@ -72,8 +74,8 @@ public abstract class DFS {
         neighboors = new Hashtable<Variable, HashSet<Variable>>();
         nConnections = new Hashtable<Variable, Integer>();
         remainingVariables = new HashSet<Variable>();
-        for (Factor f : factors) {
-            HashSet<Variable> vars = f.getVariableSet();
+        for (CostFunction f : factors) {
+            Set<Variable> vars = f.getVariableSet();
             remainingVariables.addAll(f.getVariableSet());
             for (Variable v : vars) {
                 // Get the previously found neighboors
@@ -137,8 +139,9 @@ public abstract class DFS {
         while(remainingVariables.size() > 0) {
             next = getMostConnectedNodes(remainingVariables);
             Variable n = this.pickRandomly(next);
+            System.err.print("Warning: disconnected primal graph, next var: ");
+            System.err.println(n);
             buildTree(adjacency, n, 1);
-
             // Connect n to the root
             adjacency[variableIndices.get(root)][variableIndices.get(n)] = 1;
         }
@@ -189,14 +192,14 @@ public abstract class DFS {
         }
     }
 
-    public Hashtable<Variable, Factor[]> getFactorAssignments() {
+    public Hashtable<Variable, CostFunction[]> getFactorAssignments() {
         if (adjacency == null) {
             computeDFS();
         }
 
-        Factor[][] flist = assignFactors();
-        Hashtable<Variable, Factor[]> results =
-                new Hashtable<Variable, Factor[]>();
+        CostFunction[][] flist = assignFactors();
+        Hashtable<Variable, CostFunction[]> results =
+                new Hashtable<Variable, CostFunction[]>();
 
         for(int i=0; i<variables.length; i++) {
             results.put(variables[i], flist[i]);
@@ -205,19 +208,19 @@ public abstract class DFS {
         return results;
     }
 
-    private Factor[][] assignFactors() {
-        Hashtable<Variable, ArrayList<Factor>> factorList =
-                new Hashtable<Variable, ArrayList<Factor>>(variables.length);
+    private CostFunction[][] assignFactors() {
+        Hashtable<Variable, ArrayList<CostFunction>> factorList =
+                new Hashtable<Variable, ArrayList<CostFunction>>(variables.length);
 
         // Instantiate lists, so there are no "null" values
         for (Variable v : variables) {
-            ArrayList<Factor> l = new ArrayList<Factor>();
+            ArrayList<CostFunction> l = new ArrayList<CostFunction>();
             factorList.put(v, l);
         }
 
 
         // Assign the factors
-        for (Factor f : factors) {
+        for (CostFunction f : factors) {
 
             // Find the most deep variable, to assign this factor to it's
             // corresponding node.
@@ -232,15 +235,15 @@ public abstract class DFS {
             }
 
             // Now assign the factor
-            ArrayList<Factor> fl = factorList.get(mv);
+            ArrayList<CostFunction> fl = factorList.get(mv);
             fl.add(f);
         }
 
         // Convert to array of arrays
-        Factor[][] result = new Factor[variables.length][];
+        CostFunction[][] result = new CostFunction[variables.length][];
         for (int i=0; i<variables.length; i++) {
-            ArrayList<Factor> l = factorList.get(variables[i]);
-            result[i] = new Factor[l.size()];
+            ArrayList<CostFunction> l = factorList.get(variables[i]);
+            result[i] = new CostFunction[l.size()];
             result[i] = l.toArray(result[i]);
         }
 
@@ -343,7 +346,7 @@ public abstract class DFS {
         return adjacency;
     }
 
-    public Factor[][] getFactorDistribution() {
+    public CostFunction[][] getFactorDistribution() {
         if (adjacency == null) {
             computeDFS();
         }

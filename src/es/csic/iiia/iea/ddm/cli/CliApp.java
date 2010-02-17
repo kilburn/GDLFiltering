@@ -38,7 +38,7 @@
 
 package es.csic.iiia.iea.ddm.cli;
 
-import es.csic.iiia.iea.ddm.Factor;
+import es.csic.iiia.iea.ddm.CostFunction;
 import es.csic.iiia.iea.ddm.FactorGraph;
 import es.csic.iiia.iea.ddm.Variable;
 import es.csic.iiia.iea.ddm.algo.JunctionTreeAlgo;
@@ -94,9 +94,9 @@ public class CliApp {
 
     private int algorithm = ALGO_JUNCTION_TREE;
     private int heuristic = JT_HEURISTIC_MCS;
-    private int summarizeOperation = Factor.SUMMARIZE_MIN;
-    private int combineOperation = Factor.COMBINE_SUM;
-    private int normalization = Factor.NORMALIZE_NONE;
+    private int summarizeOperation = CostFunction.SUMMARIZE_MIN;
+    private int combineOperation = CostFunction.COMBINE_SUM;
+    private int normalization = CostFunction.NORMALIZE_NONE;
     private int maxCliqueVariables = Integer.MAX_VALUE;
     private int maxJunctionTreeTries = 100;
     private double randomVariance = 0;
@@ -230,11 +230,11 @@ public class CliApp {
     private InputStream input = System.in;
 
 
-    private void outputVariableStatistics(Factor[] factors) {
+    private void outputVariableStatistics(CostFunction[] factors) {
 
         // Collect all variables
         HashSet<Variable> varSet = new HashSet<Variable>();
-        for (Factor f : factors) {
+        for (CostFunction f : factors) {
             varSet.addAll(f.getVariableSet());
         }
 
@@ -260,7 +260,7 @@ public class CliApp {
     void run() {
         // Read the input file into factors
         DatasetReader r = new DatasetReader();
-        Factor[] factors = r.read(input);
+        CostFunction[] factors = r.read(input);
 
         // Output factor graph
         createFactorGraphFile(new FactorGraph(factors));
@@ -301,7 +301,7 @@ public class CliApp {
 
         // Evaluate solution
         double cost = 0;
-        for (Factor f : factors) {
+        for (CostFunction f : factors) {
             cost += f.getValue(map);
         }
         System.out.println("COST " + cost);
@@ -351,7 +351,7 @@ public class CliApp {
         }
     }
 
-    private CliqueGraph createCliqueGraph(Factor[] factors) {
+    private CliqueGraph createCliqueGraph(CostFunction[] factors) {
         CliqueGraph cg = null;
 
         switch(algorithm) {
@@ -396,9 +396,9 @@ public class CliApp {
                 break;
 
             case ALGO_MAX_SUM:
-                if (normalization == Factor.NORMALIZE_NONE) {
+                if (normalization == CostFunction.NORMALIZE_NONE) {
                     System.err.println("Warning: maxsum doesn't converge without normalization, using sum0.");
-                    normalization = Factor.NORMALIZE_SUM0;
+                    normalization = CostFunction.NORMALIZE_SUM0;
                 }
                 cg = MaxSum.buildGraph(factors);
                 createCliqueGraphFile(cg);

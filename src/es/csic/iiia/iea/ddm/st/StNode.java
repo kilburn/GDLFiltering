@@ -38,7 +38,7 @@
 
 package es.csic.iiia.iea.ddm.st;
 
-import es.csic.iiia.iea.ddm.Factor;
+import es.csic.iiia.iea.ddm.CostFunction;
 import es.csic.iiia.iea.ddm.Variable;
 import es.csic.iiia.iea.ddm.cg.CgNode;
 import es.csic.iiia.iea.ddm.mp.AbstractNode;
@@ -50,7 +50,7 @@ import java.util.Hashtable;
  */
 public class StNode extends AbstractNode<StEdge, StResult> {
     
-    private Factor belief;
+    private CostFunction belief;
     private Hashtable<Variable, Integer> mapping;
     private CgNode node;
 

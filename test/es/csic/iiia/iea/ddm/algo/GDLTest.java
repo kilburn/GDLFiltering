@@ -38,7 +38,8 @@
 
 package es.csic.iiia.iea.ddm.algo;
 
-import es.csic.iiia.iea.ddm.Factor;
+import es.csic.iiia.iea.ddm.CostFunction;
+import es.csic.iiia.iea.ddm.CostFunctionFactory;
 import es.csic.iiia.iea.ddm.Variable;
 import es.csic.iiia.iea.ddm.cg.CliqueGraph;
 import es.csic.iiia.iea.ddm.cg.CgResult;
@@ -58,6 +59,8 @@ import static org.junit.Assert.*;
  */
 public class GDLTest {
 
+    private CostFunctionFactory factory;
+
     public GDLTest() {
     }
 
@@ -71,6 +74,7 @@ public class GDLTest {
 
     @Before
     public void setUp() {
+        factory = new CostFunctionFactory();
     }
 
     @After
@@ -82,7 +86,14 @@ public class GDLTest {
      */
     @Test
     public void testGdlSprinkleTree() {
-        
+        factory.setType(CostFunctionFactory.HYPERCUBE_FACTOR);
+        GdlSprinkleTree();
+
+        factory.setType(CostFunctionFactory.LIST_FACTOR);
+        GdlSprinkleTree();
+    }
+    private void GdlSprinkleTree() {
+
         Variable c,s,r;
         c = new Variable("cloudy", 2);
         s = new Variable("sprinkler",2);
@@ -90,23 +101,23 @@ public class GDLTest {
         Variable[] variables = new Variable[] {s,c,r};
 
         // Cloudy
-        Factor f0 = new Factor(new Variable[] {c});
+        CostFunction f0 = factory.buildCostFunction(new Variable[] {c});
         f0.setValues(new double[] {0.25, 0.75});
         // Cloudy | Sprinkler
-        Factor f1 = new Factor(new Variable[] {c, s});
+        CostFunction f1 = factory.buildCostFunction(new Variable[] {c, s});
         f1.setValues(new double[] {0.25, 0.4, 0.75, 0.6});
         // Cloudy | Rain
-        Factor f2 = new Factor(new Variable[] {c, r});
+        CostFunction f2 = factory.buildCostFunction(new Variable[] {c, r});
         f2.setValues(new double[] {0.8, 0.75, 0.2, 0.25});
-        Factor[] factors = new Factor[] {f0,f1,f2};
+        CostFunction[] factors = new CostFunction[] {f0,f1,f2};
 
         // Expected solution
-        int summarize = Factor.SUMMARIZE_SUM;
-        int combine = Factor.COMBINE_PRODUCT;
-        int normalize = Factor.NORMALIZE_SUM1;
-        Factor solution = EnumerateSolutions.enumerateSolutions(factors, combine);
+        int summarize = CostFunction.SUMMARIZE_SUM;
+        int combine = CostFunction.COMBINE_PRODUCT;
+        int normalize = CostFunction.NORMALIZE_SUM1;
+        CostFunction solution = EnumerateSolutions.enumerateSolutions(factors, combine);
 
-        
+
         // Initialize using max-sum
         CliqueGraph cg = MaxSum.buildGraph(factors);
         cg.setMode(summarize, combine, normalize);
@@ -117,7 +128,7 @@ public class GDLTest {
         ArrayList<CgResult> beliefs = results.getResults();
         for (int i=0; i<variables.length; i++) {
             Variable[] vars = beliefs.get(i).getFactor().getVariableSet().toArray(new Variable[]{c});
-            Factor partialSolution = solution.summarize(vars, summarize);
+            CostFunction partialSolution = solution.summarize(vars, summarize);
             partialSolution.normalize(normalize);
             assertEquals(beliefs.get(i).getFactor(), partialSolution);
         }
@@ -129,6 +140,13 @@ public class GDLTest {
      */
     @Test
     public void testGdlSprinkleTree2() {
+        factory.setType(CostFunctionFactory.HYPERCUBE_FACTOR);
+        GdlSprinkleTree2();
+
+        factory.setType(CostFunctionFactory.LIST_FACTOR);
+        GdlSprinkleTree2();
+    }
+    private void GdlSprinkleTree2() {
 
         Variable c,s,r;
         c = new Variable("cloudy", 2);
@@ -137,21 +155,21 @@ public class GDLTest {
         Variable[] variables = new Variable[] {s,c,r};
 
         // Cloudy
-        Factor f0 = new Factor(new Variable[] {c});
+        CostFunction f0 = factory.buildCostFunction(new Variable[] {c});
         f0.setValues(new double[] {0.25, 0.75});
         // Cloudy | Sprinkler
-        Factor f1 = new Factor(new Variable[] {c, s});
+        CostFunction f1 = factory.buildCostFunction(new Variable[] {c, s});
         f1.setValues(new double[] {0.25, 0.4, 0.75, 0.6});
         // Cloudy | Rain
-        Factor f2 = new Factor(new Variable[] {c, r});
+        CostFunction f2 = factory.buildCostFunction(new Variable[] {c, r});
         f2.setValues(new double[] {0.8, 0.75, 0.2, 0.25});
-        Factor[] factors = new Factor[] {f0,f1,f2};
+        CostFunction[] factors = new CostFunction[] {f0,f1,f2};
 
         // Expected solution
-        int summarize = Factor.SUMMARIZE_MAX;
-        int combine = Factor.COMBINE_PRODUCT;
-        int normalize = Factor.NORMALIZE_SUM1;
-        Factor solution = EnumerateSolutions.enumerateSolutions(factors, combine);
+        int summarize = CostFunction.SUMMARIZE_MAX;
+        int combine = CostFunction.COMBINE_PRODUCT;
+        int normalize = CostFunction.NORMALIZE_SUM1;
+        CostFunction solution = EnumerateSolutions.enumerateSolutions(factors, combine);
 
         // Initialize using max-sum
         CliqueGraph cg = MaxSum.buildGraph(factors);
@@ -163,7 +181,7 @@ public class GDLTest {
         ArrayList<CgResult> beliefs = results.getResults();
         for (int i=0; i<variables.length; i++) {
             Variable[] vars = beliefs.get(i).getFactor().getVariableSet().toArray(new Variable[]{c});
-            Factor partialSolution = solution.summarize(vars, summarize);
+            CostFunction partialSolution = solution.summarize(vars, summarize);
             partialSolution.normalize(normalize);
             assertEquals(beliefs.get(i).getFactor(), partialSolution);
         }
@@ -175,6 +193,13 @@ public class GDLTest {
      */
     @Test
     public void testGdlSprinkleTreeU() {
+        factory.setType(CostFunctionFactory.HYPERCUBE_FACTOR);
+        GdlSprinkleTreeU();
+
+        factory.setType(CostFunctionFactory.LIST_FACTOR);
+        GdlSprinkleTreeU();
+    }
+    private void GdlSprinkleTreeU() {
 
         Variable c,s,r,w;
         c = new Variable("cloudy", 2);
@@ -183,23 +208,23 @@ public class GDLTest {
         w = new Variable("wetglass",2);
 
         // Cloudy
-        Factor f0 = new Factor(new Variable[] {c});
+        CostFunction f0 = factory.buildCostFunction(new Variable[] {c});
         f0.setValues(new double[] {0.5, 0.5});
         // Cloudy | Sprinkler
-        Factor f1 = new Factor(new Variable[] {c, s});
+        CostFunction f1 = factory.buildCostFunction(new Variable[] {c, s});
         f1.setValues(new double[] {0.5, 0.5, 0.9, 0.1});
         // Cloudy | Rain
-        Factor f2 = new Factor(new Variable[] {c, r});
+        CostFunction f2 = factory.buildCostFunction(new Variable[] {c, r});
         f2.setValues(new double[] {0.8, 0.2, 0.2, 0.8});
         // Sprinkler | Rain | WetGlass
-        Factor f3 = new Factor(new Variable[] {s, r, w});
+        CostFunction f3 = factory.buildCostFunction(new Variable[] {s, r, w});
         f3.setValues(new double[] {1, 0, 0.1, 0.9, 0.1, 0.9, 0.01, 0.99});
-        Factor[] factors = new Factor[] {f1,f2,f3,f0};
+        CostFunction[] factors = new CostFunction[] {f1,f2,f3,f0};
 
         // Expected solution
-        int summarize = Factor.SUMMARIZE_MAX;
-        int combine = Factor.COMBINE_SUM;
-        int normalize = Factor.NORMALIZE_SUM0;
+        int summarize = CostFunction.SUMMARIZE_MAX;
+        int combine = CostFunction.COMBINE_SUM;
+        int normalize = CostFunction.NORMALIZE_SUM0;
 
         // Initialize using max-sum
         CliqueGraph cg = MaxSum.buildGraph(factors);
@@ -208,28 +233,28 @@ public class GDLTest {
         assertEquals(13, results.getIterations());
 
         // Expected beliefs
-        Factor b1 = new Factor(new Variable[]{c});
+        CostFunction b1 = factory.buildCostFunction(new Variable[]{c});
         b1.setValues(new double[]{-0.1050, 0.1050});
-        Factor b2 = new Factor(new Variable[]{s});
+        CostFunction b2 = factory.buildCostFunction(new Variable[]{s});
         b2.setValues(new double[]{0.1050, -0.1050});
-        Factor b3 = new Factor(new Variable[]{r});
+        CostFunction b3 = factory.buildCostFunction(new Variable[]{r});
         b3.setValues(new double[]{-0.1050, 0.1050});
-        Factor b4 = new Factor(new Variable[]{w});
+        CostFunction b4 = factory.buildCostFunction(new Variable[]{w});
         b4.setValues(new double[]{-0.1050, 0.1050});
-        Factor b5 = new Factor(new Variable[]{c});
+        CostFunction b5 = factory.buildCostFunction(new Variable[]{c});
         b5.setValues(new double[]{-0.1050, 0.1050});
-        Factor b6 = new Factor(new Variable[]{c,s});
+        CostFunction b6 = factory.buildCostFunction(new Variable[]{c,s});
         b6.setValues(new double[]{0.0050, 0.0950, 0.3050, -0.4050});
-        Factor b7 = new Factor(new Variable[]{c,r});
+        CostFunction b7 = factory.buildCostFunction(new Variable[]{c,r});
         b7.setValues(new double[]{0.1950, -0.5050, -0.0950, 0.4050});
-        Factor b8 = new Factor(new Variable[]{s,r,w});
+        CostFunction b8 = factory.buildCostFunction(new Variable[]{s,r,w});
         b8.setValues(new double[]{
             0.4950, -0.5050, -0.0950, 0.7050, -0.7050, 0.0950, -0.4850, 0.4950
         });
 
-        ArrayList<Factor> solutions = new ArrayList<Factor>(8);
+        ArrayList<CostFunction> solutions = new ArrayList<CostFunction>(8);
         solutions.addAll(Arrays.asList(
-                new Factor[] {b1, b2, b3, b4, b5, b6, b7, b8})
+                new CostFunction[] {b1, b2, b3, b4, b5, b6, b7, b8})
         );
 
         // Solutions will be empty only if all the beliefs matched a solution
@@ -245,6 +270,13 @@ public class GDLTest {
      */
     @Test
     public void testGdlSprinkle1() {
+        factory.setType(CostFunctionFactory.HYPERCUBE_FACTOR);
+        GdlSprinkle1();
+
+        factory.setType(CostFunctionFactory.LIST_FACTOR);
+        GdlSprinkle1();
+    }
+    private void GdlSprinkle1() {
 
         Variable c,s,r,w;
         c = new Variable("cloudy", 2);
@@ -253,23 +285,23 @@ public class GDLTest {
         w = new Variable("wetglass",2);
 
         // Cloudy
-        Factor f0 = new Factor(new Variable[] {c});
+        CostFunction f0 = factory.buildCostFunction(new Variable[] {c});
         f0.setValues(new double[] {0.5, 0.5});
         // Cloudy | Sprinkler
-        Factor f1 = new Factor(new Variable[] {c, s});
+        CostFunction f1 = factory.buildCostFunction(new Variable[] {c, s});
         f1.setValues(new double[] {0.5, 0.5, 0.9, 0.1});
         // Cloudy | Rain
-        Factor f2 = new Factor(new Variable[] {c, r});
+        CostFunction f2 = factory.buildCostFunction(new Variable[] {c, r});
         f2.setValues(new double[] {0.8, 0.2, 0.2, 0.8});
         // Sprinkler | Rain | WetGlass
-        Factor f3 = new Factor(new Variable[] {s, r, w});
+        CostFunction f3 = factory.buildCostFunction(new Variable[] {s, r, w});
         f3.setValues(new double[] {1, 0, 0.1, 0.9, 0.1, 0.9, 0.01, 0.99});
-        Factor[] factors = new Factor[] {f1,f2,f3,f0};
+        CostFunction[] factors = new CostFunction[] {f1,f2,f3,f0};
 
         // Expected solution
-        int summarize = Factor.SUMMARIZE_SUM;
-        int combine = Factor.COMBINE_PRODUCT;
-        int normalize = Factor.NORMALIZE_SUM1;
+        int summarize = CostFunction.SUMMARIZE_SUM;
+        int combine = CostFunction.COMBINE_PRODUCT;
+        int normalize = CostFunction.NORMALIZE_SUM1;
 
         // Initialize using max-sum
         CliqueGraph cg = MaxSum.buildGraph(factors);
@@ -278,28 +310,28 @@ public class GDLTest {
         assertEquals(9, results.getIterations());
 
         // Expected beliefs
-        Factor b1 = new Factor(new Variable[]{s});
+        CostFunction b1 = factory.buildCostFunction(new Variable[]{s});
         b1.setValues(new double[]{0.7, 0.3});
-        Factor b2 = new Factor(new Variable[]{r});
+        CostFunction b2 = factory.buildCostFunction(new Variable[]{r});
         b2.setValues(new double[]{0.5, 0.5});
-        Factor b3 = new Factor(new Variable[]{w});
+        CostFunction b3 = factory.buildCostFunction(new Variable[]{w});
         b3.setValues(new double[]{0.4015, 0.5985});
-        Factor b4 = new Factor(new Variable[]{c});
+        CostFunction b4 = factory.buildCostFunction(new Variable[]{c});
         b4.setValues(new double[]{0.5, 0.5});
-        Factor b5 = new Factor(new Variable[]{c,s});
+        CostFunction b5 = factory.buildCostFunction(new Variable[]{c,s});
         b5.setValues(new double[]{0.25, 0.25, 0.45, 0.05});
-        Factor b6 = new Factor(new Variable[]{c,r});
+        CostFunction b6 = factory.buildCostFunction(new Variable[]{c,r});
         b6.setValues(new double[]{0.4, 0.1, 0.1, 0.4});
-        Factor b7 = new Factor(new Variable[]{s,r,w});
+        CostFunction b7 = factory.buildCostFunction(new Variable[]{s,r,w});
         b7.setValues(new double[]{
             0.35, 0, 0.035, 0.3150, 0.015, 0.1350, 0.0015, 0.1485
         });
-        Factor b8 = new Factor(new Variable[]{c});
+        CostFunction b8 = factory.buildCostFunction(new Variable[]{c});
         b8.setValues(new double[]{0.5, 0.5});
 
-        ArrayList<Factor> solutions = new ArrayList<Factor>(8);
+        ArrayList<CostFunction> solutions = new ArrayList<CostFunction>(8);
         solutions.addAll(Arrays.asList(
-                new Factor[] {b1, b2, b3, b4, b5, b6, b7, b8})
+                new CostFunction[] {b1, b2, b3, b4, b5, b6, b7, b8})
         );
 
         // Solutions will be empty only if all the beliefs matched a solution

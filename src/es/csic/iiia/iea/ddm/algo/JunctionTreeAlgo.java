@@ -38,7 +38,7 @@
 
 package es.csic.iiia.iea.ddm.algo;
 
-import es.csic.iiia.iea.ddm.Factor;
+import es.csic.iiia.iea.ddm.CostFunction;
 import es.csic.iiia.iea.ddm.cg.CgEdge;
 import es.csic.iiia.iea.ddm.cg.CliqueGraph;
 import es.csic.iiia.iea.ddm.cg.CgNode;
@@ -50,7 +50,7 @@ import es.csic.iiia.iea.ddm.jt.JunctionTree;
  */
 public abstract class JunctionTreeAlgo {
 
-    public static CliqueGraph buildGraph(Factor[][] factors, char[][] adjacency) {
+    public static CliqueGraph buildGraph(CostFunction[][] factors, char[][] adjacency) {
 
         CliqueGraph cg = new CliqueGraph();
         CgNode[] nodes = new CgNode[factors.length];
@@ -58,7 +58,7 @@ public abstract class JunctionTreeAlgo {
         // Add the nodes
         for (int i=0; i<factors.length; i++) {
             nodes[i] = new CgNode();
-            for (Factor f : factors[i]) {
+            for (CostFunction f : factors[i]) {
                 nodes[i].addRelation(f);
             }
             cg.addNode(nodes[i]);

@@ -38,7 +38,7 @@
 
 package es.csic.iiia.iea.ddm.algo;
 
-import es.csic.iiia.iea.ddm.Factor;
+import es.csic.iiia.iea.ddm.CostFunction;
 
 /**
  * Enumerates all the possible combinations of any set of factors.
@@ -60,9 +60,9 @@ public class EnumerateSolutions {
      * @return bigger factor that enumerates the outcome of all the possible
      * combinations of the given factors.
      */
-    public static Factor enumerateSolutions(Factor[] factors, int combineOperation) {
+    public static CostFunction enumerateSolutions(CostFunction[] factors, int combineOperation) {
 
-        Factor combi = factors[0];
+        CostFunction combi = factors[0];
         for (int i=1; i<factors.length; i++) {
             combi = combi.combine(factors[i], combineOperation);
         }
