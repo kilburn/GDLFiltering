@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  * 
- * Copyright (c) 2009, IIIA-CSIC, Artificial Intelligence Research Institute
+ * Copyright (c) 2010, IIIA-CSIC, Artificial Intelligence Research Institute
  * All rights reserved.
  * 
  * Redistribution and use of this software in source and binary forms, with or
@@ -38,39 +38,64 @@
 
 package es.csic.iiia.iea.ddm;
 
-import java.util.Iterator;
-
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class FactorGraph {
+public class CostFunctionFactory {
 
-    private CostFunction[] factors;
+    public static final int HYPERCUBE_FACTOR = 1;
+    public static final int LIST_FACTOR = 2;
 
-    public FactorGraph(CostFunction[] factors) {
-        this.factors = factors;
+    private int type;
+    
+    public CostFunctionFactory() {
+        type = HYPERCUBE_FACTOR;
+    }
+    
+    public CostFunctionFactory(int type) {
+        this.type = type;
     }
 
-    @Override
-    public String toString() {
-        StringBuffer buf = new StringBuffer("graph G {\n");
+    public void setType(int type) {
+        this.type = type;
+    }
 
-        for (CostFunction f : factors) {
-            buf.append("  ");
-            Iterator<Variable> i = f.getVariableSet().iterator();
-            while (i.hasNext()) {
-                Variable v = i.next();
-                buf.append(v.getName());
-                if (i.hasNext()) {
-                    buf.append(" -- ");
-                }
-            }
-            buf.append(";\n");
+    public CostFunction buildCostFunction(Variable[] variables) {
+        AbstractCostFunction f = null;
+        switch(type) {
+            case HYPERCUBE_FACTOR:
+                f = new HypercubeCostFunction(variables);
+                break;
+            case LIST_FACTOR:
+                f = new ListCostFunction(variables);
+                break;
         }
+        return f;
+    }
 
-        buf.append("}\n");
-        return buf.toString();
+    public CostFunction buildCostFunction(Variable[] variables, int initialValue) {
+        AbstractCostFunction f = null;
+        switch(type) {
+            case HYPERCUBE_FACTOR:
+                f = new HypercubeCostFunction(variables, initialValue);
+                break;
+            case LIST_FACTOR:
+                f = new ListCostFunction(variables, initialValue);
+                break;
+        }
+        return f;
+    }
+
+    public CostFunction buildCostFunction(CostFunction function) {
+        AbstractCostFunction f = null;
+        switch(type) {
+            case HYPERCUBE_FACTOR:
+                f = new HypercubeCostFunction(function);
+            case LIST_FACTOR:
+                f = new ListCostFunction(function);
+        }
+        return f;
     }
 
 }
