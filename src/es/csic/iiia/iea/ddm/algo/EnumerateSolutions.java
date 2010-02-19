@@ -60,7 +60,7 @@ public class EnumerateSolutions {
      * @return bigger factor that enumerates the outcome of all the possible
      * combinations of the given factors.
      */
-    public static CostFunction enumerateSolutions(CostFunction[] factors, int combineOperation) {
+    public static CostFunction enumerateSolutions(CostFunction[] factors, CostFunction.Combine combineOperation) {
 
         CostFunction combi = factors[0];
         for (int i=1; i<factors.length; i++) {

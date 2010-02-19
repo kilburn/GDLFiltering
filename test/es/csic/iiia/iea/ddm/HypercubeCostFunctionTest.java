@@ -456,7 +456,7 @@ public class HypercubeCostFunctionTest {
     @Test
     public void testSummarize1() {
         Variable[] vars = new Variable[]{a};
-        CostFunction sum = f1.summarize(vars, CostFunction.SUMMARIZE_SUM);
+        CostFunction sum = f1.summarize(vars, CostFunction.Summarize.SUMMARIZE_SUM);
         CostFunction res = new HypercubeCostFunction(vars);
         res.setValues(new double[]{0.63, 0.37});
         assertEquals(sum, res);
@@ -468,7 +468,7 @@ public class HypercubeCostFunctionTest {
     @Test
     public void testSummarize2() {
         Variable[] vars = new Variable[]{a};
-        CostFunction sum = f1.summarize(vars, CostFunction.SUMMARIZE_MAX);
+        CostFunction sum = f1.summarize(vars, CostFunction.Summarize.SUMMARIZE_MAX);
         CostFunction res = new HypercubeCostFunction(vars);
         res.setValues(new double[]{0.2, 0.2});
         assertEquals(sum, res);
@@ -480,7 +480,7 @@ public class HypercubeCostFunctionTest {
     @Test
     public void testSummarize3() {
         Variable[] vars = new Variable[]{a,c};
-        CostFunction sum = f1.summarize(vars, CostFunction.SUMMARIZE_SUM);
+        CostFunction sum = f1.summarize(vars, CostFunction.Summarize.SUMMARIZE_SUM);
         CostFunction res = new HypercubeCostFunction(vars);
         res.setValues(new double[]{0.3,0.25,0.08,0.2,0.1,0.07});
         assertEquals(sum, res);
@@ -492,7 +492,7 @@ public class HypercubeCostFunctionTest {
     @Test
     public void testSummarize4() {
         Variable[] vars = new Variable[]{a,c};
-        CostFunction sum = f1.summarize(vars, CostFunction.SUMMARIZE_MAX);
+        CostFunction sum = f1.summarize(vars, CostFunction.Summarize.SUMMARIZE_MAX);
         CostFunction res = new HypercubeCostFunction(vars);
         res.setValues(new double[]{0.2,0.2,0.05,0.2,0.1,0.04});
         assertEquals(sum, res);
@@ -503,8 +503,8 @@ public class HypercubeCostFunctionTest {
      */
     @Test
     public void testSummarize5() {
-        CostFunction sum = f1.summarize(new Variable[]{c,a}, CostFunction.SUMMARIZE_SUM);
-        CostFunction res = f1.summarize(new Variable[]{a,c}, CostFunction.SUMMARIZE_SUM);
+        CostFunction sum = f1.summarize(new Variable[]{c,a}, CostFunction.Summarize.SUMMARIZE_SUM);
+        CostFunction res = f1.summarize(new Variable[]{a,c}, CostFunction.Summarize.SUMMARIZE_SUM);
         assertEquals(sum, res);
     }
 
@@ -513,8 +513,8 @@ public class HypercubeCostFunctionTest {
      */
     @Test
     public void testSummarize6() {
-        CostFunction sum = f1.summarize(new Variable[]{c,a}, CostFunction.SUMMARIZE_MAX);
-        CostFunction res = f1.summarize(new Variable[]{a,c}, CostFunction.SUMMARIZE_MAX);
+        CostFunction sum = f1.summarize(new Variable[]{c,a}, CostFunction.Summarize.SUMMARIZE_MAX);
+        CostFunction res = f1.summarize(new Variable[]{a,c}, CostFunction.Summarize.SUMMARIZE_MAX);
         assertEquals(sum, res);
     }
 
@@ -524,7 +524,7 @@ public class HypercubeCostFunctionTest {
     @Test
     public void testSummarize7() {
         Variable[] vars = new Variable[]{a,c,d};
-        CostFunction sum = f1.summarize(vars, CostFunction.SUMMARIZE_SUM);
+        CostFunction sum = f1.summarize(vars, CostFunction.Summarize.SUMMARIZE_SUM);
         CostFunction res = new HypercubeCostFunction(new Variable[]{a,c,d});
         res.setValues(new double[]{0.3,0,0.25,0,0.08,0,0.2,0,0.1,0,0.07,0});
         assertEquals(sum, res);
@@ -536,7 +536,7 @@ public class HypercubeCostFunctionTest {
     @Test
     public void testSummarize8() {
         Variable[] vars = new Variable[]{a,b,c};
-        CostFunction sum = f1.summarize(vars, CostFunction.SUMMARIZE_SUM);
+        CostFunction sum = f1.summarize(vars, CostFunction.Summarize.SUMMARIZE_SUM);
         CostFunction res = new HypercubeCostFunction(new Variable[]{a,b,c});
         res.setValues(new double[]{
             0.1, 0.2, 0.05, 0.2, 0.05, 0.03, 0, 0, 0.03, 0.2, 0.1, 0.04
@@ -549,8 +549,8 @@ public class HypercubeCostFunctionTest {
      */
     @Test
     public void testCombine1() {
-        CostFunction sum = f1.summarize(new Variable[]{a,c}, CostFunction.SUMMARIZE_SUM);
-        CostFunction com = f1.combine(sum, CostFunction.COMBINE_PRODUCT);
+        CostFunction sum = f1.summarize(new Variable[]{a,c}, CostFunction.Summarize.SUMMARIZE_SUM);
+        CostFunction com = f1.combine(sum, CostFunction.Combine.COMBINE_PRODUCT);
         CostFunction res = new HypercubeCostFunction(new Variable[]{a,b,c});
         res.setValues(new double[]{
             0.1*0.3, 0.2*.25, 0.05*.08, 0.2*0.3, 0.05*.25, 0.03*.08, 0,
@@ -564,8 +564,8 @@ public class HypercubeCostFunctionTest {
      */
     @Test
     public void testCombine2() {
-        CostFunction sum = f1.summarize(new Variable[]{a,c}, CostFunction.SUMMARIZE_SUM);
-        CostFunction com = f1.combine(sum, CostFunction.COMBINE_SUM);
+        CostFunction sum = f1.summarize(new Variable[]{a,c}, CostFunction.Summarize.SUMMARIZE_SUM);
+        CostFunction com = f1.combine(sum, CostFunction.Combine.COMBINE_SUM);
         CostFunction res = new HypercubeCostFunction(new Variable[]{a,b,c});
         res.setValues(new double[]{
             0.1+0.3, 0.2+.25, 0.05+.08, 0.2+0.3, 0.05+.25, 0.03+.08, 0+0.2,
@@ -580,7 +580,7 @@ public class HypercubeCostFunctionTest {
     @Test
     public void testCombine3() {
         CostFunction sf  = new HypercubeCostFunction(new Variable[]{a,b,c,d}, 1);
-        CostFunction com = sf.combine(fda, CostFunction.COMBINE_PRODUCT);
+        CostFunction com = sf.combine(fda, CostFunction.Combine.COMBINE_PRODUCT);
         CostFunction res = new HypercubeCostFunction(new Variable[]{a,b,c,d});
         res.setValues(new double[]{
             0.1, 0.3, 0.1, 0.3, 0.1, 0.3,
@@ -597,7 +597,7 @@ public class HypercubeCostFunctionTest {
     @Test
     public void testCombineEmptyFunction1() {
         CostFunction sf  = new HypercubeCostFunction(new Variable[]{});
-        CostFunction com = sf.combine(fda, CostFunction.COMBINE_PRODUCT);
+        CostFunction com = sf.combine(fda, CostFunction.Combine.COMBINE_PRODUCT);
         assertEquals(fda, com);
     }
 
@@ -607,7 +607,7 @@ public class HypercubeCostFunctionTest {
     @Test
     public void testCombineEmptyFunction2() {
         CostFunction sf  = new HypercubeCostFunction(new Variable[]{});
-        CostFunction com = fda.combine(sf, CostFunction.COMBINE_PRODUCT);
+        CostFunction com = fda.combine(sf, CostFunction.Combine.COMBINE_PRODUCT);
         assertEquals(fda, com);
     }
 
@@ -616,7 +616,7 @@ public class HypercubeCostFunctionTest {
      */
     @Test
     public void testNormalize1() {
-        fa.normalize(HypercubeCostFunction.NORMALIZE_SUM1);
+        fa.normalize(HypercubeCostFunction.Normalize.NORMALIZE_SUM1);
         HypercubeCostFunction res = new HypercubeCostFunction(new Variable[]{a});
         res.setValues(new double[]{
             0.3, 0.7
@@ -629,7 +629,7 @@ public class HypercubeCostFunctionTest {
      */
     @Test
     public void testNormalize2() {
-        fa.normalize(CostFunction.NORMALIZE_SUM0);
+        fa.normalize(CostFunction.Normalize.NORMALIZE_SUM0);
         CostFunction res = new HypercubeCostFunction(new Variable[]{a});
         res.setValues(new double[]{
             -0.2, 0.2
@@ -646,7 +646,7 @@ public class HypercubeCostFunctionTest {
         fac.setValues(new double[]{
             0.2, 0.4, 0.1, 0.4, 0.1, 0.06, 0, 0, 0.06, 0.4, 0.2, 0.08
         });
-        fac.normalize(CostFunction.NORMALIZE_SUM1);
+        fac.normalize(CostFunction.Normalize.NORMALIZE_SUM1);
         CostFunction res = new HypercubeCostFunction(new Variable[]{a,b,c});
         res.setValues(new double[]{
             0.1, 0.2, 0.05, 0.2, 0.05, 0.03, 0, 0, 0.03, 0.2, 0.1, 0.04
@@ -659,7 +659,7 @@ public class HypercubeCostFunctionTest {
      */
     @Test
     public void testNormalize4() {
-        f1.normalize(CostFunction.NORMALIZE_SUM0);
+        f1.normalize(CostFunction.Normalize.NORMALIZE_SUM0);
         CostFunction res = new HypercubeCostFunction(new Variable[]{a,b,c});
         final double r = 1d/12d;
         res.setValues(new double[]{
@@ -678,7 +678,7 @@ public class HypercubeCostFunctionTest {
         fac.setValues(new double[]{
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
         });
-        fac.normalize(CostFunction.NORMALIZE_SUM1);
+        fac.normalize(CostFunction.Normalize.NORMALIZE_SUM1);
         CostFunction res = new HypercubeCostFunction(new Variable[]{a,b,c});
         final double r = 1d/12d;
         res.setValues(new double[]{
@@ -692,7 +692,7 @@ public class HypercubeCostFunctionTest {
      */
     @Test
     public void testNegate1() {
-        fa.negate(CostFunction.COMBINE_PRODUCT);
+        fa.negate(CostFunction.Combine.COMBINE_PRODUCT);
         CostFunction res = new HypercubeCostFunction(new Variable[]{a});
         res.setValues(new double[]{
             1/0.3, 1/0.7
@@ -705,7 +705,7 @@ public class HypercubeCostFunctionTest {
      */
     @Test
     public void testNegate2() {
-        fa.negate(CostFunction.COMBINE_SUM);
+        fa.negate(CostFunction.Combine.COMBINE_SUM);
         CostFunction res = new HypercubeCostFunction(new Variable[]{a});
         res.setValues(new double[]{
             -0.3, -0.7

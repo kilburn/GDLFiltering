@@ -78,17 +78,17 @@ public class CgNode extends AbstractNode<CgEdge, CgResult> {
     /**
      * Summarize operation to use.
      */
-    private int summarizeOperation;
+    private CostFunction.Summarize summarizeOperation;
 
     /**
      * Combine operation to use.
      */
-    private int combineOperation;
+    private CostFunction.Combine combineOperation;
 
     /**
      * Normalization type to use.
      */
-    private int normalizationType;
+    private CostFunction.Normalize normalizationType;
 
     /**
      * Tolerance to use when comparing the previous and current beliefs.
@@ -203,7 +203,8 @@ public class CgNode extends AbstractNode<CgEdge, CgResult> {
             potential = new HypercubeCostFunction(new Variable[0]);
         }
 
-        belief = potential.buildCostFunction(variables.toArray(vars), combineOperation);
+        belief = potential.buildCostFunction(variables.toArray(vars),
+                combineOperation.getNeutralValue());
         belief = potential.combine(belief, combineOperation);
 
         // Send initial messages
@@ -211,9 +212,10 @@ public class CgNode extends AbstractNode<CgEdge, CgResult> {
             CostFunction msg;
             final Variable[] ev = e.getVariables();
             if (potential != null) {
-                msg = belief.summarize(ev, combineOperation);
+                msg = belief.summarize(ev, summarizeOperation);
             } else {
-                msg = potential.buildCostFunction(ev, combineOperation);
+                msg = potential.buildCostFunction(ev,
+                        combineOperation.getNeutralValue());
             }
             e.sendMessage(this, new CgMessage(msg));
         }
@@ -231,7 +233,8 @@ public class CgNode extends AbstractNode<CgEdge, CgResult> {
         long cc = 0;
 
         // Combine incoming messages
-        CostFunction combi = potential.buildCostFunction(variables.toArray(vars), combineOperation);
+        CostFunction combi = potential.buildCostFunction(variables.toArray(vars),
+                combineOperation.getNeutralValue());
         for (CgEdge e : getEdges()) {
             CostFunction msg = e.getMessage(this).getFactor();
             combi = combi.combine(msg, combineOperation);
@@ -251,7 +254,7 @@ public class CgNode extends AbstractNode<CgEdge, CgResult> {
             // Instead of multiplying all incoming messages except the one
             // from e, we "substract" the e message from the belief, which
             // has the same result but with fewer operations.
-            CostFunction inMsg = potential  .buildCostFunction(e.getMessage(this).getFactor());
+            CostFunction inMsg = potential.buildCostFunction(e.getMessage(this).getFactor());
             inMsg.negate(combineOperation);
             CostFunction msg = belief.combine(inMsg, combineOperation);
             cc += msg.getSize();
@@ -324,27 +327,27 @@ public class CgNode extends AbstractNode<CgEdge, CgResult> {
         return new CgResult(this);
     }
 
-    public int getCombineOperation() {
+    public CostFunction.Combine getCombineOperation() {
         return combineOperation;
     }
 
-    public void setCombineOperation(int combineOperation) {
+    public void setCombineOperation(CostFunction.Combine combineOperation) {
         this.combineOperation = combineOperation;
     }
 
-    public int getNormalizationType() {
+    public CostFunction.Normalize getNormalizationType() {
         return normalizationType;
     }
 
-    public void setNormalizationType(int normalizationType) {
+    public void setNormalizationType(CostFunction.Normalize normalizationType) {
         this.normalizationType = normalizationType;
     }
 
-    public int getSummarizeOperation() {
+    public CostFunction.Summarize getSummarizeOperation() {
         return summarizeOperation;
     }
 
-    public void setSummarizeOperation(int summarizeOperation) {
+    public void setSummarizeOperation(CostFunction.Summarize summarizeOperation) {
         this.summarizeOperation = summarizeOperation;
     }
 

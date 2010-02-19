@@ -38,6 +38,7 @@
 
 package es.csic.iiia.iea.ddm.cg;
 
+import es.csic.iiia.iea.ddm.CostFunction;
 import es.csic.iiia.iea.ddm.Variable;
 import es.csic.iiia.iea.ddm.mp.DefaultGraph;
 import java.util.HashSet;
@@ -73,7 +74,7 @@ public class CliqueGraph extends DefaultGraph<CgNode,CgEdge,CgResults> {
      * @param combine combine operation to use.
      * @param normalize normalization type.
      */
-    public void setMode(int summarize, int combine, int normalize) {
+    public void setMode(CostFunction.Summarize summarize, CostFunction.Combine combine, CostFunction.Normalize normalize) {
         for (CgNode clique : getNodes()) {
             clique.setCombineOperation(combine);
             clique.setSummarizeOperation(summarize);

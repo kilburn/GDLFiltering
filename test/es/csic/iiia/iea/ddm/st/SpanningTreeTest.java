@@ -130,9 +130,9 @@ public class SpanningTreeTest {
      */
     @Test
     public void testSpanningTreeRunMax() {
-        int summarize = CostFunction.SUMMARIZE_MAX;
-        int combine = CostFunction.COMBINE_SUM;
-        int normalize = CostFunction.NORMALIZE_NONE;
+        CostFunction.Summarize summarize = CostFunction.Summarize.SUMMARIZE_MAX;
+        CostFunction.Combine combine = CostFunction.Combine.COMBINE_SUM;
+        CostFunction.Normalize normalize = CostFunction.Normalize.NORMALIZE_NONE;
         cg.setMode(summarize, combine, normalize);
         cg.run(100);
         SpanningTree instance = new SpanningTree(cg);
@@ -150,9 +150,9 @@ public class SpanningTreeTest {
      */
     @Test
     public void testSpanningTreeRunMin() {
-        int summarize = CostFunction.SUMMARIZE_MIN;
-        int combine = CostFunction.COMBINE_SUM;
-        int normalize = CostFunction.NORMALIZE_NONE;
+        CostFunction.Summarize summarize = CostFunction.Summarize.SUMMARIZE_MIN;
+        CostFunction.Combine combine = CostFunction.Combine.COMBINE_SUM;
+        CostFunction.Normalize normalize = CostFunction.Normalize.NORMALIZE_NONE;
         cg.setMode(summarize, combine, normalize);
         cg.run(100);
         SpanningTree instance = new SpanningTree(cg);

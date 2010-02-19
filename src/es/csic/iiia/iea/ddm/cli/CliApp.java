@@ -94,9 +94,9 @@ public class CliApp {
 
     private int algorithm = ALGO_JUNCTION_TREE;
     private int heuristic = JT_HEURISTIC_MCS;
-    private int summarizeOperation = CostFunction.SUMMARIZE_MIN;
-    private int combineOperation = CostFunction.COMBINE_SUM;
-    private int normalization = CostFunction.NORMALIZE_NONE;
+    private CostFunction.Summarize summarizeOperation = CostFunction.Summarize.SUMMARIZE_MIN;
+    private CostFunction.Combine combineOperation = CostFunction.Combine.COMBINE_SUM;
+    private CostFunction.Normalize normalization = CostFunction.Normalize.NORMALIZE_NONE;
     private int maxCliqueVariables = Integer.MAX_VALUE;
     private int maxJunctionTreeTries = 100;
     private double randomVariance = 0;
@@ -182,7 +182,7 @@ public class CliApp {
      *
      * @return
      */
-    public int getNormalization() {
+    public CostFunction.Normalize getNormalization() {
         return normalization;
     }
 
@@ -190,7 +190,7 @@ public class CliApp {
      *
      * @param normalization
      */
-    public void setNormalization(int normalization) {
+    public void setNormalization(CostFunction.Normalize normalization) {
         this.normalization = normalization;
     }
     private int communicationCost = 0;
@@ -199,7 +199,7 @@ public class CliApp {
      *
      * @return
      */
-    public int getCombineOperation() {
+    public CostFunction.Combine getCombineOperation() {
         return combineOperation;
     }
 
@@ -207,7 +207,7 @@ public class CliApp {
      *
      * @param combineOperation
      */
-    public void setCombineOperation(int combineOperation) {
+    public void setCombineOperation(CostFunction.Combine combineOperation) {
         this.combineOperation = combineOperation;
     }
 
@@ -215,7 +215,7 @@ public class CliApp {
      *
      * @return
      */
-    public int getSummarizeOperation() {
+    public CostFunction.Summarize getSummarizeOperation() {
         return summarizeOperation;
     }
 
@@ -223,7 +223,7 @@ public class CliApp {
      *
      * @param summarizeOperation
      */
-    public void setSummarizeOperation(int summarizeOperation) {
+    public void setSummarizeOperation(CostFunction.Summarize summarizeOperation) {
         this.summarizeOperation = summarizeOperation;
     }
     
@@ -396,9 +396,9 @@ public class CliApp {
                 break;
 
             case ALGO_MAX_SUM:
-                if (normalization == CostFunction.NORMALIZE_NONE) {
+                if (normalization == CostFunction.Normalize.NORMALIZE_NONE) {
                     System.err.println("Warning: maxsum doesn't converge without normalization, using sum0.");
-                    normalization = CostFunction.NORMALIZE_SUM0;
+                    normalization = CostFunction.Normalize.NORMALIZE_SUM0;
                 }
                 cg = MaxSum.buildGraph(factors);
                 createCliqueGraphFile(cg);

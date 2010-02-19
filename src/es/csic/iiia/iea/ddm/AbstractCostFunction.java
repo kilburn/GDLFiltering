@@ -162,36 +162,20 @@ public abstract class AbstractCostFunction implements CostFunction {
      *                configuration.
      * @param operation operation used to calculate the optimum.
      */
-    public void getBestConfiguration(Hashtable<Variable, Integer> mapping, int operation) {
+    public void getBestConfiguration(Hashtable<Variable, Integer> mapping, Summarize operation) {
         // Find the maximal value
         ArrayList<Integer> idx = new ArrayList<Integer>();
-        if (operation == SUMMARIZE_MAX) {
-            double max = Double.NEGATIVE_INFINITY;
-            Iterator<Integer> it = iterator();
-            while(it.hasNext()) {
-                final int i = it.next();
-                final double value = getValue(i);
-                if (value > max) {
-                    max = value;
-                    idx.clear();
-                }
-                if (value >= max) {
-                    idx.add(i);
-                }
-            }
-        } else if (operation == SUMMARIZE_MIN) {
-            double min = Double.POSITIVE_INFINITY;
-            Iterator<Integer> it = iterator();
-            while(it.hasNext()) {
-                final int i = it.next();
-                final double value = getValue(i);
-                if (value < min) {
-                    min = value;
-                    idx.clear();
-                }
-                if (value <= min) {
-                    idx.add(i);
-                }
+        double optimal = operation.getNoGood();
+        Iterator<Integer> it = iterator();
+        while(it.hasNext()) {
+            final int i = it.next();
+            final double value = getValue(i);
+            if (operation.isBetter(value, optimal)) {
+                optimal = value;
+                idx.clear();
+                idx.add(i);
+            } else if (value == optimal) {
+                idx.add(i);
             }
         }
         int i = idx.get(new Random().nextInt(idx.size()));
@@ -305,7 +289,7 @@ public abstract class AbstractCostFunction implements CostFunction {
     }
 
     /** {@inheritDoc} */
-    public void negate(int operation) {
+    public void negate(Combine operation) {
         Iterator<Integer> it = iterator();
         while(it.hasNext()) {
             final int i = it.next();
@@ -321,7 +305,7 @@ public abstract class AbstractCostFunction implements CostFunction {
     }
 
     /** {@inheritDoc} */
-    public CostFunction combine(CostFunction factor, int operation) {
+    public CostFunction combine(CostFunction factor, Combine operation) {
 
         // Combination with null factors gives a null / the other factor
         if (factor == null || factor.getSize()==0) {
@@ -336,7 +320,8 @@ public abstract class AbstractCostFunction implements CostFunction {
         vars.addAll(factor.getVariableSet());
 
         // Perform the combination using the given mode
-        CostFunction result = buildCostFunction(vars.toArray(new Variable[0]), operation%10);
+        CostFunction result = buildCostFunction(vars.toArray(new Variable[0]),
+                operation.getNeutralValue());
 
         Hashtable<Variable, Integer> map = null;
         for (int i=0; i<result.getSize(); i++) {
@@ -359,8 +344,8 @@ public abstract class AbstractCostFunction implements CostFunction {
     }
 
     /** {@inheritDoc} */
-    public void normalize(int mode) {
-        if (mode == NORMALIZE_NONE) {
+    public void normalize(Normalize mode) {
+        if (mode == Normalize.NORMALIZE_NONE) {
             return;
         }
 
@@ -445,12 +430,11 @@ public abstract class AbstractCostFunction implements CostFunction {
     }
 
     /** {@inheritDoc} */
-    public CostFunction summarize(Variable[] vars, int operation) {
+    public CostFunction summarize(Variable[] vars, Summarize operation) {
         /*HashSet<Variable> varSet = new HashSet<Variable>(Arrays.asList(vars));
         varSet.retainAll(variableSet);*/
-        HypercubeCostFunction result = new HypercubeCostFunction(vars, 
-                operation == SUMMARIZE_MAX ? Double.NEGATIVE_INFINITY :
-                    (operation == SUMMARIZE_MIN ? Double.POSITIVE_INFINITY : 0));
+        HypercubeCostFunction result = 
+                new HypercubeCostFunction(vars, operation.getNoGood());
         Hashtable<Variable, Integer> map = null;
         Iterator<Integer> it = iterator();
         while (it.hasNext()) {
@@ -459,17 +443,7 @@ public abstract class AbstractCostFunction implements CostFunction {
             final int idx = result.getIndex(map);
             // This value is lost during the summarization
             if (idx < 0) continue;
-            switch (operation) {
-                case SUMMARIZE_MAX:
-                    result.setValue(idx, Math.max(getValue(i), result.getValue(idx)));
-                    break;
-                case SUMMARIZE_SUM:
-                    result.setValue(idx, result.getValue(idx) + getValue(i));
-                    break;
-                case SUMMARIZE_MIN:
-                    result.setValue(idx, Math.min(getValue(i), result.getValue(idx)));
-                    break;
-            }
+            result.setValue(idx, operation.eval(getValue(i), result.getValue(idx)));
         }
         return result;
     }
@@ -485,7 +459,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         }
         final CostFunction other = (CostFunction) obj;
 
-        return equals(other, 0.0001);
+        return equals(other, 0.0000001);
     }
 
     /**

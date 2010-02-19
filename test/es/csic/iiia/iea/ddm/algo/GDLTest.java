@@ -112,9 +112,9 @@ public class GDLTest {
         CostFunction[] factors = new CostFunction[] {f0,f1,f2};
 
         // Expected solution
-        int summarize = CostFunction.SUMMARIZE_SUM;
-        int combine = CostFunction.COMBINE_PRODUCT;
-        int normalize = CostFunction.NORMALIZE_SUM1;
+        CostFunction.Summarize summarize = CostFunction.Summarize.SUMMARIZE_SUM;
+        CostFunction.Combine combine = CostFunction.Combine.COMBINE_PRODUCT;
+        CostFunction.Normalize normalize = CostFunction.Normalize.NORMALIZE_SUM1;
         CostFunction solution = EnumerateSolutions.enumerateSolutions(factors, combine);
 
 
@@ -166,9 +166,9 @@ public class GDLTest {
         CostFunction[] factors = new CostFunction[] {f0,f1,f2};
 
         // Expected solution
-        int summarize = CostFunction.SUMMARIZE_MAX;
-        int combine = CostFunction.COMBINE_PRODUCT;
-        int normalize = CostFunction.NORMALIZE_SUM1;
+        CostFunction.Summarize summarize = CostFunction.Summarize.SUMMARIZE_MAX;
+        CostFunction.Combine combine = CostFunction.Combine.COMBINE_PRODUCT;
+        CostFunction.Normalize normalize = CostFunction.Normalize.NORMALIZE_SUM1;
         CostFunction solution = EnumerateSolutions.enumerateSolutions(factors, combine);
 
         // Initialize using max-sum
@@ -222,9 +222,9 @@ public class GDLTest {
         CostFunction[] factors = new CostFunction[] {f1,f2,f3,f0};
 
         // Expected solution
-        int summarize = CostFunction.SUMMARIZE_MAX;
-        int combine = CostFunction.COMBINE_SUM;
-        int normalize = CostFunction.NORMALIZE_SUM0;
+        CostFunction.Summarize summarize = CostFunction.Summarize.SUMMARIZE_MAX;
+        CostFunction.Combine combine = CostFunction.Combine.COMBINE_SUM;
+        CostFunction.Normalize normalize = CostFunction.Normalize.NORMALIZE_SUM0;
 
         // Initialize using max-sum
         CliqueGraph cg = MaxSum.buildGraph(factors);
@@ -299,9 +299,9 @@ public class GDLTest {
         CostFunction[] factors = new CostFunction[] {f1,f2,f3,f0};
 
         // Expected solution
-        int summarize = CostFunction.SUMMARIZE_SUM;
-        int combine = CostFunction.COMBINE_PRODUCT;
-        int normalize = CostFunction.NORMALIZE_SUM1;
+        CostFunction.Summarize summarize = CostFunction.Summarize.SUMMARIZE_SUM;
+        CostFunction.Combine combine = CostFunction.Combine.COMBINE_PRODUCT;
+        CostFunction.Normalize normalize = CostFunction.Normalize.NORMALIZE_SUM1;
 
         // Initialize using max-sum
         CliqueGraph cg = MaxSum.buildGraph(factors);

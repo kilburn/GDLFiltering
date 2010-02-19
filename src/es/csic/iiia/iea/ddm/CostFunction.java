@@ -47,38 +47,108 @@ import java.util.Set;
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
 public interface CostFunction {
+
     /**
-     * Perform the combine operator using product.
+     * Available combination modes.
      */
-    int COMBINE_PRODUCT = 1;
+    public enum Combine {
+        /**
+         * Perform the combine operator using product.
+         */
+        COMBINE_PRODUCT (1),
+        /**
+         * Perform the combine operator using addition.
+         */
+        COMBINE_SUM (0);
+
+        private int n;
+        Combine(int n) {this.n = n;}
+        public int getNeutralValue() {return n;}
+    }
+
     /**
-     * Perform the combine operator using addition.
+     * Available normalization modes.
      */
-    int COMBINE_SUM = 0;
+    public enum Normalize {
+        /**
+         * Do not normalize.
+         */
+        NORMALIZE_NONE,
+        /**
+         * Normalize so that all values add to 0.
+         */
+        NORMALIZE_SUM0,
+        /**
+         * Normalize so that all values add to 1.
+         */
+        NORMALIZE_SUM1;
+    }
+
     /**
-     * Do not normalize.
+     * Available summarization modes.
      */
-    int NORMALIZE_NONE = 2;
-    /**
-     * Normalize so that all values add to 0.
-     */
-    int NORMALIZE_SUM0 = 0;
-    /**
-     * Normalize so that all values add to 1.
-     */
-    int NORMALIZE_SUM1 = 1;
-    /**
-     * Perform the summzarize operator using maximum.
-     */
-    int SUMMARIZE_MAX = 1;
-    /**
-     * Perform the summzarize operator using minimum.
-     */
-    int SUMMARIZE_MIN = 2;
-    /**
-     * Perform the summarize operator using addition.
-     */
-    int SUMMARIZE_SUM = 0;
+    public enum Summarize {
+        /**
+         * Perform the summzarize operator using maximum.
+         */
+        SUMMARIZE_MAX {
+            public double eval(double x, double y) {return Math.max(x, y);}
+            public boolean isBetter(double x, double y) {return x > y;}
+            public double getNoGood() {
+                return Double.NEGATIVE_INFINITY;
+            }
+        },
+        /**
+         * Perform the summzarize operator using minimum.
+         */
+        SUMMARIZE_MIN {
+            public double eval(double x, double y) {return Math.min(x, y);}
+            public boolean isBetter(double x, double y) {return x < y;}
+            public double getNoGood() {
+                return Double.POSITIVE_INFINITY;
+            }
+        },
+        /**
+         * Perform the summarize operator using addition.
+         */
+        SUMMARIZE_SUM {
+            public double eval(double x, double y) {return x+y;}
+            public boolean isBetter(double x, double y) {
+                throw new RuntimeException("I don't know how to compare when using SUM summarization.");
+            }
+            public double getNoGood() {
+                return 0;
+            }
+        };
+
+        /**
+         * Performs the summarization of the given values according to the
+         * current summarization mode.
+         *
+         * @param x first value.
+         * @param y second value.
+         * @return summarization result.
+         */
+        public abstract double eval(double x, double y);
+        
+        /**
+         * Returns <em>true</em> if x is better than y according to the
+         * summarization mode being used.
+         * 
+         * @param x first value.
+         * @param y second value.
+         * @return true if x is better than y or <em>false</em> otherwise.
+         */
+        public abstract boolean isBetter(double x, double y);
+
+        /**
+         * Returns the value corresponding to a <em>nogood</em> (infitely bad
+         * value) according to the summarization mode being used.
+         *
+         * @return <em>nogood</em> (worst) value.
+         */
+        public abstract double getNoGood();
+    }
 
     /**
      * Combine this factor with the given one, using the specified operation.
@@ -88,7 +158,7 @@ public interface CostFunction {
      * @return a new CostFunction which is the result of the combination between this
      * and the given one.
      */
-    CostFunction combine(CostFunction factor, int operation);
+    CostFunction combine(CostFunction factor, Combine operation);
 
     /**
      * {@inheritDoc}
@@ -103,7 +173,7 @@ public interface CostFunction {
      * @param mapping current variable mappings.
      * @param operation summarizing operation used.
      */
-    void getBestConfiguration(Hashtable<Variable, Integer> mapping, int operation);
+    void getBestConfiguration(Hashtable<Variable, Integer> mapping, Summarize operation);
 
     /**
      * Returns the index of the values array corresponding to the specified
@@ -172,14 +242,14 @@ public interface CostFunction {
      * @see #combine(es.csic.iiia.iea.ddm.CostFunction, int)
      * @param operation operation to use.
      */
-    void negate(int operation);
+    void negate(Combine operation);
 
     /**
      * Normalizes this factor in the specified mode.
      *
      * @param mode Normalization mode to use.
      */
-    void normalize(int mode);
+    void normalize(Normalize mode);
 
     /**
      * Reduces the factor, fixing the variable-value pairs of the mapping
@@ -222,7 +292,7 @@ public interface CostFunction {
      * @return a new CostFunction which is the result of summarizing this one over
      * the specified variables.
      */
-    CostFunction summarize(Variable[] vars, int operation);
+    CostFunction summarize(Variable[] vars, Summarize operation);
 
     /**
      * Obtains an iterator over the linearized indices of non-infinity elements of this
