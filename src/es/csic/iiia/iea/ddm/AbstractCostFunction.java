@@ -459,7 +459,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         }
         final CostFunction other = (CostFunction) obj;
 
-        return equals(other, 0.0000001);
+        return equals(other, 0.0001);
     }
 
     /**

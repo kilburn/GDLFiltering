@@ -122,7 +122,7 @@ public class GDLTest {
         CliqueGraph cg = MaxSum.buildGraph(factors);
         cg.setMode(summarize, combine, normalize);
         DefaultResults<CgResult> results = cg.run(100);
-        assertEquals(5, results.getIterations());
+        assertEquals(4, results.getIterations());
 
         // Fist beliefs are always those from the single-variable cliques
         ArrayList<CgResult> beliefs = results.getResults();
@@ -230,7 +230,7 @@ public class GDLTest {
         CliqueGraph cg = MaxSum.buildGraph(factors);
         cg.setMode(summarize, combine, normalize);
         DefaultResults<CgResult> results = cg.run(100);
-        assertEquals(13, results.getIterations());
+        assertEquals(12, results.getIterations());
 
         // Expected beliefs
         CostFunction b1 = factory.buildCostFunction(new Variable[]{c});
@@ -307,7 +307,7 @@ public class GDLTest {
         CliqueGraph cg = MaxSum.buildGraph(factors);
         cg.setMode(summarize, combine, normalize);
         DefaultResults<CgResult> results = cg.run(100);
-        assertEquals(9, results.getIterations());
+        assertEquals(4, results.getIterations());
 
         // Expected beliefs
         CostFunction b1 = factory.buildCostFunction(new Variable[]{s});
