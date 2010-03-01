@@ -56,12 +56,12 @@ public abstract class CostFunctionTest {
 
     protected CostFunction instance;
     private Variable[] variables;
-    protected CostFunctionFactory factory;
+    protected HypercubeCostFunctionFactory factory;
 
     private Variable a,b,c,d;
     private CostFunction f1, fda, fdc, fa, fb;
 
-    public abstract CostFunctionFactory buildFactory();
+    public abstract HypercubeCostFunctionFactory buildFactory();
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -163,6 +163,7 @@ public abstract class CostFunctionTest {
         assertNotSame(f, f1);
         assertEquals(f, f1);
         assertNotSame(f.getVariableSet(), f1.getVariableSet());
+        assertSame(f.getFactory(), f1.getFactory());
     }
 
 
@@ -386,10 +387,12 @@ public abstract class CostFunctionTest {
     @Test
     public void testSummarize1() {
         Variable[] vars = new Variable[]{a};
-        CostFunction sum = f1.summarize(vars, CostFunction.Summarize.SUMMARIZE_SUM);
+        factory.setSummarizeOperation(CostFunction.Summarize.SUM);
+        CostFunction sum = f1.summarize(vars);
         CostFunction res = factory.buildCostFunction(vars);
         res.setValues(new double[]{0.63, 0.37});
         assertEquals(sum, res);
+        assertSame(sum.getFactory(), res.getFactory());
     }
 
     /**
@@ -398,10 +401,12 @@ public abstract class CostFunctionTest {
     @Test
     public void testSummarize2() {
         Variable[] vars = new Variable[]{a};
-        CostFunction sum = f1.summarize(vars, CostFunction.Summarize.SUMMARIZE_MAX);
+        factory.setSummarizeOperation(CostFunction.Summarize.MAX);
+        CostFunction sum = f1.summarize(vars);
         CostFunction res = factory.buildCostFunction(vars);
         res.setValues(new double[]{0.2, 0.2});
         assertEquals(sum, res);
+        assertSame(sum.getFactory(), res.getFactory());
     }
 
     /**
@@ -410,10 +415,12 @@ public abstract class CostFunctionTest {
     @Test
     public void testSummarize3() {
         Variable[] vars = new Variable[]{a,c};
-        CostFunction sum = f1.summarize(vars, CostFunction.Summarize.SUMMARIZE_SUM);
+        factory.setSummarizeOperation(CostFunction.Summarize.SUM);
+        CostFunction sum = f1.summarize(vars);
         CostFunction res = factory.buildCostFunction(vars);
         res.setValues(new double[]{0.3,0.25,0.08,0.2,0.1,0.07});
         assertEquals(sum, res);
+        assertSame(sum.getFactory(), res.getFactory());
     }
 
     /**
@@ -422,10 +429,12 @@ public abstract class CostFunctionTest {
     @Test
     public void testSummarize4() {
         Variable[] vars = new Variable[]{a,c};
-        CostFunction sum = f1.summarize(vars, CostFunction.Summarize.SUMMARIZE_MAX);
+        factory.setSummarizeOperation(CostFunction.Summarize.MAX);
+        CostFunction sum = f1.summarize(vars);
         CostFunction res = factory.buildCostFunction(vars);
         res.setValues(new double[]{0.2,0.2,0.05,0.2,0.1,0.04});
         assertEquals(sum, res);
+        assertSame(sum.getFactory(), res.getFactory());
     }
 
     /**
@@ -433,9 +442,11 @@ public abstract class CostFunctionTest {
      */
     @Test
     public void testSummarize5() {
-        CostFunction sum = f1.summarize(new Variable[]{c,a}, CostFunction.Summarize.SUMMARIZE_SUM);
-        CostFunction res = f1.summarize(new Variable[]{a,c}, CostFunction.Summarize.SUMMARIZE_SUM);
+        factory.setSummarizeOperation(CostFunction.Summarize.SUM);
+        CostFunction sum = f1.summarize(new Variable[]{c,a});
+        CostFunction res = f1.summarize(new Variable[]{a,c});
         assertEquals(sum, res);
+        assertSame(sum.getFactory(), res.getFactory());
     }
 
     /**
@@ -443,9 +454,11 @@ public abstract class CostFunctionTest {
      */
     @Test
     public void testSummarize6() {
-        CostFunction sum = f1.summarize(new Variable[]{c,a}, CostFunction.Summarize.SUMMARIZE_MAX);
-        CostFunction res = f1.summarize(new Variable[]{a,c}, CostFunction.Summarize.SUMMARIZE_MAX);
+        factory.setSummarizeOperation(CostFunction.Summarize.MAX);
+        CostFunction sum = f1.summarize(new Variable[]{c,a});
+        CostFunction res = f1.summarize(new Variable[]{a,c});
         assertEquals(sum, res);
+        assertSame(sum.getFactory(), res.getFactory());
     }
 
     /**
@@ -454,10 +467,12 @@ public abstract class CostFunctionTest {
     @Test
     public void testSummarize7() {
         Variable[] vars = new Variable[]{a,c,d};
-        CostFunction sum = f1.summarize(vars, CostFunction.Summarize.SUMMARIZE_SUM);
+        factory.setSummarizeOperation(CostFunction.Summarize.SUM);
+        CostFunction sum = f1.summarize(vars);
         CostFunction res = factory.buildCostFunction(new Variable[]{a,c,d});
         res.setValues(new double[]{0.3,0,0.25,0,0.08,0,0.2,0,0.1,0,0.07,0});
         assertEquals(sum, res);
+        assertSame(sum.getFactory(), res.getFactory());
     }
 
     /**
@@ -466,12 +481,16 @@ public abstract class CostFunctionTest {
     @Test
     public void testSummarize8() {
         Variable[] vars = new Variable[]{a,b,c};
-        CostFunction sum = f1.summarize(vars, CostFunction.Summarize.SUMMARIZE_SUM);
+        factory.setSummarizeOperation(CostFunction.Summarize.SUM);
+        CostFunction sum = f1.summarize(vars);
+        assertSame(sum.getFactory(), f1.getFactory());
         CostFunction res = factory.buildCostFunction(new Variable[]{a,b,c});
+        assertSame(sum.getFactory(), res.getFactory());
         res.setValues(new double[]{
             0.1, 0.2, 0.05, 0.2, 0.05, 0.03, 0, 0, 0.03, 0.2, 0.1, 0.04
         });
         assertEquals(sum, res);
+        assertSame(sum.getFactory(), res.getFactory());
     }
 
     /**
@@ -479,14 +498,16 @@ public abstract class CostFunctionTest {
      */
     @Test
     public void testCombine1() {
-        CostFunction sum = f1.summarize(new Variable[]{a,c}, CostFunction.Summarize.SUMMARIZE_SUM);
-        CostFunction com = f1.combine(sum, CostFunction.Combine.COMBINE_PRODUCT);
+        factory.setMode(CostFunction.Summarize.SUM, CostFunction.Combine.PRODUCT, CostFunction.Normalize.NONE);
+        CostFunction sum = f1.summarize(new Variable[]{a,c});
+        CostFunction com = f1.combine(sum);
         CostFunction res = factory.buildCostFunction(new Variable[]{a,b,c});
         res.setValues(new double[]{
             0.1*0.3, 0.2*.25, 0.05*.08, 0.2*0.3, 0.05*.25, 0.03*.08, 0,
             0, 0.03*.07, 0.2*0.2, 0.1*0.1, 0.04*0.07
         });
         assertEquals(com, res);
+        assertSame(com.getFactory(), res.getFactory());
     }
 
     /**
@@ -494,14 +515,16 @@ public abstract class CostFunctionTest {
      */
     @Test
     public void testCombine2() {
-        CostFunction sum = f1.summarize(new Variable[]{a,c}, CostFunction.Summarize.SUMMARIZE_SUM);
-        CostFunction com = f1.combine(sum, CostFunction.Combine.COMBINE_SUM);
+        factory.setMode(CostFunction.Summarize.SUM, CostFunction.Combine.SUM, CostFunction.Normalize.NONE);
+        CostFunction sum = f1.summarize(new Variable[]{a,c});
+        CostFunction com = f1.combine(sum);
         CostFunction res = factory.buildCostFunction(new Variable[]{a,b,c});
         res.setValues(new double[]{
             0.1+0.3, 0.2+.25, 0.05+.08, 0.2+0.3, 0.05+.25, 0.03+.08, 0+0.2,
             0+0.1, 0.03+.07, 0.2+0.2, 0.1+0.1, 0.04+0.07
         });
         assertEquals(com, res);
+        assertSame(com.getFactory(), res.getFactory());
     }
 
     /**
@@ -509,8 +532,9 @@ public abstract class CostFunctionTest {
      */
     @Test
     public void testCombine3() {
+        factory.setCombineOperation(CostFunction.Combine.PRODUCT);
         CostFunction sf  = factory.buildCostFunction(new Variable[]{a,b,c,d}, 1);
-        CostFunction com = sf.combine(fda, CostFunction.Combine.COMBINE_PRODUCT);
+        CostFunction com = sf.combine(fda);
         CostFunction res = factory.buildCostFunction(new Variable[]{a,b,c,d});
         res.setValues(new double[]{
             0.1, 0.3, 0.1, 0.3, 0.1, 0.3,
@@ -519,6 +543,7 @@ public abstract class CostFunctionTest {
             0.4, 0.2, 0.4, 0.2, 0.4, 0.2,
         });
         assertEquals(com, res);
+        assertSame(com.getFactory(), res.getFactory());
     }
 
     /**
@@ -526,9 +551,11 @@ public abstract class CostFunctionTest {
      */
     @Test
     public void testCombineEmptyFunction1() {
+        factory.setCombineOperation(CostFunction.Combine.PRODUCT);
         CostFunction sf  = factory.buildCostFunction(new Variable[]{});
-        CostFunction com = sf.combine(fda, CostFunction.Combine.COMBINE_PRODUCT);
+        CostFunction com = sf.combine(fda);
         assertEquals(fda, com);
+        assertSame(fda.getFactory(), com.getFactory());
     }
 
     /**
@@ -536,9 +563,11 @@ public abstract class CostFunctionTest {
      */
     @Test
     public void testCombineEmptyFunction2() {
+        factory.setCombineOperation(CostFunction.Combine.PRODUCT);
         CostFunction sf  = factory.buildCostFunction(new Variable[]{});
-        CostFunction com = fda.combine(sf, CostFunction.Combine.COMBINE_PRODUCT);
+        CostFunction com = fda.combine(sf);
         assertEquals(fda, com);
+        assertSame(fda.getFactory(), com.getFactory());
     }
 
     /**
@@ -546,12 +575,14 @@ public abstract class CostFunctionTest {
      */
     @Test
     public void testNormalize1() {
-        fa.normalize(CostFunction.Normalize.NORMALIZE_SUM1);
+        factory.setNormalizationType(CostFunction.Normalize.SUM1);
+        fa.normalize();
         CostFunction res = factory.buildCostFunction(new Variable[]{a});
         res.setValues(new double[]{
             0.3, 0.7
         });
         assertEquals(fa, res);
+        assertSame(fa.getFactory(), res.getFactory());
     }
 
     /**
@@ -559,12 +590,14 @@ public abstract class CostFunctionTest {
      */
     @Test
     public void testNormalize2() {
-        fa.normalize(CostFunction.Normalize.NORMALIZE_SUM0);
+        factory.setNormalizationType(CostFunction.Normalize.SUM0);
+        fa.normalize();
         CostFunction res = factory.buildCostFunction(new Variable[]{a});
         res.setValues(new double[]{
             -0.2, 0.2
         });
         assertEquals(fa, res);
+        assertSame(fa.getFactory(), res.getFactory());
     }
     
     /**
@@ -572,16 +605,18 @@ public abstract class CostFunctionTest {
      */
     @Test
     public void testNormalize3() {
+        factory.setNormalizationType(CostFunction.Normalize.SUM1);
         CostFunction fac = factory.buildCostFunction(new Variable[]{a,b,c});
         fac.setValues(new double[]{
             0.2, 0.4, 0.1, 0.4, 0.1, 0.06, 0, 0, 0.06, 0.4, 0.2, 0.08
         });
-        fac.normalize(CostFunction.Normalize.NORMALIZE_SUM1);
+        fac.normalize();
         CostFunction res = factory.buildCostFunction(new Variable[]{a,b,c});
         res.setValues(new double[]{
             0.1, 0.2, 0.05, 0.2, 0.05, 0.03, 0, 0, 0.03, 0.2, 0.1, 0.04
         });
         assertEquals(fac, res);
+        assertSame(fac.getFactory(), res.getFactory());
     }
 
     /**
@@ -589,7 +624,8 @@ public abstract class CostFunctionTest {
      */
     @Test
     public void testNormalize4() {
-        f1.normalize(CostFunction.Normalize.NORMALIZE_SUM0);
+        factory.setNormalizationType(CostFunction.Normalize.SUM0);
+        f1.normalize();
         CostFunction res = factory.buildCostFunction(new Variable[]{a,b,c});
         final double r = 1d/12d;
         res.setValues(new double[]{
@@ -597,6 +633,7 @@ public abstract class CostFunctionTest {
             0-r, 0-r, 0.03-r, 0.2-r, 0.1-r, 0.04-r
         });
         assertEquals(f1, res);
+        assertSame(f1.getFactory(), res.getFactory());
     }
 
     /**
@@ -604,17 +641,19 @@ public abstract class CostFunctionTest {
      */
     @Test
     public void testNormalize5() {
+        factory.setNormalizationType(CostFunction.Normalize.SUM1);
         CostFunction fac = factory.buildCostFunction(new Variable[]{a,b,c});
         fac.setValues(new double[]{
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
         });
-        fac.normalize(CostFunction.Normalize.NORMALIZE_SUM1);
+        fac.normalize();
         CostFunction res = factory.buildCostFunction(new Variable[]{a,b,c});
         final double r = 1d/12d;
         res.setValues(new double[]{
             r, r, r, r, r, r, r, r, r, r, r, r
         });
         assertEquals(fac, res);
+        assertSame(fac.getFactory(), res.getFactory());
     }
 
     /**
@@ -622,12 +661,14 @@ public abstract class CostFunctionTest {
      */
     @Test
     public void testNegate1() {
-        fa.negate(CostFunction.Combine.COMBINE_PRODUCT);
+        factory.setCombineOperation(CostFunction.Combine.PRODUCT);
+        fa.negate();
         CostFunction res = factory.buildCostFunction(new Variable[]{a});
         res.setValues(new double[]{
             1/0.3, 1/0.7
         });
         assertEquals(fa, res);
+        assertSame(fa.getFactory(), res.getFactory());
     }
 
     /**
@@ -635,12 +676,14 @@ public abstract class CostFunctionTest {
      */
     @Test
     public void testNegate2() {
-        fa.negate(CostFunction.Combine.COMBINE_SUM);
+        factory.setCombineOperation(CostFunction.Combine.SUM);
+        fa.negate();
         CostFunction res = factory.buildCostFunction(new Variable[]{a});
         res.setValues(new double[]{
             -0.3, -0.7
         });
         assertEquals(fa, res);
+        assertSame(fa.getFactory(), res.getFactory());
     }
 
     /**
@@ -657,6 +700,7 @@ public abstract class CostFunctionTest {
             0.1, 0.2, 0.05, 0.2, 0.05, 0.03
         });
         assertEquals(red, res);
+        assertSame(red.getFactory(), res.getFactory());
     }
 
     /**
@@ -673,6 +717,7 @@ public abstract class CostFunctionTest {
             0.1, 0.2, 0.05, 0, 0, 0.03
         });
         assertEquals(red, res);
+        assertSame(red.getFactory(), res.getFactory());
     }
 
     /**
@@ -689,6 +734,7 @@ public abstract class CostFunctionTest {
             0.1, 0.2, 0, 0.2
         });
         assertEquals(red, res);
+        assertSame(red.getFactory(), res.getFactory());
     }
 
     /**
@@ -701,7 +747,6 @@ public abstract class CostFunctionTest {
         map.put(b, 0);
         map.put(c, 0);
         CostFunction red = f1.reduce(map);
-
         CostFunction res = null;
         assertEquals(red, res);
     }

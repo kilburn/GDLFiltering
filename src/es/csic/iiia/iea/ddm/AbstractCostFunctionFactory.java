@@ -1,28 +1,28 @@
 /*
  * Software License Agreement (BSD License)
- *
- * Copyright (c) 2010, IIIA-CSIC, Artificial Intelligence Research Institute
+ * 
+ * Copyright (c) 2010, Expression company is undefined on line 6, column 62 in Templates/Licenses/license-bsd.txt.
  * All rights reserved.
- *
+ * 
  * Redistribution and use of this software in source and binary forms, with or
  * without modification, are permitted provided that the following conditions
  * are met:
- *
+ * 
  *   Redistributions of source code must retain the above
  *   copyright notice, this list of conditions and the
  *   following disclaimer.
- *
+ * 
  *   Redistributions in binary form must reproduce the above
  *   copyright notice, this list of conditions and the
  *   following disclaimer in the documentation and/or other
  *   materials provided with the distribution.
- *
- *   Neither the name of IIIA-CSIC, Artificial Intelligence Research Institute
+ * 
+ *   Neither the name of Expression company is undefined on line 22, column 41 in Templates/Licenses/license-bsd.txt. 
  *   nor the names of its contributors may be used to
  *   endorse or promote products derived from this
  *   software without specific prior written permission of
- *   IIIA-CSIC, Artificial Intelligence Research Institute
- *
+ *   Expression company is undefined on line 26, column 21 in Templates/Licenses/license-bsd.txt.
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -42,46 +42,80 @@ package es.csic.iiia.iea.ddm;
  *
  * @author marc
  */
-public interface CostFunctionFactory {
+public abstract class AbstractCostFunctionFactory implements CostFunctionFactory {
 
-    CostFunction buildCostFunction(Variable[] variables);
+    /**
+     * Summarize operation to use.
+     */
+    private CostFunction.Summarize summarizeOperation = CostFunction.Summarize.MAX;
 
-    CostFunction buildCostFunction(Variable[] variables, double initialValue);
+    /**
+     * Combine operation to use.
+     */
+    private CostFunction.Combine combineOperation = CostFunction.Combine.SUM;
 
-    CostFunction buildCostFunction(CostFunction function);
+    /**
+     * Normalization type to use.
+     */
+    private CostFunction.Normalize normalizationType = CostFunction.Normalize.NONE;
 
     public void setMode(CostFunction.Summarize summarizeOperation,
             CostFunction.Combine combineOperation,
-            CostFunction.Normalize normalizationType);
+            CostFunction.Normalize normalizationType)
+    {
+        this.setCombineOperation(combineOperation);
+        this.setSummarizeOperation(summarizeOperation);
+        this.setNormalizationType(normalizationType);
+    }
+
+    protected void initialize(CostFunction c) {
+        initialize(c, combineOperation.getNeutralValue());
+    }
+    protected void initialize(CostFunction c, Double initialValue) {
+        c.setFactory(this);
+        c.initialize(initialValue);
+    }
 
     /**
      * @return the summarizeOperation
      */
-    public CostFunction.Summarize getSummarizeOperation();
+    public CostFunction.Summarize getSummarizeOperation() {
+        return summarizeOperation;
+    }
 
     /**
      * @param summarizeOperation the summarizeOperation to set
      */
-    public void setSummarizeOperation(CostFunction.Summarize summarizeOperation);
+    public void setSummarizeOperation(CostFunction.Summarize summarizeOperation) {
+        this.summarizeOperation = summarizeOperation;
+    }
 
     /**
      * @return the combineOperation
      */
-    public CostFunction.Combine getCombineOperation();
+    public CostFunction.Combine getCombineOperation() {
+        return combineOperation;
+    }
 
     /**
      * @param combineOperation the combineOperation to set
      */
-    public void setCombineOperation(CostFunction.Combine combineOperation);
+    public void setCombineOperation(CostFunction.Combine combineOperation) {
+        this.combineOperation = combineOperation;
+    }
 
     /**
      * @return the normalizationType
      */
-    public CostFunction.Normalize getNormalizationType();
+    public CostFunction.Normalize getNormalizationType() {
+        return normalizationType;
+    }
 
     /**
      * @param normalizationType the normalizationType to set
      */
-    public void setNormalizationType(CostFunction.Normalize normalizationType);
+    public void setNormalizationType(CostFunction.Normalize normalizationType) {
+        this.normalizationType = normalizationType;
+    }
 
 }

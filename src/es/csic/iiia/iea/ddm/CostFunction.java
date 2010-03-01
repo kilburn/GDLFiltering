@@ -55,15 +55,15 @@ public interface CostFunction {
         /**
          * Perform the combine operator using product.
          */
-        COMBINE_PRODUCT (1),
+        PRODUCT (1),
         /**
          * Perform the combine operator using addition.
          */
-        COMBINE_SUM (0);
+        SUM (0);
 
-        private int n;
-        Combine(int n) {this.n = n;}
-        public int getNeutralValue() {return n;}
+        private double n;
+        Combine(double n) {this.n = n;}
+        public double getNeutralValue() {return n;}
     }
 
     /**
@@ -73,15 +73,15 @@ public interface CostFunction {
         /**
          * Do not normalize.
          */
-        NORMALIZE_NONE,
+        NONE,
         /**
          * Normalize so that all values add to 0.
          */
-        NORMALIZE_SUM0,
+        SUM0,
         /**
          * Normalize so that all values add to 1.
          */
-        NORMALIZE_SUM1;
+        SUM1;
     }
 
     /**
@@ -91,7 +91,7 @@ public interface CostFunction {
         /**
          * Perform the summzarize operator using maximum.
          */
-        SUMMARIZE_MAX {
+        MAX {
             public double eval(double x, double y) {return Math.max(x, y);}
             public boolean isBetter(double x, double y) {return x > y;}
             public double getNoGood() {
@@ -101,7 +101,7 @@ public interface CostFunction {
         /**
          * Perform the summzarize operator using minimum.
          */
-        SUMMARIZE_MIN {
+        MIN {
             public double eval(double x, double y) {return Math.min(x, y);}
             public boolean isBetter(double x, double y) {return x < y;}
             public double getNoGood() {
@@ -111,7 +111,7 @@ public interface CostFunction {
         /**
          * Perform the summarize operator using addition.
          */
-        SUMMARIZE_SUM {
+        SUM {
             public double eval(double x, double y) {return x+y;}
             public boolean isBetter(double x, double y) {
                 throw new RuntimeException("I don't know how to compare when using SUM summarization.");
@@ -151,14 +151,21 @@ public interface CostFunction {
     }
 
     /**
+     * Sets the initial cost/utility of all the factor configurations to the
+     * given initial value.
+     *
+     * @param initialValue
+     */
+    public void initialize(Double initialValue);
+
+    /**
      * Combine this factor with the given one, using the specified operation.
      *
      * @param factor factor to combine with.
-     * @param operation operation to use.
      * @return a new CostFunction which is the result of the combination between this
      * and the given one.
      */
-    CostFunction combine(CostFunction factor, Combine operation);
+    CostFunction combine(CostFunction factor);
 
     /**
      * {@inheritDoc}
@@ -171,9 +178,8 @@ public interface CostFunction {
      * that it is an "optimal" configuration.
      *
      * @param mapping current variable mappings.
-     * @param operation summarizing operation used.
      */
-    void getBestConfiguration(Hashtable<Variable, Integer> mapping, Summarize operation);
+    void getBestConfiguration(Hashtable<Variable, Integer> mapping);
 
     /**
      * Returns the index of the values array corresponding to the specified
@@ -240,16 +246,13 @@ public interface CostFunction {
      * all it's values.
      *
      * @see #combine(es.csic.iiia.iea.ddm.CostFunction, int)
-     * @param operation operation to use.
      */
-    void negate(Combine operation);
+    void negate();
 
     /**
      * Normalizes this factor in the specified mode.
-     *
-     * @param mode Normalization mode to use.
      */
-    void normalize(Normalize mode);
+    void normalize();
 
     /**
      * Reduces the factor, fixing the variable-value pairs of the mapping
@@ -292,7 +295,7 @@ public interface CostFunction {
      * @return a new CostFunction which is the result of summarizing this one over
      * the specified variables.
      */
-    CostFunction summarize(Variable[] vars, Summarize operation);
+    CostFunction summarize(Variable[] vars);
 
     /**
      * Obtains an iterator over the linearized indices of non-infinity elements of this
@@ -300,24 +303,10 @@ public interface CostFunction {
      *
      * @return Iterator over the indices of this cost function.
      */
-    public abstract Iterator<Integer> iterator();
+    public Iterator<Integer> iterator();
 
-    /**
-     * Utility to allow generation of new cost functions using the same class
-     * as the current one.
-     *
-     * @TODO: Review this thing. Dependency injection anyone?
-     */
-    public CostFunction buildCostFunction(Variable[] variables);
-    /**
-     * Utility to allow generation of new cost functions using the same class
-     * as the current one.
-     */
-    public CostFunction buildCostFunction(Variable[] variables, int initialValue);
-    /**
-     * Utility to allow generation of new cost functions using the same class
-     * as the current one.
-     */
-    public CostFunction buildCostFunction(CostFunction factor);
+    public void setFactory(CostFunctionFactory factory);
+
+    public CostFunctionFactory getFactory();
     
 }

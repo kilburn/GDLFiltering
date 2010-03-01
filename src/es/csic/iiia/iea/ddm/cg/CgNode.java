@@ -39,7 +39,7 @@
 package es.csic.iiia.iea.ddm.cg;
 
 import es.csic.iiia.iea.ddm.CostFunction;
-import es.csic.iiia.iea.ddm.HypercubeCostFunction;
+import es.csic.iiia.iea.ddm.CostFunctionFactory;
 import es.csic.iiia.iea.ddm.Variable;
 import es.csic.iiia.iea.ddm.mp.AbstractNode;
 import java.util.ArrayList;
@@ -76,19 +76,9 @@ public class CgNode extends AbstractNode<CgEdge, CgResult> {
     private CostFunction belief;
 
     /**
-     * Summarize operation to use.
+     * Factor factory to use.
      */
-    private CostFunction.Summarize summarizeOperation;
-
-    /**
-     * Combine operation to use.
-     */
-    private CostFunction.Combine combineOperation;
-
-    /**
-     * Normalization type to use.
-     */
-    private CostFunction.Normalize normalizationType;
+    private CostFunctionFactory factory;
 
     /**
      * Tolerance to use when comparing the previous and current beliefs.
@@ -197,25 +187,23 @@ public class CgNode extends AbstractNode<CgEdge, CgResult> {
         // Calculate our potential
         potential = null;
         for (CostFunction f : relations) {
-            potential = f.combine(potential, combineOperation);
+            potential = f.combine(potential);
         }
         if (potential == null) {
-            potential = new HypercubeCostFunction(new Variable[0]);
+            potential = factory.buildCostFunction(new Variable[0]);
         }
 
-        belief = potential.buildCostFunction(variables.toArray(vars),
-                combineOperation.getNeutralValue());
-        belief = potential.combine(belief, combineOperation);
+        belief = getFactory().buildCostFunction(variables.toArray(vars));
+        belief = potential.combine(belief);
 
-        // Send initial messages
+        // Send initial messages (only if we are leaf nodes)
         for (CgEdge e : getEdges()) {
             CostFunction msg;
             final Variable[] ev = e.getVariables();
             if (potential != null) {
-                msg = belief.summarize(ev, summarizeOperation);
+                msg = belief.summarize(ev);
             } else {
-                msg = potential.buildCostFunction(ev,
-                        combineOperation.getNeutralValue());
+                msg = getFactory().buildCostFunction(ev);
             }
             e.sendMessage(this, new CgMessage(msg));
         }
@@ -233,19 +221,19 @@ public class CgNode extends AbstractNode<CgEdge, CgResult> {
         long cc = 0;
 
         // Combine incoming messages
-        CostFunction combi = potential.buildCostFunction(variables.toArray(vars),
-                combineOperation.getNeutralValue());
+        CostFunction combi = getFactory().buildCostFunction(variables.toArray(vars),
+                factory.getCombineOperation().getNeutralValue());
         for (CgEdge e : getEdges()) {
             CostFunction msg = e.getMessage(this).getFactor();
-            combi = combi.combine(msg, combineOperation);
+            combi = combi.combine(msg);
             cc += combi.getSize();
         }
 
         // Compute our belief
         CostFunction previousBelief = belief;
-        this.belief = combi.combine(this.potential, combineOperation);
+        this.belief = combi.combine(this.potential);
         cc += belief.getSize();
-        this.belief.normalize(normalizationType);
+        this.belief.normalize();
         cc += belief.getSize();
 
         // Send updated messages
@@ -254,11 +242,11 @@ public class CgNode extends AbstractNode<CgEdge, CgResult> {
             // Instead of multiplying all incoming messages except the one
             // from e, we "substract" the e message from the belief, which
             // has the same result but with fewer operations.
-            CostFunction inMsg = potential.buildCostFunction(e.getMessage(this).getFactor());
-            inMsg.negate(combineOperation);
-            CostFunction msg = belief.combine(inMsg, combineOperation);
+            CostFunction inMsg = getFactory().buildCostFunction(e.getMessage(this).getFactor());
+            inMsg.negate();
+            CostFunction msg = belief.combine(inMsg);
             cc += msg.getSize();
-            msg = msg.summarize(e.getVariables(), summarizeOperation);
+            msg = msg.summarize(e.getVariables());
             cc += msg.getSize();
 
             e.sendMessage(this, new CgMessage(msg));
@@ -327,30 +315,6 @@ public class CgNode extends AbstractNode<CgEdge, CgResult> {
         return new CgResult(this);
     }
 
-    public CostFunction.Combine getCombineOperation() {
-        return combineOperation;
-    }
-
-    public void setCombineOperation(CostFunction.Combine combineOperation) {
-        this.combineOperation = combineOperation;
-    }
-
-    public CostFunction.Normalize getNormalizationType() {
-        return normalizationType;
-    }
-
-    public void setNormalizationType(CostFunction.Normalize normalizationType) {
-        this.normalizationType = normalizationType;
-    }
-
-    public CostFunction.Summarize getSummarizeOperation() {
-        return summarizeOperation;
-    }
-
-    public void setSummarizeOperation(CostFunction.Summarize summarizeOperation) {
-        this.summarizeOperation = summarizeOperation;
-    }
-
     public double getTolerance() {
         return tolerance;
     }
@@ -366,6 +330,20 @@ public class CgNode extends AbstractNode<CgEdge, CgResult> {
             size *= v.getDomain();
         }
         return size;
+    }
+
+    /**
+     * @return the factory
+     */
+    public CostFunctionFactory getFactory() {
+        return factory;
+    }
+
+    /**
+     * @param factory the factory to set
+     */
+    public void setFactory(CostFunctionFactory factory) {
+        this.factory = factory;
     }
 
 }

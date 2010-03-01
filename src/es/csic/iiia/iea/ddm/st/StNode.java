@@ -82,7 +82,7 @@ public class StNode extends AbstractNode<StEdge, StResult> {
         // Instantiate remaining variables
         if (belief != null) {
             cc += belief.getSize();
-            belief.getBestConfiguration(mapping, node.getSummarizeOperation());
+            belief.getBestConfiguration(mapping);
         }
 
         // Send messages

@@ -58,24 +58,11 @@ public class HypercubeCostFunction extends AbstractCostFunction implements Seria
     private double[] values;
 
     /**
-     * Creates a new CostFunction, initializing the values to initValue.
-     *
-     * @param variables involved in this factor.
-     * @param initValue initial value.
-     */
-    public HypercubeCostFunction(Variable[] variables, double initValue) {
-        this(variables);
-        for (int i=0; i<size; i++) {
-            values[i] = initValue;
-        }
-    }
-
-    /**
      * Creates a new CostFunction, initialized to zeros.
      *
      * @param variables involved in this factor.
      */
-    public HypercubeCostFunction(Variable[] variables) {
+    protected HypercubeCostFunction(Variable[] variables) {
         super(variables);
         values = new double[size];
     }
@@ -85,7 +72,7 @@ public class HypercubeCostFunction extends AbstractCostFunction implements Seria
      *
      * @param factor factor to copy.
      */
-    public HypercubeCostFunction(CostFunction factor) {
+    protected HypercubeCostFunction(CostFunction factor) {
         super(factor);
         values = factor.getValues();
     }
@@ -121,30 +108,15 @@ public class HypercubeCostFunction extends AbstractCostFunction implements Seria
     }
 
     /** {@inheritDoc} */
-    public AbstractCostFunction buildCostFunction(Variable[] variables) {
-        return new HypercubeCostFunction(variables);
-    }
-
-    /** {@inheritDoc} */
-    public AbstractCostFunction buildCostFunction(Variable[] variables, int initialValue) {
-        return new HypercubeCostFunction(variables, initialValue);
-    }
-
-    /** {@inheritDoc} */
-    public AbstractCostFunction buildCostFunction(CostFunction function) {
-        return new HypercubeCostFunction(function);
-    }
-
-    /** {@inheritDoc} */
     public String toString() {
         StringBuffer buf = new StringBuffer("H");
         buf.append(getName());
         buf.append(" {");
         if (values != null && values.length>0) {
-            buf.append(values[0]);
+            buf.append(formatValue(values[0]));
             for(int i=1; i<values.length; i++) {
                 buf.append(",");
-                buf.append(values[i]);
+                buf.append(formatValue(values[i]));
             }
         }
         buf.append("}");

@@ -39,9 +39,9 @@
 package es.csic.iiia.iea.ddm.dfs;
 
 import es.csic.iiia.iea.ddm.CostFunction;
-import es.csic.iiia.iea.ddm.HypercubeCostFunction;
+import es.csic.iiia.iea.ddm.CostFunctionFactory;
+import es.csic.iiia.iea.ddm.HypercubeCostFunctionFactory;
 import es.csic.iiia.iea.ddm.Variable;
-import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Map.Entry;
 import org.junit.After;
@@ -59,6 +59,7 @@ public class MCSTest {
 
     private Variable[] v;
     private CostFunction[] f;
+    private CostFunctionFactory factory;
 
     public MCSTest() {
     }
@@ -73,6 +74,7 @@ public class MCSTest {
 
     @Before
     public void setUp() {
+        factory = new HypercubeCostFunctionFactory();
         // Set up variables
         v = new Variable[10];
         for (int i=0; i<10; i++) {
@@ -81,16 +83,16 @@ public class MCSTest {
 
         // And now factors
         f = new CostFunction[]{
-            new HypercubeCostFunction( new Variable[]{v[0],v[1]} ),
-            new HypercubeCostFunction( new Variable[]{v[0],v[1]} ),
-            new HypercubeCostFunction( new Variable[]{v[0],v[1]} ),
-            new HypercubeCostFunction( new Variable[]{v[0],v[2]} ),
-            new HypercubeCostFunction( new Variable[]{v[0],v[2]} ),
-            new HypercubeCostFunction( new Variable[]{v[0],v[3]} ),
-            new HypercubeCostFunction( new Variable[]{v[0],v[4]} ),
-            new HypercubeCostFunction( new Variable[]{v[1],v[2]} ),
-            new HypercubeCostFunction( new Variable[]{v[1],v[3]} ),
-            new HypercubeCostFunction( new Variable[]{v[3],v[4]} ),
+            factory.buildCostFunction( new Variable[]{v[0],v[1]} ),
+            factory.buildCostFunction( new Variable[]{v[0],v[1]} ),
+            factory.buildCostFunction( new Variable[]{v[0],v[1]} ),
+            factory.buildCostFunction( new Variable[]{v[0],v[2]} ),
+            factory.buildCostFunction( new Variable[]{v[0],v[2]} ),
+            factory.buildCostFunction( new Variable[]{v[0],v[3]} ),
+            factory.buildCostFunction( new Variable[]{v[0],v[4]} ),
+            factory.buildCostFunction( new Variable[]{v[1],v[2]} ),
+            factory.buildCostFunction( new Variable[]{v[1],v[3]} ),
+            factory.buildCostFunction( new Variable[]{v[3],v[4]} ),
         };
     }
 

@@ -60,11 +60,14 @@ public class EnumerateSolutions {
      * @return bigger factor that enumerates the outcome of all the possible
      * combinations of the given factors.
      */
-    public static CostFunction enumerateSolutions(CostFunction[] factors, CostFunction.Combine combineOperation) {
+    public static CostFunction enumerateSolutions(CostFunction[] factors) {
+        if (factors == null || factors.length == 0) {
+            throw new RuntimeException("Attempt to enumerate solutions of an empty list of factors!");
+        }
 
         CostFunction combi = factors[0];
         for (int i=1; i<factors.length; i++) {
-            combi = combi.combine(factors[i], combineOperation);
+            combi = combi.combine(factors[i]);
         }
 
         return combi;

@@ -38,15 +38,18 @@
 
 package es.csic.iiia.iea.ddm;
 
+import org.junit.Ignore;
+
 /**
  *
  * @author marc
  */
+@Ignore
 public class ListCostFunctionTest extends AbstractCostFunctionTest {
 
     @Override
-    public CostFunctionFactory buildFactory() {
-        return new CostFunctionFactory(CostFunctionFactory.LIST_FACTOR);
+    public HypercubeCostFunctionFactory buildFactory() {
+        return new HypercubeCostFunctionFactory();
     }
 
 }

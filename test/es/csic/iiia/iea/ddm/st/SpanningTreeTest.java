@@ -39,7 +39,8 @@
 package es.csic.iiia.iea.ddm.st;
 
 import es.csic.iiia.iea.ddm.CostFunction;
-import es.csic.iiia.iea.ddm.HypercubeCostFunction;
+import es.csic.iiia.iea.ddm.CostFunctionFactory;
+import es.csic.iiia.iea.ddm.HypercubeCostFunctionFactory;
 import es.csic.iiia.iea.ddm.Variable;
 import es.csic.iiia.iea.ddm.algo.JunctionTreeAlgo;
 import es.csic.iiia.iea.ddm.cg.CliqueGraph;
@@ -61,6 +62,7 @@ public class SpanningTreeTest {
     private Variable[] v;
     private CostFunction[] f;
     private CliqueGraph cg;
+    private CostFunctionFactory factory;
 
     public SpanningTreeTest() {
     }
@@ -75,6 +77,8 @@ public class SpanningTreeTest {
 
     @Before
     public void setUp() {
+        factory = new HypercubeCostFunctionFactory();
+
         v = new Variable[10];
         for (int i=0; i<10; i++) {
             v[i] = new Variable(String.valueOf(i+1), 2);
@@ -82,16 +86,16 @@ public class SpanningTreeTest {
 
         // And now factors
         f = new CostFunction[]{
-            new HypercubeCostFunction( new Variable[]{v[0],v[1]} ),
-            new HypercubeCostFunction( new Variable[]{v[0],v[1]} ),
-            new HypercubeCostFunction( new Variable[]{v[0],v[1]} ),
-            new HypercubeCostFunction( new Variable[]{v[0],v[2]} ),
-            new HypercubeCostFunction( new Variable[]{v[0],v[2]} ),
-            new HypercubeCostFunction( new Variable[]{v[0],v[3]} ),
-            new HypercubeCostFunction( new Variable[]{v[0],v[4]} ),
-            new HypercubeCostFunction( new Variable[]{v[1],v[2]} ),
-            new HypercubeCostFunction( new Variable[]{v[1],v[3]} ),
-            new HypercubeCostFunction( new Variable[]{v[3],v[4]} ),
+            factory.buildCostFunction( new Variable[]{v[0],v[1]} ),
+            factory.buildCostFunction( new Variable[]{v[0],v[1]} ),
+            factory.buildCostFunction( new Variable[]{v[0],v[1]} ),
+            factory.buildCostFunction( new Variable[]{v[0],v[2]} ),
+            factory.buildCostFunction( new Variable[]{v[0],v[2]} ),
+            factory.buildCostFunction( new Variable[]{v[0],v[3]} ),
+            factory.buildCostFunction( new Variable[]{v[0],v[4]} ),
+            factory.buildCostFunction( new Variable[]{v[1],v[2]} ),
+            factory.buildCostFunction( new Variable[]{v[1],v[3]} ),
+            factory.buildCostFunction( new Variable[]{v[3],v[4]} ),
         };
         for (CostFunction fac : f) {
             fac.setValues(new double[]{2, 1, 1, 0});
@@ -130,10 +134,11 @@ public class SpanningTreeTest {
      */
     @Test
     public void testSpanningTreeRunMax() {
-        CostFunction.Summarize summarize = CostFunction.Summarize.SUMMARIZE_MAX;
-        CostFunction.Combine combine = CostFunction.Combine.COMBINE_SUM;
-        CostFunction.Normalize normalize = CostFunction.Normalize.NORMALIZE_NONE;
-        cg.setMode(summarize, combine, normalize);
+        CostFunction.Summarize summarize = CostFunction.Summarize.MAX;
+        CostFunction.Combine combine = CostFunction.Combine.SUM;
+        CostFunction.Normalize normalize = CostFunction.Normalize.NONE;
+        factory.setMode(summarize, combine, normalize);
+        cg.setFactory(factory);
         cg.run(100);
         SpanningTree instance = new SpanningTree(cg);
 
@@ -150,10 +155,11 @@ public class SpanningTreeTest {
      */
     @Test
     public void testSpanningTreeRunMin() {
-        CostFunction.Summarize summarize = CostFunction.Summarize.SUMMARIZE_MIN;
-        CostFunction.Combine combine = CostFunction.Combine.COMBINE_SUM;
-        CostFunction.Normalize normalize = CostFunction.Normalize.NORMALIZE_NONE;
-        cg.setMode(summarize, combine, normalize);
+        CostFunction.Summarize summarize = CostFunction.Summarize.MIN;
+        CostFunction.Combine combine = CostFunction.Combine.SUM;
+        CostFunction.Normalize normalize = CostFunction.Normalize.NONE;
+        factory.setMode(summarize, combine, normalize);
+        cg.setFactory(factory);
         cg.run(100);
         SpanningTree instance = new SpanningTree(cg);
 

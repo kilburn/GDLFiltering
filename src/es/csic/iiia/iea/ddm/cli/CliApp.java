@@ -39,7 +39,9 @@
 package es.csic.iiia.iea.ddm.cli;
 
 import es.csic.iiia.iea.ddm.CostFunction;
+import es.csic.iiia.iea.ddm.CostFunctionFactory;
 import es.csic.iiia.iea.ddm.FactorGraph;
+import es.csic.iiia.iea.ddm.HypercubeCostFunctionFactory;
 import es.csic.iiia.iea.ddm.Variable;
 import es.csic.iiia.iea.ddm.algo.JunctionTreeAlgo;
 import es.csic.iiia.iea.ddm.algo.MaxSum;
@@ -94,9 +96,9 @@ public class CliApp {
 
     private int algorithm = ALGO_JUNCTION_TREE;
     private int heuristic = JT_HEURISTIC_MCS;
-    private CostFunction.Summarize summarizeOperation = CostFunction.Summarize.SUMMARIZE_MIN;
-    private CostFunction.Combine combineOperation = CostFunction.Combine.COMBINE_SUM;
-    private CostFunction.Normalize normalization = CostFunction.Normalize.NORMALIZE_NONE;
+    private CostFunction.Summarize summarizeOperation = CostFunction.Summarize.MIN;
+    private CostFunction.Combine combineOperation = CostFunction.Combine.SUM;
+    private CostFunction.Normalize normalization = CostFunction.Normalize.NONE;
     private int maxCliqueVariables = Integer.MAX_VALUE;
     private int maxJunctionTreeTries = 100;
     private double randomVariance = 0;
@@ -278,7 +280,9 @@ public class CliApp {
         }
 
         // Run GDL
-        cg.setMode(summarizeOperation, combineOperation, normalization);
+        CostFunctionFactory factory = new HypercubeCostFunctionFactory();
+        factory.setMode(summarizeOperation, combineOperation, normalization);
+        cg.setFactory(factory);
         CgResults results = cg.run(1000);
             
         System.out.println("ITERATIONS " + results.getIterations());
@@ -396,9 +400,9 @@ public class CliApp {
                 break;
 
             case ALGO_MAX_SUM:
-                if (normalization == CostFunction.Normalize.NORMALIZE_NONE) {
+                if (normalization == CostFunction.Normalize.NONE) {
                     System.err.println("Warning: maxsum doesn't converge without normalization, using sum0.");
-                    normalization = CostFunction.Normalize.NORMALIZE_SUM0;
+                    normalization = CostFunction.Normalize.SUM0;
                 }
                 cg = MaxSum.buildGraph(factors);
                 createCliqueGraphFile(cg);

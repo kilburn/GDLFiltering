@@ -40,6 +40,8 @@ package es.csic.iiia.iea.ddm.algo;
 
 import es.csic.iiia.iea.ddm.CostFunction;
 import es.csic.iiia.iea.ddm.CostFunctionFactory;
+import es.csic.iiia.iea.ddm.HypercubeCostFunctionFactory;
+import es.csic.iiia.iea.ddm.ListCostFunctionFactory;
 import es.csic.iiia.iea.ddm.Variable;
 import es.csic.iiia.iea.ddm.cg.CliqueGraph;
 import es.csic.iiia.iea.ddm.cg.CgResult;
@@ -50,16 +52,23 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.experimental.theories.DataPoint;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
+import org.junit.runner.RunWith;
 import static org.junit.Assert.*;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
+@RunWith(Theories.class)
 public class GDLTest {
 
-    private CostFunctionFactory factory;
+    @DataPoint public static CostFunctionFactory HYPERCUBE_FACTORY =
+        new HypercubeCostFunctionFactory();
+    @DataPoint public static CostFunctionFactory LIST_FACTORY =
+        new ListCostFunctionFactory();
 
     public GDLTest() {
     }
@@ -74,7 +83,6 @@ public class GDLTest {
 
     @Before
     public void setUp() {
-        factory = new CostFunctionFactory();
     }
 
     @After
@@ -84,15 +92,13 @@ public class GDLTest {
     /**
      * Test of gdl method, of class GDL.
      */
-    @Test
-    public void testGdlSprinkleTree() {
-        factory.setType(CostFunctionFactory.HYPERCUBE_FACTOR);
-        GdlSprinkleTree();
-
-        factory.setType(CostFunctionFactory.LIST_FACTOR);
-        GdlSprinkleTree();
-    }
-    private void GdlSprinkleTree() {
+    @Theory
+    public void GdlSprinkleTree(CostFunctionFactory factory) {
+        // Set operating mode
+        CostFunction.Summarize summarize = CostFunction.Summarize.SUM;
+        CostFunction.Combine combine = CostFunction.Combine.PRODUCT;
+        CostFunction.Normalize normalize = CostFunction.Normalize.SUM1;
+        factory.setMode(summarize, combine, normalize);
 
         Variable c,s,r;
         c = new Variable("cloudy", 2);
@@ -112,41 +118,35 @@ public class GDLTest {
         CostFunction[] factors = new CostFunction[] {f0,f1,f2};
 
         // Expected solution
-        CostFunction.Summarize summarize = CostFunction.Summarize.SUMMARIZE_SUM;
-        CostFunction.Combine combine = CostFunction.Combine.COMBINE_PRODUCT;
-        CostFunction.Normalize normalize = CostFunction.Normalize.NORMALIZE_SUM1;
-        CostFunction solution = EnumerateSolutions.enumerateSolutions(factors, combine);
-
+        CostFunction solution = EnumerateSolutions.enumerateSolutions(factors);
 
         // Initialize using max-sum
         CliqueGraph cg = MaxSum.buildGraph(factors);
-        cg.setMode(summarize, combine, normalize);
+        cg.setFactory(factory);
         DefaultResults<CgResult> results = cg.run(100);
+        System.out.println(results);
         assertEquals(4, results.getIterations());
 
         // Fist beliefs are always those from the single-variable cliques
         ArrayList<CgResult> beliefs = results.getResults();
         for (int i=0; i<variables.length; i++) {
             Variable[] vars = beliefs.get(i).getFactor().getVariableSet().toArray(new Variable[]{c});
-            CostFunction partialSolution = solution.summarize(vars, summarize);
-            partialSolution.normalize(normalize);
+            CostFunction partialSolution = solution.summarize(vars);
+            partialSolution.normalize();
             assertEquals(beliefs.get(i).getFactor(), partialSolution);
         }
-        System.out.println(results);
     }
 
     /**
      * Test of gdl method, of class GDL.
      */
-    @Test
-    public void testGdlSprinkleTree2() {
-        factory.setType(CostFunctionFactory.HYPERCUBE_FACTOR);
-        GdlSprinkleTree2();
-
-        factory.setType(CostFunctionFactory.LIST_FACTOR);
-        GdlSprinkleTree2();
-    }
-    private void GdlSprinkleTree2() {
+    @Theory
+    public void GdlSprinkleTree2(CostFunctionFactory factory) {
+        // Set operating mode
+        CostFunction.Summarize summarize = CostFunction.Summarize.MAX;
+        CostFunction.Combine combine = CostFunction.Combine.PRODUCT;
+        CostFunction.Normalize normalize = CostFunction.Normalize.SUM1;
+        factory.setMode(summarize, combine, normalize);
 
         Variable c,s,r;
         c = new Variable("cloudy", 2);
@@ -166,14 +166,11 @@ public class GDLTest {
         CostFunction[] factors = new CostFunction[] {f0,f1,f2};
 
         // Expected solution
-        CostFunction.Summarize summarize = CostFunction.Summarize.SUMMARIZE_MAX;
-        CostFunction.Combine combine = CostFunction.Combine.COMBINE_PRODUCT;
-        CostFunction.Normalize normalize = CostFunction.Normalize.NORMALIZE_SUM1;
-        CostFunction solution = EnumerateSolutions.enumerateSolutions(factors, combine);
+        CostFunction solution = EnumerateSolutions.enumerateSolutions(factors);
 
         // Initialize using max-sum
         CliqueGraph cg = MaxSum.buildGraph(factors);
-        cg.setMode(summarize, combine, normalize);
+        cg.setFactory(factory);
         DefaultResults<CgResult> results = cg.run(100);
         assertEquals(4, results.getIterations());
 
@@ -181,8 +178,8 @@ public class GDLTest {
         ArrayList<CgResult> beliefs = results.getResults();
         for (int i=0; i<variables.length; i++) {
             Variable[] vars = beliefs.get(i).getFactor().getVariableSet().toArray(new Variable[]{c});
-            CostFunction partialSolution = solution.summarize(vars, summarize);
-            partialSolution.normalize(normalize);
+            CostFunction partialSolution = solution.summarize(vars);
+            partialSolution.normalize();
             assertEquals(beliefs.get(i).getFactor(), partialSolution);
         }
         System.out.println(results);
@@ -191,15 +188,13 @@ public class GDLTest {
     /**
      * Test of gdl method, of class GDL.
      */
-    @Test
-    public void testGdlSprinkleTreeU() {
-        factory.setType(CostFunctionFactory.HYPERCUBE_FACTOR);
-        GdlSprinkleTreeU();
-
-        factory.setType(CostFunctionFactory.LIST_FACTOR);
-        GdlSprinkleTreeU();
-    }
-    private void GdlSprinkleTreeU() {
+    @Theory
+    public void GdlSprinkleTreeU(CostFunctionFactory factory) {
+        // Set operating mode
+        CostFunction.Summarize summarize = CostFunction.Summarize.MAX;
+        CostFunction.Combine combine = CostFunction.Combine.SUM;
+        CostFunction.Normalize normalize = CostFunction.Normalize.SUM0;
+        factory.setMode(summarize, combine, normalize);
 
         Variable c,s,r,w;
         c = new Variable("cloudy", 2);
@@ -221,15 +216,11 @@ public class GDLTest {
         f3.setValues(new double[] {1, 0, 0.1, 0.9, 0.1, 0.9, 0.01, 0.99});
         CostFunction[] factors = new CostFunction[] {f1,f2,f3,f0};
 
-        // Expected solution
-        CostFunction.Summarize summarize = CostFunction.Summarize.SUMMARIZE_MAX;
-        CostFunction.Combine combine = CostFunction.Combine.COMBINE_SUM;
-        CostFunction.Normalize normalize = CostFunction.Normalize.NORMALIZE_SUM0;
-
         // Initialize using max-sum
         CliqueGraph cg = MaxSum.buildGraph(factors);
-        cg.setMode(summarize, combine, normalize);
+        cg.setFactory(factory);
         DefaultResults<CgResult> results = cg.run(100);
+        System.out.println(results);
         assertEquals(12, results.getIterations());
 
         // Expected beliefs
@@ -262,21 +253,18 @@ public class GDLTest {
             assertTrue(solutions.remove(b.getFactor()));
         }
         assertEquals(0, solutions.size());
-        System.out.println(results);
     }
 
     /**
      * Test of gdl method, of class GDL.
      */
-    @Test
-    public void testGdlSprinkle1() {
-        factory.setType(CostFunctionFactory.HYPERCUBE_FACTOR);
-        GdlSprinkle1();
-
-        factory.setType(CostFunctionFactory.LIST_FACTOR);
-        GdlSprinkle1();
-    }
-    private void GdlSprinkle1() {
+    @Theory
+    public void GdlSprinkle1(CostFunctionFactory factory) {
+        // Set operating mode
+        CostFunction.Summarize summarize = CostFunction.Summarize.SUM;
+        CostFunction.Combine combine = CostFunction.Combine.PRODUCT;
+        CostFunction.Normalize normalize = CostFunction.Normalize.SUM1;
+        factory.setMode(summarize, combine, normalize);
 
         Variable c,s,r,w;
         c = new Variable("cloudy", 2);
@@ -298,14 +286,9 @@ public class GDLTest {
         f3.setValues(new double[] {1, 0, 0.1, 0.9, 0.1, 0.9, 0.01, 0.99});
         CostFunction[] factors = new CostFunction[] {f1,f2,f3,f0};
 
-        // Expected solution
-        CostFunction.Summarize summarize = CostFunction.Summarize.SUMMARIZE_SUM;
-        CostFunction.Combine combine = CostFunction.Combine.COMBINE_PRODUCT;
-        CostFunction.Normalize normalize = CostFunction.Normalize.NORMALIZE_SUM1;
-
         // Initialize using max-sum
         CliqueGraph cg = MaxSum.buildGraph(factors);
-        cg.setMode(summarize, combine, normalize);
+        cg.setFactory(factory);
         DefaultResults<CgResult> results = cg.run(100);
         assertEquals(4, results.getIterations());
 

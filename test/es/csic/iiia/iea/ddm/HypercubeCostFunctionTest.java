@@ -45,8 +45,8 @@ package es.csic.iiia.iea.ddm;
 public class HypercubeCostFunctionTest extends AbstractCostFunctionTest {
 
     @Override
-    public CostFunctionFactory buildFactory() {
-        return new CostFunctionFactory(CostFunctionFactory.HYPERCUBE_FACTOR);
+    public HypercubeCostFunctionFactory buildFactory() {
+        return new HypercubeCostFunctionFactory();
     }
 
 }

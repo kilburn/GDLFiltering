@@ -79,6 +79,11 @@ public abstract class AbstractCostFunction implements CostFunction {
     protected int[] sizes;
 
     /**
+     * The factory that generated this CostFunction.
+     */
+    private CostFunctionFactory factory;
+
+    /**
      * Creates a new CostFunction, initialized to zeros.
      *
      * @param variables involved in this factor.
@@ -95,6 +100,7 @@ public abstract class AbstractCostFunction implements CostFunction {
      * @param factor factor to copy.
      */
     public AbstractCostFunction(CostFunction factor) {
+        factory = factor.getFactory();
         variableSet = new LinkedHashSet<Variable>(factor.getVariableSet());
         variables = variableSet.toArray(new Variable[0]);
         if (factor instanceof AbstractCostFunction) {
@@ -103,6 +109,23 @@ public abstract class AbstractCostFunction implements CostFunction {
         } else {
             computeFunctionSize();
         }
+    }
+
+    /** {@inheritDoc} */
+    public void initialize(Double initialValue) {
+        for (int i=0; i<size; i++) {
+            setValue(i, initialValue);
+        }
+    }
+
+    /** {@inheritDoc} */
+    public void setFactory(CostFunctionFactory factory) {
+        this.factory = factory;
+    }
+
+    /** {@inheritDoc} */
+    public CostFunctionFactory getFactory() {
+        return factory;
     }
 
     /**
@@ -162,8 +185,9 @@ public abstract class AbstractCostFunction implements CostFunction {
      *                configuration.
      * @param operation operation used to calculate the optimum.
      */
-    public void getBestConfiguration(Hashtable<Variable, Integer> mapping, Summarize operation) {
+    public void getBestConfiguration(Hashtable<Variable, Integer> mapping) {
         // Find the maximal value
+        Summarize operation = factory.getSummarizeOperation();
         ArrayList<Integer> idx = new ArrayList<Integer>();
         double optimal = operation.getNoGood();
         Iterator<Integer> it = iterator();
@@ -289,15 +313,16 @@ public abstract class AbstractCostFunction implements CostFunction {
     }
 
     /** {@inheritDoc} */
-    public void negate(Combine operation) {
+    public void negate() {
+        Combine operation = factory.getCombineOperation();
         Iterator<Integer> it = iterator();
         while(it.hasNext()) {
             final int i = it.next();
             switch (operation) {
-                case COMBINE_PRODUCT:
+                case PRODUCT:
                     setValue(i, 1 / getValue(i));
                     break;
-                case COMBINE_SUM:
+                case SUM:
                     setValue(i, -getValue(i));
                     break;
             }
@@ -305,14 +330,15 @@ public abstract class AbstractCostFunction implements CostFunction {
     }
 
     /** {@inheritDoc} */
-    public CostFunction combine(CostFunction factor, Combine operation) {
+    public CostFunction combine(CostFunction factor) {
+        Combine operation = factory.getCombineOperation();
 
         // Combination with null factors gives a null / the other factor
         if (factor == null || factor.getSize()==0) {
-            return buildCostFunction(this);
+            return factory.buildCostFunction(this);
         }
         if (this.getSize() == 0) {
-            return buildCostFunction(factor);
+            return factory.buildCostFunction(factor);
         }
 
         // Compute the variable set intersection (sets doesn't allow duplicates)
@@ -320,7 +346,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         vars.addAll(factor.getVariableSet());
 
         // Perform the combination using the given mode
-        CostFunction result = buildCostFunction(vars.toArray(new Variable[0]),
+        CostFunction result = factory.buildCostFunction(vars.toArray(new Variable[0]),
                 operation.getNeutralValue());
 
         Hashtable<Variable, Integer> map = null;
@@ -328,11 +354,11 @@ public abstract class AbstractCostFunction implements CostFunction {
             map = result.getMapping(i, map);
 
             switch(operation) {
-                case COMBINE_PRODUCT:
+                case PRODUCT:
                     result.setValue(i, getValue(map) * factor.getValue(map));
                     break;
 
-                case COMBINE_SUM:
+                case SUM:
                     result.setValue(i, getValue(map) + factor.getValue(map));
                     break;
 
@@ -344,8 +370,10 @@ public abstract class AbstractCostFunction implements CostFunction {
     }
 
     /** {@inheritDoc} */
-    public void normalize(Normalize mode) {
-        if (mode == Normalize.NORMALIZE_NONE) {
+    public void normalize() {
+        Normalize mode = factory.getNormalizationType();
+        
+        if (mode == Normalize.NONE) {
             return;
         }
 
@@ -360,13 +388,13 @@ public abstract class AbstractCostFunction implements CostFunction {
         final double avg = sum / dlen;
         it = iterator();
         switch (mode) {
-            case NORMALIZE_SUM0:
+            case SUM0:
                 while(it.hasNext()) {
                     final int i = it.next();
                     setValue(i, getValue(i) - avg);
                 }
                 break;
-            case NORMALIZE_SUM1:
+            case SUM1:
                 // Avoid div by 0
                 while(it.hasNext()) {
                     final int i = it.next();
@@ -388,7 +416,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         }
 
         // Instantiate it
-        CostFunction result = buildCostFunction(newVariables.toArray(new Variable[0]));
+        CostFunction result = factory.buildCostFunction(newVariables.toArray(new Variable[0]));
         Hashtable<Variable, Integer> map = null;
         Iterator<Integer> it = result.iterator();
         for (int i = 0, len = result.getSize(); i < len; i++) {
@@ -430,11 +458,12 @@ public abstract class AbstractCostFunction implements CostFunction {
     }
 
     /** {@inheritDoc} */
-    public CostFunction summarize(Variable[] vars, Summarize operation) {
+    public CostFunction summarize(Variable[] vars) {
+        Summarize operation = factory.getSummarizeOperation();
         /*HashSet<Variable> varSet = new HashSet<Variable>(Arrays.asList(vars));
         varSet.retainAll(variableSet);*/
-        HypercubeCostFunction result = 
-                new HypercubeCostFunction(vars, operation.getNoGood());
+        AbstractCostFunction result = (AbstractCostFunction)factory.buildCostFunction(vars,
+                operation.getNoGood());
         Hashtable<Variable, Integer> map = null;
         Iterator<Integer> it = iterator();
         while (it.hasNext()) {
@@ -508,5 +537,14 @@ public abstract class AbstractCostFunction implements CostFunction {
         int hash = 3;
         hash = 37 * hash + (this.variableSet != null ? this.variableSet.hashCode() : 0);
         return hash;
+    }
+
+    protected String formatValue(double value) {
+        String res = String.valueOf(value);
+        final int idx = res.indexOf('.');
+        if (idx > 0) {
+            res = res.substring(0, Math.min(res.length(), idx+4));
+        }
+        return res;
     }
 }

@@ -68,7 +68,7 @@ public class ListCostFunction extends AbstractCostFunction {
      * @param variables involved in this factor.
      * @param initValue initial value.
      */
-    public ListCostFunction(Variable[] variables, double initValue) {
+    protected ListCostFunction(Variable[] variables, double initValue) {
         this(variables);
         for (int i=0; i<size; i++) {
             values.put(i, initValue);
@@ -80,9 +80,9 @@ public class ListCostFunction extends AbstractCostFunction {
      *
      * @param variables involved in this factor.
      */
-    public ListCostFunction(Variable[] variables) {
+    private ListCostFunction(Variable[] variables) {
         super(variables);
-        
+
         if (size>0) {
             values = new HashMap<Integer, Double>(size);
         }
@@ -93,7 +93,7 @@ public class ListCostFunction extends AbstractCostFunction {
      *
      * @param factor factor to copy.
      */
-    public ListCostFunction(CostFunction factor) {
+    protected ListCostFunction(CostFunction factor) {
         super(factor);
         if (factor instanceof ListCostFunction) {
             values = new HashMap<Integer, Double>(((ListCostFunction)factor).getValueMap());
@@ -119,36 +119,17 @@ public class ListCostFunction extends AbstractCostFunction {
         if (values.containsKey(index)) {
             return values.get(index);
         }
-        return Double.NaN;
+        throw new RuntimeException("Failure");
     }
 
     @Override
     public void setValue(int index, double value) {
-        if (!Double.isNaN(value)) {
-            values.put(index, value);
-        } else {
-            values.remove(index);
-        }
+        values.put(index, value);
     }
 
     @Override
     public Iterator<Integer> iterator() {
         return new ArrayList<Integer>(values.keySet()).iterator();
-    }
-
-    @Override
-    public AbstractCostFunction buildCostFunction(Variable[] variables) {
-        return new ListCostFunction(variables);
-    }
-
-    @Override
-    public AbstractCostFunction buildCostFunction(Variable[] variables, int initialValue) {
-        return new ListCostFunction(variables, initialValue);
-    }
-
-    @Override
-    public AbstractCostFunction buildCostFunction(CostFunction function) {
-        return new ListCostFunction(function);
     }
 
     public double[] getValues() {
@@ -176,10 +157,10 @@ public class ListCostFunction extends AbstractCostFunction {
         buf.append(getName());
         buf.append(" {");
         if (values != null && size>0) {
-            buf.append(values.get(0));
+            buf.append(formatValue(getValue(0)));
             for(int i=1; i<size; i++) {
                 buf.append(",");
-                buf.append(values.get(i));
+                buf.append(formatValue(getValue(i)));
             }
         }
         buf.append("}");
