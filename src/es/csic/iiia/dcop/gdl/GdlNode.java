@@ -40,12 +40,9 @@ package es.csic.iiia.dcop.gdl;
 
 import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.CostFunction;
-import es.csic.iiia.dcop.CostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPNode;
-import java.util.ArrayList;
-import java.util.HashSet;
 
 /**
  * GDL algorithm node.
@@ -55,46 +52,9 @@ import java.util.HashSet;
 public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
 
     /**
-     * Helper array to get the correct type when using ArrayList.toArray(T[])
-     */
-    private static final Variable[] vars = new Variable[]{};
-
-    /**
-     * Clique's member variables.
-     */
-    private HashSet<Variable> variables;
-
-    /**
-     * Potential of this clique.
-     */
-    private CostFunction potential;
-
-    public CostFunction getPotential() {
-        return potential;
-    }
-
-    /**
-     * Belief of this clique.
-     */
-    private CostFunction belief;
-
-    /**
-     * Factor factory to use.
-     */
-    private CostFunctionFactory factory;
-
-    /**
      * Tolerance to use when comparing the previous and current beliefs.
      */
     private double tolerance = 0.0001;
-
-    /**
-     * Relations assigned to this clique.
-     */
-    private ArrayList<CostFunction> relations;
-
-
-    private boolean converged = false;
 
     /**
      * Constructs a new clique with the specified member variable and null
@@ -103,10 +63,7 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
      * @param variable member variable of this clique.
      */
     public GdlNode(Variable variable) {
-        super();
-        this.relations = new ArrayList<CostFunction>(0);
-        this.variables = new HashSet<Variable>(1);
-        this.addVariable(variable);
+        super(variable);
     }
 
     /**
@@ -118,10 +75,7 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
      * @param potential potential of the clique.
      */
     public GdlNode(CostFunction potential) {
-        super();
-        this.relations = new ArrayList<CostFunction>(1);
-        this.relations.add(potential);
-        this.variables = new HashSet<Variable>(potential.getVariableSet());
+        super(potential);
     }
 
     /**
@@ -129,56 +83,6 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
      */
     public GdlNode() {
         super();
-        this.relations = new ArrayList<CostFunction>();
-        this.variables = new HashSet<Variable>();
-    }
-
-    /**
-     * Adds a new variable to the member variables of this class.
-     *
-     * @param variable new member variable.
-     */
-    public void addVariable(Variable variable) {
-        this.variables.add(variable);
-    }
-
-    /**
-     * Checks if this clique contains the specified variable as a member.
-     *
-     * @param variable variable to look for.
-     * @return true if this clique contains the specified variable or false
-     * otherwise
-     */
-    public boolean contains(Variable variable) {
-        return this.variables.contains(variable);
-    }
-
-    /**
-     * Gets the whole member variables set.
-     *
-     * @return member variable set.
-     */
-    public HashSet<Variable> getVariables() {
-        return this.variables;
-    }
-
-    /**
-     * Adds a new relation to this clique.
-     *
-     * @param relation relation to add.
-     */
-    public void addRelation(CostFunction relation) {
-        this.relations.add(relation);
-        this.variables.addAll(relation.getVariableSet());
-    }
-
-    /**
-     * Gets the relations assigned to this clique.
-     *
-     * @return clique's relations.
-     */
-    public ArrayList<CostFunction> getRelations() {
-        return relations;
     }
 
     /**
@@ -196,7 +100,7 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
             potential = factory.buildCostFunction(new Variable[0]);
         }
 
-        belief = getFactory().buildCostFunction(variables.toArray(vars));
+        belief = getFactory().buildCostFunction(variables.toArray(new Variable[]{}));
         belief = potential.combine(belief);
 
         // Send initial messages
@@ -224,7 +128,7 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
         long cc = 0;
 
         // Combine incoming messages
-        CostFunction combi = getFactory().buildCostFunction(variables.toArray(vars),
+        CostFunction combi = getFactory().buildCostFunction(variables.toArray(new Variable[]{}),
                 factory.getCombineOperation().getNeutralValue());
         for (UPEdge<GdlNode, GdlMessage> e : getEdges()) {
             CostFunction msg = e.getMessage(this).getFactor();
@@ -260,60 +164,6 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
         return cc;
     }
 
-    /**
-     * Checks if this clique has converged in the last iteration (it's current
-     * and previous beliefs are equal).
-     *
-     * @return true if this clique has converged or false otherwise.
-     */
-    public boolean isConverged() {
-        return converged;
-    }
-
-    /**
-     * Retrieves the belief of this clique.
-     *
-     * @return belief of this clique.
-     */
-    public CostFunction getBelief() {
-        return belief;
-    }
-
-    @Override
-    public String toString() {
-        StringBuffer buf = new StringBuffer();
-
-        buf.append(getName());
-        
-        buf.append("[");
-        int i=0;
-        for (CostFunction f : relations){
-            if (i++>0) buf.append(",");
-            buf.append(f.getName());
-        }
-        buf.append("] P:");
-        buf.append(potential == null ? "null" : potential.toString());
-        buf.append(" - B:");
-        buf.append(belief == null ? "null" : belief.toString());
-        buf.append(")");
-
-        return buf.toString();
-    }
-
-    public String getName() {
-        StringBuffer buf = new StringBuffer();
-
-        buf.append("");
-        int i=0;
-        for (Variable v : variables) {
-            if (i++>0) buf.append(".");
-            buf.append(v.getName());
-        }
-        buf.append("");
-
-        return buf.toString();
-    }
-
     public UPResult end() {
         return new UPResult(this);
     }
@@ -324,29 +174,6 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
 
     public void setTolerance(double tolerance) {
         this.tolerance = tolerance;
-    }
-
-    public int getSize() {
-        // Now we have to do it the hard way...
-        int size = 1;
-        for (Variable v : variables) {
-            size *= v.getDomain();
-        }
-        return size;
-    }
-
-    /**
-     * @return the factory
-     */
-    public CostFunctionFactory getFactory() {
-        return factory;
-    }
-
-    /**
-     * @param factory the factory to set
-     */
-    public void setFactory(CostFunctionFactory factory) {
-        this.factory = factory;
     }
 
 }

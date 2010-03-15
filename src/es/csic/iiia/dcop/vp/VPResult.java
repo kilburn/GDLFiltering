@@ -36,49 +36,44 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.jt;
+package es.csic.iiia.dcop.vp;
 
-import es.csic.iiia.dcop.mp.DefaultGraph;
-import es.csic.iiia.dcop.up.UPEdge;
-import es.csic.iiia.dcop.up.UPGraph;
-import es.csic.iiia.dcop.up.UPNode;
-import java.util.ArrayList;
+import es.csic.iiia.dcop.Variable;
+import es.csic.iiia.dcop.mp.Result;
 import java.util.Hashtable;
 
 /**
- *
+ * Value Propagation results for a single node.
+ * 
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class JunctionTree extends DefaultGraph<JTNode, JTEdge, JTResults> {
+public class VPResult implements Result {
 
-    /**
-     * Creates a JT Message passing graph to propagate the variables
-     * of the given clique graph.
-     *
-     * @param cg
-     */
-    public JunctionTree(UPGraph cg) {
-        Hashtable<UPNode, JTNode> nodes = new Hashtable<UPNode, JTNode>();
+    private Hashtable<Variable, Integer> mapping;
 
-        // Java generics bug:
-        // UPGraph.getNodes() returns an ArrayList<N extends UPNode>, but the
-        // current compiler fails to notice it.
-        ArrayList<UPNode> ns = cg.getNodes();
-        for(UPNode cn : ns) {
-            JTNode jn = new JTNode(cn);
-            addNode(jn);
-            nodes.put(cn, jn);
-        }
+    VPResult(Hashtable<Variable, Integer> mapping) {
+        this.mapping = mapping;
+    }
 
-        ArrayList<UPEdge> es = cg.getEdges();
-        for(UPEdge e : es) {
-            addEdge(new JTEdge(nodes.get(e.getNode1()), nodes.get(e.getNode2()), e));
-        }
+    public Hashtable<Variable, Integer> getMapping() {
+        return mapping;
     }
 
     @Override
-    protected JTResults buildResults() {
-        return new JTResults();
+    public String toString() {
+        StringBuffer buf = new StringBuffer("M:");
+        if (mapping != null) {
+            for(Variable v : mapping.keySet()) {
+                buf.append("(");
+                buf.append(v.getName());
+                buf.append(",");
+                buf.append(mapping.get(v));
+                buf.append(")");
+            }
+        } else {
+            buf.append("null");
+        }
+        return buf.toString();
     }
 
 }

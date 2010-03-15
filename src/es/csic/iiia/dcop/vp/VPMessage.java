@@ -36,49 +36,28 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.jt;
+package es.csic.iiia.dcop.vp;
 
-import es.csic.iiia.dcop.mp.DefaultGraph;
-import es.csic.iiia.dcop.up.UPEdge;
-import es.csic.iiia.dcop.up.UPGraph;
-import es.csic.iiia.dcop.up.UPNode;
-import java.util.ArrayList;
+import es.csic.iiia.dcop.Variable;
+import es.csic.iiia.dcop.mp.Message;
 import java.util.Hashtable;
 
 /**
- *
+ * Value propagation message, carrying the variable/value pairs assigned by
+ * the ancestor nodes.
+ * 
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class JunctionTree extends DefaultGraph<JTNode, JTEdge, JTResults> {
+public class VPMessage implements Message {
 
-    /**
-     * Creates a JT Message passing graph to propagate the variables
-     * of the given clique graph.
-     *
-     * @param cg
-     */
-    public JunctionTree(UPGraph cg) {
-        Hashtable<UPNode, JTNode> nodes = new Hashtable<UPNode, JTNode>();
+    private Hashtable<Variable, Integer> mapping;
 
-        // Java generics bug:
-        // UPGraph.getNodes() returns an ArrayList<N extends UPNode>, but the
-        // current compiler fails to notice it.
-        ArrayList<UPNode> ns = cg.getNodes();
-        for(UPNode cn : ns) {
-            JTNode jn = new JTNode(cn);
-            addNode(jn);
-            nodes.put(cn, jn);
-        }
-
-        ArrayList<UPEdge> es = cg.getEdges();
-        for(UPEdge e : es) {
-            addEdge(new JTEdge(nodes.get(e.getNode1()), nodes.get(e.getNode2()), e));
-        }
+    public VPMessage(Hashtable<Variable, Integer> mapping) {
+        this.mapping = mapping;
     }
 
-    @Override
-    protected JTResults buildResults() {
-        return new JTResults();
+    public Hashtable<Variable, Integer> getMapping() {
+        return mapping;
     }
 
 }

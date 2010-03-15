@@ -36,8 +36,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.st;
+package es.csic.iiia.dcop.vp;
 
+import es.csic.iiia.dcop.gdl.GdlGraph;
+import es.csic.iiia.dcop.gdl.GdlNode;
 import es.csic.iiia.dcop.mp.AbstractTree;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
@@ -48,15 +50,16 @@ import java.util.Hashtable;
 import java.util.Random;
 
 /**
- *
+ * Value Propagation graph.
+ * 
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class SpanningTree extends AbstractTree<StNode,StEdge,StResults> {
+public class VPGraph extends AbstractTree<VPNode,VPEdge,VPResults> {
 
     private Random random = new Random();
-    private Hashtable<UPNode, StNode> nodes;
+    private Hashtable<UPNode, VPNode> nodes;
 
-    public SpanningTree(UPGraph cg) {
+    public VPGraph(UPGraph cg) {
         super();
         buildRandomSpanningTree(cg);
     }
@@ -67,9 +70,9 @@ public class SpanningTree extends AbstractTree<StNode,StEdge,StResults> {
         HashSet<UPNode> visitedNodes = new HashSet<UPNode>();
 
         // Add all the nodes
-        nodes = new Hashtable<UPNode, StNode>(remainingNodes.size());
+        nodes = new Hashtable<UPNode, VPNode>(remainingNodes.size());
         for(UPNode n : remainingNodes) {
-            StNode stn = new StNode(n);
+            VPNode stn = new VPNode(n);
             addNode(stn);
             nodes.put(n, stn);
         }
@@ -128,21 +131,21 @@ public class SpanningTree extends AbstractTree<StNode,StEdge,StResults> {
             visitedNodes.add(path.get(i));
             remainingNodes.remove(path.get(i));
             if (i>0) {
-                StNode n1 = nodes.get(path.get(i-1));
-                StNode n2 = nodes.get(path.get(i));
-                addEdge(new StEdge(n1,n2));
+                VPNode n1 = nodes.get(path.get(i-1));
+                VPNode n2 = nodes.get(path.get(i));
+                addEdge(new VPEdge(n1,n2));
             }
         }
-        StNode n1 = nodes.get(path.get(path.size()-1));
-        StNode n2 = nodes.get(node);
-        addEdge(new StEdge(n1,n2));
+        VPNode n1 = nodes.get(path.get(path.size()-1));
+        VPNode n2 = nodes.get(node);
+        addEdge(new VPEdge(n1,n2));
 
         walkTree(visitedNodes, remainingNodes);
     }
 
     @Override
-    protected StResults buildResults() {
-        return new StResults();
+    protected VPResults buildResults() {
+        return new VPResults();
     }
 
 }

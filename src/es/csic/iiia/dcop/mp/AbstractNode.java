@@ -50,6 +50,36 @@ import java.util.Collection;
 public abstract class AbstractNode<E extends Edge, R extends Result> implements Node<E,R> {
 
     /**
+     * @return the mode
+     */
+    public Modes getMode() {
+        return mode;
+    }
+
+    /**
+     * @param mode the mode to set
+     */
+    public void setMode(Modes mode) {
+        this.mode = mode;
+    }
+
+    /**
+     * Nodes can operate either inside a tree or inside a graph.
+     *
+     * When in tree mode, they only operate after receiving messages from each
+     * (and every) child. Contrastingly, graph nodes operate each time that
+     * they receive a message.
+     */
+    public enum Modes {
+        TREE, GRAPH
+    }
+
+    /**
+     * Node operating mode
+     */
+    private Modes mode = Modes.GRAPH;
+
+    /**
      * Edges associated to the edge, through which it will send and receive
      * messages.
      */
@@ -79,6 +109,18 @@ public abstract class AbstractNode<E extends Edge, R extends Result> implements 
      * @param updated
      */
     public void setUpdated(boolean updated) {
+        if (updated == true && getMode() == Modes.TREE) {
+            // Check if we have received messages from at least all neighboors
+            // but one (the parent), meaning that all childs have messaged us.
+            int n_msgs = 0;
+            for (E e : edges) {
+                if (e.getMessage(this) != null)
+                    n_msgs++;
+            }
+            if (n_msgs < edges.size()-1) {
+                return;
+            }
+        }
         this.updated = updated;
     }
 

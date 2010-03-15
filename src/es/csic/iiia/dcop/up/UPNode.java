@@ -54,12 +54,200 @@ import java.util.HashSet;
 public abstract class UPNode<E extends Edge, R extends UPResult> extends
         AbstractNode<E, R> {
 
-    public abstract void addRelation(CostFunction f);
-    public abstract void setFactory(CostFunctionFactory factory);
-    public abstract HashSet<Variable> getVariables();
-    public abstract void addVariable(Variable v);
-    public abstract int getSize();
-    public abstract CostFunction getBelief();
-    public abstract ArrayList<CostFunction> getRelations();
+    /**
+     * Clique's member variables.
+     */
+    protected HashSet<Variable> variables;
+
+    /**
+     * Potential of this clique.
+     */
+    protected CostFunction potential;
+
+    /**
+     * Belief of this clique.
+     */
+    protected CostFunction belief;
+
+    /**
+     * Factor factory to use.
+     */
+    protected CostFunctionFactory factory;
+
+    /**
+     * Relations assigned to this clique.
+     */
+    protected ArrayList<CostFunction> relations;
+
+    /**
+     * Converged flag.
+     */
+    protected boolean converged = false;
+
+    /**
+     * Constructs a new clique with the specified member variable and null
+     * potential.
+     *
+     * @param variable member variable of this clique.
+     */
+    public UPNode(Variable variable) {
+        super();
+        this.relations = new ArrayList<CostFunction>(0);
+        this.variables = new HashSet<Variable>(1);
+        this.addVariable(variable);
+    }
+
+    /**
+     * Constructs a new clique with the specified potential.
+     *
+     * The potential variables are automatically extracted and added as
+     * member variables of this clique.
+     *
+     * @param potential potential of the clique.
+     */
+    public UPNode(CostFunction potential) {
+        super();
+        this.relations = new ArrayList<CostFunction>(1);
+        this.relations.add(potential);
+        this.variables = new HashSet<Variable>(potential.getVariableSet());
+    }
+
+    /**
+     * Constructs a new empty clique.
+     */
+    public UPNode() {
+        super();
+        this.relations = new ArrayList<CostFunction>();
+        this.variables = new HashSet<Variable>();
+    }
+
+    /**
+     * Adds a new variable to the member variables of this class.
+     *
+     * @param variable new member variable.
+     */
+    public void addVariable(Variable variable) {
+        this.variables.add(variable);
+    }
+
+    /**
+     * Checks if this clique contains the specified variable as a member.
+     *
+     * @param variable variable to look for.
+     * @return true if this clique contains the specified variable or false
+     * otherwise
+     */
+    public boolean contains(Variable variable) {
+        return this.variables.contains(variable);
+    }
+
+    /**
+     * Gets the whole member variables set.
+     *
+     * @return member variable set.
+     */
+    public HashSet<Variable> getVariables() {
+        return this.variables;
+    }
+
+    /**
+     * Adds a new relation to this clique.
+     *
+     * @param relation relation to add.
+     */
+    public void addRelation(CostFunction relation) {
+        this.relations.add(relation);
+        this.variables.addAll(relation.getVariableSet());
+    }
+
+    /**
+     * Gets the relations assigned to this clique.
+     *
+     * @return clique's relations.
+     */
+    public ArrayList<CostFunction> getRelations() {
+        return relations;
+    }
+
+    /**
+     * Checks if this clique has converged in the last iteration (it's current
+     * and previous beliefs are equal).
+     *
+     * @return true if this clique has converged or false otherwise.
+     */
+    public boolean isConverged() {
+        return converged;
+    }
+
+    public int getSize() {
+        // Now we have to do it the hard way...
+        int size = 1;
+        for (Variable v : variables) {
+            size *= v.getDomain();
+        }
+        return size;
+    }
+
+    /**
+     * @return the factory
+     */
+    public CostFunctionFactory getFactory() {
+        return factory;
+    }
+
+    /**
+     * @param factory the factory to set
+     */
+    public void setFactory(CostFunctionFactory factory) {
+        this.factory = factory;
+    }
+
+    public CostFunction getPotential() {
+        return potential;
+    }
+
+    /**
+     * Retrieves the belief of this clique.
+     *
+     * @return belief of this clique.
+     */
+    public CostFunction getBelief() {
+        return belief;
+    }
+
+    @Override
+    public String toString() {
+        StringBuffer buf = new StringBuffer();
+
+        buf.append(getName());
+
+        buf.append("[");
+        int i=0;
+        for (CostFunction f : relations){
+            if (i++>0) buf.append(",");
+            buf.append(f.getName());
+        }
+        buf.append("] P:");
+        buf.append(potential == null ? "null" : potential.toString());
+        buf.append(" - B:");
+        buf.append(belief == null ? "null" : belief.toString());
+        buf.append(")");
+
+        return buf.toString();
+    }
+
+    public String getName() {
+        StringBuffer buf = new StringBuffer();
+
+        buf.append("");
+        int i=0;
+        for (Variable v : variables) {
+            if (i++>0) buf.append(".");
+            buf.append(v.getName());
+        }
+        buf.append("");
+
+        return buf.toString();
+    }
     
 }

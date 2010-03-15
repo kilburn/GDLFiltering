@@ -38,13 +38,10 @@
 
 package es.csic.iiia.dcop.algo;
 
-import es.csic.iiia.dcop.algo.JunctionTreeAlgo;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunctionFactory;
-import es.csic.iiia.dcop.HypercubeCostFunction;
 import es.csic.iiia.dcop.HypercubeCostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.gdl.GdlGraph;
 import es.csic.iiia.dcop.dfs.MCS;
 import es.csic.iiia.dcop.gdl.GdlFactory;
 import es.csic.iiia.dcop.up.UPFactory;

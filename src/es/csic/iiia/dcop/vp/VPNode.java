@@ -36,49 +36,88 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.jt;
+package es.csic.iiia.dcop.vp;
 
-import es.csic.iiia.dcop.mp.DefaultGraph;
-import es.csic.iiia.dcop.up.UPEdge;
-import es.csic.iiia.dcop.up.UPGraph;
+import es.csic.iiia.dcop.CostFunction;
+import es.csic.iiia.dcop.Variable;
+import es.csic.iiia.dcop.mp.AbstractNode;
 import es.csic.iiia.dcop.up.UPNode;
-import java.util.ArrayList;
 import java.util.Hashtable;
 
 /**
- *
+ * Value Propagation algorithm node.
+ * 
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class JunctionTree extends DefaultGraph<JTNode, JTEdge, JTResults> {
+public class VPNode extends AbstractNode<VPEdge, VPResult> {
+    
+    private CostFunction belief;
+    private Hashtable<Variable, Integer> mapping;
+    private UPNode node;
 
-    /**
-     * Creates a JT Message passing graph to propagate the variables
-     * of the given clique graph.
-     *
-     * @param cg
-     */
-    public JunctionTree(UPGraph cg) {
-        Hashtable<UPNode, JTNode> nodes = new Hashtable<UPNode, JTNode>();
+    public boolean isSynchronous() {
+        return false;
+    }
 
-        // Java generics bug:
-        // UPGraph.getNodes() returns an ArrayList<N extends UPNode>, but the
-        // current compiler fails to notice it.
-        ArrayList<UPNode> ns = cg.getNodes();
-        for(UPNode cn : ns) {
-            JTNode jn = new JTNode(cn);
-            addNode(jn);
-            nodes.put(cn, jn);
+    public VPNode(UPNode n) {
+        node = n;
+        belief = n.getBelief();
+    }
+
+    public void initialize() {
+        
+    }
+
+    public long run() {
+        long cc = 0;
+
+        // Receive incoming messages
+        mapping = new Hashtable<Variable, Integer>();
+        for(VPEdge e : getEdges()) {
+            VPMessage msg = e.getMessage(this);
+            if (msg != null) {
+                mapping.putAll(msg.getMapping());
+                cc += msg.getMapping().size();
+            }
         }
 
-        ArrayList<UPEdge> es = cg.getEdges();
-        for(UPEdge e : es) {
-            addEdge(new JTEdge(nodes.get(e.getNode1()), nodes.get(e.getNode2()), e));
+        // Reduce our belief with the given mapping
+        belief = belief.reduce(mapping);
+
+        // Instantiate remaining variables
+        if (belief != null) {
+            cc += belief.getSize();
+            belief.getBestConfiguration(mapping);
         }
+
+        // Send messages
+        for(VPEdge e : getEdges()) {
+            VPMessage msg = new VPMessage(mapping);
+            e.sendMessage(this, msg);
+        }
+
+        return cc;
+    }
+
+
+    public boolean isConverged() {
+        // As convergence is checked after the first iteration and this is a
+        // tree, it is granted.
+        return true;
+    }
+
+    public VPResult end() {
+        return new VPResult(mapping);
+    }
+
+    public String getName() {
+        return node.getName();
     }
 
     @Override
-    protected JTResults buildResults() {
-        return new JTResults();
+    public String toString() {
+        return node.toString();
     }
+    
 
 }
