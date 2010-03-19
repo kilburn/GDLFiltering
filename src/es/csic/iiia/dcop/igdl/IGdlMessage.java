@@ -36,45 +36,42 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.st;
+package es.csic.iiia.dcop.igdl;
 
-import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.mp.DefaultResults;
-import java.util.Hashtable;
+import es.csic.iiia.dcop.CostFunction;
+import es.csic.iiia.dcop.mp.Message;
+import java.util.ArrayList;
 
 /**
- *
+ * GDL Utility message.
+ * 
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class StResults extends DefaultResults<StResult> {
-    
-    public Hashtable<Variable, Integer> getMapping() {
+public class IGdlMessage implements Message {
+    private ArrayList<CostFunction> factors;
 
-        // Simple result collection
-        Hashtable<Variable, Integer> result = new Hashtable<Variable, Integer>();
-        for (StResult r : getResults()) {
-            Hashtable<Variable, Integer> map = r.getMapping();
-            if (map!=null) {
-                result.putAll(map);
-            }
-        }
+    public IGdlMessage(ArrayList<CostFunction> factors) {
+        this.factors = factors;
+    }
 
-        return result;
+    public IGdlMessage() {
+        this.factors = new ArrayList<CostFunction>();
+    }
+
+    public ArrayList<CostFunction> getFactors() {
+        return this.factors;
+    }
+
+    public boolean addFactor(CostFunction factor) {
+        return factors.add(factor);
     }
 
     @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer(super.toString().split("\\n", 2)[0]);
-        Hashtable<Variable, Integer> map = getMapping();
-        buf.append("\nM:");
-        for (Variable v : map.keySet()) {
-            buf.append("(");
-            buf.append(v.getName());
-            buf.append(",");
-            buf.append(map.get(v));
-            buf.append(")");
+        StringBuffer buf = new StringBuffer();
+        for (CostFunction f : factors) {
+            buf.append("\n\t" + f);
         }
         return buf.toString();
     }
-
 }

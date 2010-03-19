@@ -38,6 +38,10 @@
 
 package es.csic.iiia.dcop.cli;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.action.LoggerAction;
+import ch.qos.logback.classic.sift.AppenderFactory;
+import ch.qos.logback.core.Appender;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunctionFactory;
 import es.csic.iiia.dcop.FactorGraph;
@@ -46,21 +50,20 @@ import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.algo.JunctionTreeAlgo;
 import es.csic.iiia.dcop.algo.MaxSum;
 import es.csic.iiia.dcop.algo.RandomNoiseAdder;
-import es.csic.iiia.dcop.gdl.GdlGraph;
 import es.csic.iiia.dcop.up.UPResults;
 import es.csic.iiia.dcop.dfs.DFS;
 import es.csic.iiia.dcop.dfs.MCN;
 import es.csic.iiia.dcop.dfs.MCS;
 import es.csic.iiia.dcop.gdl.GdlFactory;
 import es.csic.iiia.dcop.io.DatasetReader;
+import es.csic.iiia.dcop.io.TreeReader;
 import es.csic.iiia.dcop.jt.JTResults;
 import es.csic.iiia.dcop.jt.JunctionTree;
-import es.csic.iiia.dcop.mp.GraphFactory;
-import es.csic.iiia.dcop.mp.Results;
-import es.csic.iiia.dcop.st.SpanningTree;
-import es.csic.iiia.dcop.st.StResults;
+import es.csic.iiia.dcop.mp.AbstractNode.Modes;
 import es.csic.iiia.dcop.up.UPFactory;
 import es.csic.iiia.dcop.up.UPGraph;
+import es.csic.iiia.dcop.vp.VPGraph;
+import es.csic.iiia.dcop.vp.VPResults;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -73,6 +76,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import org.slf4j.LoggerFactory;
 
 /**
  * Command Line Interface application logic handler.
@@ -85,7 +89,7 @@ public class CliApp {
     /**
      * Use junction tree as solving algorithm.
      */
-    public static final int ALGO_JUNCTION_TREE = 0;
+    public static final int ALGO_GDL = 0;
     /**
      * Use max-sum as solving algorithm.
      */
@@ -99,18 +103,21 @@ public class CliApp {
      */
     public static final int JT_HEURISTIC_MCN = 1;
 
-    private int algorithm = ALGO_JUNCTION_TREE;
+    private int algorithm = ALGO_GDL;
     private int heuristic = JT_HEURISTIC_MCS;
     private CostFunction.Summarize summarizeOperation = CostFunction.Summarize.MIN;
     private CostFunction.Combine combineOperation = CostFunction.Combine.SUM;
     private CostFunction.Normalize normalization = CostFunction.Normalize.NONE;
     private int maxCliqueVariables = Integer.MAX_VALUE;
-    private int maxJunctionTreeTries = 100;
+    private int maxJunctionTreeTries = 1;
     private double randomVariance = 0;
     private boolean createCliqueGraph = false;
     private boolean createFactorGraph = false;
+    private InputStream treeFile = null;
     private String cliqueGraphFile = "cgraph.dot";
     private String factorGraphFile = "fgraph.dot";
+    private boolean createTraceFile = false;
+    private String traceFile = "trace.txt";
 
     /**
      * Get the maximum number of junction tree's built trying to minimize the
@@ -265,9 +272,19 @@ public class CliApp {
     }
 
     void run() {
+        // Parameter combination checks
+        if (algorithm == ALGO_MAX_SUM && normalization == CostFunction.Normalize.NONE) {
+            System.err.println("Warning: maxsum doesn't converge without normalization, using sum0.");
+            normalization = CostFunction.Normalize.SUM0;
+        }
+
         // Read the input file into factors
         DatasetReader r = new DatasetReader();
-        CostFunction[] factors = r.read(input);
+        CostFunctionFactory factory = new HypercubeCostFunctionFactory();
+        factory.setCombineOperation(combineOperation);
+        factory.setNormalizationType(normalization);
+        factory.setSummarizeOperation(summarizeOperation);
+        CostFunction[] factors = r.read(input, factory);
 
         // Output factor graph
         createFactorGraphFile(new FactorGraph(factors));
@@ -285,8 +302,6 @@ public class CliApp {
         }
 
         // Run GDL
-        CostFunctionFactory factory = new HypercubeCostFunctionFactory();
-        factory.setMode(summarizeOperation, combineOperation, normalization);
         cg.setFactory(factory);
         UPResults results = cg.run(1000);
             
@@ -295,8 +310,8 @@ public class CliApp {
         System.out.println("LOAD_FACTOR " + results.getLoadFactor());
 
         // Extract a solution
-        SpanningTree st = new SpanningTree(cg);
-        StResults res = st.run(100);
+        VPGraph st = new VPGraph(cg);
+        VPResults res = st.run(100);
         Hashtable<Variable, Integer> map = res.getMapping();
 
         System.out.print("SOLUTION");
@@ -304,7 +319,7 @@ public class CliApp {
         Iterator<Variable> i = foo.iterator();
         while(i.hasNext()) {
             Variable v = i.next();
-            System.out.print(" " + (map.get(v)+1));
+            System.out.print(" " + (map.get(v)));
         }
         System.out.println();
 
@@ -361,38 +376,47 @@ public class CliApp {
     }
 
     private UPGraph createCliqueGraph(CostFunction[] factors) {
+        
         UPGraph cg = null;
-
         switch(algorithm) {
 
-            case ALGO_JUNCTION_TREE:
-
+            case ALGO_GDL:
+                GdlFactory factory = new GdlFactory();
+                factory.setMode(Modes.TREE);
                 int variables = 0;
                 JTResults results = null;
-                int minVariables = Integer.MAX_VALUE;
-                for(int i=0; i < maxJunctionTreeTries || variables != minVariables; i++) {
-                
-                    DFS dfs = null;
-                    switch(heuristic) {
-                        case JT_HEURISTIC_MCS:
-                            dfs = new MCS(factors);
-                            break;
-                        default:
-                            System.err.println("Warning: invalid junction tree heuristic chosen, falling back to MCN.");
-                        case JT_HEURISTIC_MCN:
-                            dfs = new MCN(factors);
-                            break;
-                    }
-                    UPFactory factory = new GdlFactory();
-                    cg = JunctionTreeAlgo.buildGraph(factory, dfs.getFactorDistribution(), dfs.getAdjacency());
+
+                if (treeFile != null) {
+                    TreeReader treeReader = new TreeReader();
+                    treeReader.read(treeFile, factors);
+                    cg = JunctionTreeAlgo.buildGraph(factory, treeReader.getFactorDistribution(), treeReader.getAdjacency());
                     JunctionTree jt = new JunctionTree(cg);
                     results = jt.run(100);
                     variables = results.getMaxVariables();
+                } else {
+                    int minVariables = Integer.MAX_VALUE;
+                    for(int i=0; i < maxJunctionTreeTries || variables != minVariables; i++) {
+                        DFS dfs = null;
+                        switch(heuristic) {
+                            case JT_HEURISTIC_MCS:
+                                dfs = new MCS(factors);
+                                break;
+                            default:
+                                System.err.println("Warning: invalid junction tree heuristic chosen, falling back to MCN.");
+                            case JT_HEURISTIC_MCN:
+                                dfs = new MCN(factors);
+                                break;
+                        }
 
-                    if (variables < minVariables) {
-                        minVariables = variables;
+                        cg = JunctionTreeAlgo.buildGraph(factory, dfs.getFactorDistribution(), dfs.getAdjacency());
+                        JunctionTree jt = new JunctionTree(cg);
+                        results = jt.run(100);
+                        variables = results.getMaxVariables();
+
+                        if (variables < minVariables) {
+                            minVariables = variables;
+                        }
                     }
-
                 }
                 
                 System.out.println("MAX_CLIQUE_VARIABLES " + results.getMaxVariables());
@@ -405,10 +429,6 @@ public class CliApp {
                 break;
 
             case ALGO_MAX_SUM:
-                if (normalization == CostFunction.Normalize.NONE) {
-                    System.err.println("Warning: maxsum doesn't converge without normalization, using sum0.");
-                    normalization = CostFunction.Normalize.SUM0;
-                }
                 cg = MaxSum.buildGraph(factors);
                 createCliqueGraphFile(cg);
                 break;
@@ -436,6 +456,39 @@ public class CliApp {
 
     void setCliqueGraphFile(String fileName) {
         cliqueGraphFile = fileName;
+    }
+
+    void setTreeFile(File fileName) throws FileNotFoundException {
+        treeFile = new FileInputStream(fileName);
+    }
+
+    /**
+     * @return the traceFile
+     */
+    public String getTraceFile() {
+        return traceFile;
+    }
+
+    /**
+     * @param traceFile the traceFile to set
+     */
+    public void setTraceFile(String traceFile) {
+        
+        this.traceFile = traceFile;
+    }
+
+    /**
+     * @return the createTraceFile
+     */
+    public boolean isCreateTraceFile() {
+        return createTraceFile;
+    }
+
+    /**
+     * @param createTraceFile the createTraceFile to set
+     */
+    public void setCreateTraceFile(boolean createTraceFile) {
+        this.createTraceFile = createTraceFile;
     }
 
 }

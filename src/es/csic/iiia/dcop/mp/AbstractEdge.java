@@ -69,12 +69,17 @@ public abstract class AbstractEdge<N extends Node,M extends Message> implements 
     }
 
     
-    public void sendMessage(N sender, M message) {
+    public boolean sendMessage(N sender, M message) {
         if (sender == c1) {
+            if (message.equals(m2))
+                return false;
             nm2 = message;
         } else {
+            if (message.equals(m1))
+                return false;
             nm1 = message;
         }
+        return true;
     }
 
     public M getMessage(N recipient) {
@@ -89,7 +94,6 @@ public abstract class AbstractEdge<N extends Node,M extends Message> implements 
      * notifiying Nodes as needed.
      */
     public void tick() {
-
         // Propagate new messages, notifying the nodes that have new msgs.
         if (nm1 != m1) {
             m1 = nm1;
@@ -108,6 +112,14 @@ public abstract class AbstractEdge<N extends Node,M extends Message> implements 
 
     public N getNode2() {
         return c2;
+    }
+
+    public boolean haveSentMessage(N sender) {
+        if (sender == c1) {
+            return m2 != null || nm2 != null;
+        } else {
+            return m1 != null || nm1 != null;
+        }
     }
 
     public N getDestination(N node) {

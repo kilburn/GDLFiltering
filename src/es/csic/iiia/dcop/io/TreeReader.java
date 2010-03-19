@@ -39,7 +39,6 @@
 package es.csic.iiia.dcop.io;
 
 import es.csic.iiia.dcop.CostFunction;
-import es.csic.iiia.dcop.CostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -48,6 +47,7 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -55,27 +55,100 @@ import java.util.regex.Pattern;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class DatasetReader {
-    
-    Matcher agent = Pattern.compile("(?i)^AGENT\\s+(\\d+)\\s*$").matcher("");
-    Matcher variable = Pattern.compile("(?i)^VARIABLE\\s+(\\w+)\\s+(\\w+)\\s+(\\d+)").matcher("");
-    Matcher constraint = Pattern.compile("(?i)^CONSTRAINT(\\s+\\w+)+").matcher("");
-    Matcher nogood = Pattern.compile("(?i)^NOGOOD\\s+(\\d+)\\s+(\\d+)\\s*$").matcher("");
-    Matcher f = Pattern.compile("(?i)^F\\s+").matcher("");
+public class TreeReader {
 
-    private HashMap<String, Variable> variables;
-    private ArrayList<CostFunction> factors;
-    private CostFunction lastFactor;
-    private CostFunctionFactory factory;
+    Matcher node = Pattern.compile("(?i)^NODE\\s+(\\w+)$").matcher("");
+    Matcher f = Pattern.compile("(?i)^F(\\s+\\w+)+$").matcher("");
+    Matcher link = Pattern.compile("(?i)^LINK\\s+(\\w+)\\s+(\\w+)").matcher("");
 
-    public DatasetReader() {
-        this.variables = new HashMap<String, Variable>();
-        this.factors = new ArrayList<CostFunction>();
+    private HashMap<String, Node> nodes = new HashMap<String, Node>();
+    private Node currentNode;
+    private HashMap<String, String> links = new HashMap<String, String>();
+
+    // tree results
+    private CostFunction[][] factorDistribution;
+    private char[][] adjacency;
+
+    public void parseNode(String line) {
+        if (!node.reset(line).find()) {
+            return;
+        }
+
+        String id = node.group(1);
+        currentNode = new Node(id);
+        nodes.put(id, currentNode);
     }
 
-    public CostFunction[] read(InputStream problem, CostFunctionFactory factory) {
-        this.factory = factory;
+    public void parseF(String line) {
+        if (!f.reset(line).find()) {
+            return;
+        }
 
+        currentNode.addFunction(line.trim());
+    }
+
+    public void parseLink(String line) {
+        if (!link.reset(line).find()) {
+            return;
+        }
+
+        links.put(link.group(1), link.group(2));
+    }
+
+    public void read(InputStream problem, CostFunction[] factors) {
+
+        // Start by reading the files contents
+        parse(problem);
+
+        // And now map the obtained info to an array of costfunctions +
+        // the adjacency matrix.
+        HashMap<HashSet<String>, CostFunction> functions =
+                new HashMap<HashSet<String>, CostFunction>();
+        for (CostFunction factor : factors) {
+            HashSet<String> vars = new HashSet<String>();
+            for (Variable v : factor.getVariableSet()) {
+                vars.add(v.getName());
+            }
+            functions.put(vars, factor);
+        }
+
+        factorDistribution = new CostFunction[nodes.size()][];
+        HashMap<Node, Integer> nodeToIdx = new HashMap<Node, Integer>();
+        int i=0;
+        for (Node n : nodes.values()) {
+            nodeToIdx.put(n, i);
+            factorDistribution[i] = new CostFunction[n.fns.size()];
+            for(int j=0; j<n.fns.size(); j++) {
+                HashSet<String> foo = n.fns.get(j);
+                if (functions.get(foo) == null) {
+                    System.err.println("Function not found?");
+                }
+                factorDistribution[i][j] = functions.get(foo);
+            }
+            i++;
+        }
+
+        // And finally the adjacency matrix
+        adjacency = new char[nodes.size()][nodes.size()];
+        for (String n1 : links.keySet()) {
+            String n2 = links.get(n1);
+            int idx1 = nodeToIdx.get(nodes.get(n1));
+            int idx2 = nodeToIdx.get(nodes.get(n2));
+            adjacency[idx1][idx2] = 1;
+        }
+
+        return;
+    }
+
+    public CostFunction[][] getFactorDistribution() {
+        return factorDistribution;
+    }
+
+    public char[][] getAdjacency() {
+        return adjacency;
+    }
+
+    private void parse(InputStream problem) {
         try {
 
             //use buffering, reading one line at a time
@@ -100,13 +173,9 @@ public class DatasetReader {
         } catch (IOException ex){
             ex.printStackTrace();
         }
-
-        this.factory = null;
-        return factors.toArray(new CostFunction[]{});
     }
 
     private void parseLine(String line) {
-
         Method m = getParsingMethod(line);
         if (m != null) {
             try {
@@ -119,66 +188,11 @@ public class DatasetReader {
         }
     }
 
-    public void parseAgent(String line) {
-        //if (agent.reset(line).find()) {}
-    }
-
-    public void parseVariable(String line) {
-        if (!variable.reset(line).find()) {
-            return;
-        }
-        
-        Variable v = new Variable(variable.group(1),
-                Integer.valueOf(variable.group(3)));
-        variables.put(variable.group(1), v);
-    }
-
-    public void parseConstraint(String line) {
-        if (!constraint.reset(line).find()) {
-            return;
-        }
-
-        String[] parts = line.split("\\s+");
-        Variable[] vars = new Variable[parts.length-1];
-        for(int i=1; i<parts.length; i++) {
-            vars[i-1] = variables.get(parts[i]);
-        }
-
-        lastFactor = factory.buildCostFunction(vars);
-        factors.add(lastFactor);
-    }
-
-    public void parseNogood(String line) {
-        if (!nogood.reset(line).find()) {
-            return;
-        }
-
-        lastFactor.setValue(new int[] {
-            Integer.valueOf(nogood.group(1)),
-            Integer.valueOf(nogood.group(2)),
-        }, 1);
-    }
-
-    public void parseF(String line) {
-        if (!f.reset(line).find()) {
-            return;
-        }
-
-        String[] parts = line.split("\\s+");
-        int[] idx = new int[parts.length-2];
-        for(int i=1; i<parts.length-1; i++) {
-            idx[i-1] = Integer.valueOf(parts[i]);
-        }
-
-        if (lastFactor == null) return;
-        lastFactor.setValue(idx, Double.valueOf(parts[parts.length-1]));
-    }
-
     private Method getParsingMethod(String line) {
         // Construct parsing method name
         String mn = line.split("\\s+", 2)[0].toLowerCase();
         if (mn.length() == 0) return null;
-        
+
         mn = "parse" + mn.substring(0, 1).toUpperCase() + mn.substring(1);
 
         // Look for it
@@ -192,4 +206,17 @@ public class DatasetReader {
         return m;
     }
 
+    private class Node {
+        public final String id;
+        public ArrayList<HashSet<String>> fns = new ArrayList<HashSet<String>>();
+        public Node(String id) { this.id = id; }
+        public void addFunction(String f) {
+            String[] parts = f.split("\\s");
+            HashSet<String> fn = new HashSet<String>(parts.length-1);
+            for (int i=1; i<parts.length; i++) {
+                fn.add(parts[i]);
+            }
+            fns.add(fn);
+        }
+    }
 }

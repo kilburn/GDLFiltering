@@ -43,22 +43,25 @@ import es.csic.iiia.dcop.CostFunctionFactory;
 import es.csic.iiia.dcop.HypercubeCostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.algo.JunctionTreeAlgo;
+import es.csic.iiia.dcop.dfs.DFS;
+import es.csic.iiia.dcop.dfs.MCN;
 import es.csic.iiia.dcop.dfs.MCS;
+import es.csic.iiia.dcop.igdl.IGdlFactory;
+import es.csic.iiia.dcop.igdl.IGdlGraph;
 import es.csic.iiia.dcop.jt.JunctionTree;
+import es.csic.iiia.dcop.mp.AbstractNode.Modes;
 import es.csic.iiia.dcop.mp.DefaultResults;
-import es.csic.iiia.dcop.st.SpanningTree;
-import es.csic.iiia.dcop.st.StResults;
 import es.csic.iiia.dcop.up.UPFactory;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.up.UPResult;
+import es.csic.iiia.dcop.vp.VPGraph;
+import es.csic.iiia.dcop.vp.VPResults;
 import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -91,6 +94,7 @@ public class GDLTest {
     }
 
     @Test
+    @Ignore
     public void testGdlGraphMode() {
         // Set operating mode
         CostFunction.Summarize summarize = CostFunction.Summarize.MAX;
@@ -123,10 +127,17 @@ public class GDLTest {
         // Run the UtilityPropagation phase
         g.setFactory(factory);
         DefaultResults<UPResult> results = g.run(100);
+        for (UPResult r : results.getResults()) {
+            Hashtable<Variable, Integer> map2 = r.getFactor().getBestConfiguration(null);
+            for (Variable v : map2.keySet()) {
+                System.out.println(v.getName() + ":" + map2.get(v));
+            }
+        }
+        System.out.println(results);
 
         // Extract a solution
-        SpanningTree st = new SpanningTree(g);
-        StResults res = st.run(100);
+        VPGraph vp = new VPGraph(g);
+        VPResults res = vp.run(100);
         Hashtable<Variable, Integer> map = res.getMapping();
 
         // The solution should be 0 0 1
@@ -143,55 +154,177 @@ public class GDLTest {
     }
 
     @Test
-    public void testGdlTreeMode() {
+    public void testIGdlExample() {
+        System.out.println("RUNNING IGDL");
         // Set operating mode
-        CostFunction.Summarize summarize = CostFunction.Summarize.MAX;
+        CostFunction.Summarize summarize = CostFunction.Summarize.MIN;
         CostFunction.Combine combine = CostFunction.Combine.SUM;
         CostFunction.Normalize normalize = CostFunction.Normalize.NONE;
         factory.setMode(summarize, combine, normalize);
 
-        Variable a,b,c;
-        a = new Variable("a", 2);
-        b = new Variable("b", 2);
-        c = new Variable("c", 2);
-        Variable[] variables = new Variable[] {a,b,c};
+        Variable x,y,z,t,u,v;
+        x = new Variable("x", 2);
+        y = new Variable("y", 2);
+        z = new Variable("z", 2);
+        t = new Variable("t", 2);
+        u = new Variable("u", 2);
+        v = new Variable("v", 2);
+        Variable[] variables = new Variable[] {x, y, z, t, u, v};
 
         // Simple cycle with unique solution
-        CostFunction f0 = factory.buildCostFunction(new Variable[] {a, b});
-        f0.setValues(new double[] {0, 1, 1, 0});
-        CostFunction f1 = factory.buildCostFunction(new Variable[] {b, c});
-        f1.setValues(new double[] {0, 2, 1, 0});
-        CostFunction f2 = factory.buildCostFunction(new Variable[] {a, c});
-        f2.setValues(new double[] {0, 2, 1, 0});
-        CostFunction[] factors = new CostFunction[] {f0,f1,f2};
+        CostFunction f0 = factory.buildCostFunction(new Variable[] {x, y});
+        f0.setValues(new double[] {20, 10, 10, 0});
+        CostFunction f1 = factory.buildCostFunction(new Variable[] {y, t});
+        f1.setValues(new double[] {0, 4, 4, 12});
+        CostFunction f2 = factory.buildCostFunction(new Variable[] {z, t});
+        f2.setValues(new double[] {14, 10, 14, 10});
+        CostFunction f3 = factory.buildCostFunction(new Variable[] {t, u});
+        f3.setValues(new double[] {3, 2, 2, 0});
+        CostFunction f4 = factory.buildCostFunction(new Variable[] {z, v});
+        f4.setValues(new double[] {3, 2, 2, 0});
+        CostFunction f5 = factory.buildCostFunction(new Variable[] {u, v});
+        f5.setValues(new double[] {0, 10, 10, 0});
+        CostFunction[] factors = new CostFunction[] {f0,f1,f2,f3,f4,f5};
 
         // Build a junction tree
-        MCS mcs = new MCS(factors);
-        UPFactory f = new GdlFactory();
-        UPGraph g = JunctionTreeAlgo.buildGraph(f, mcs.getFactorDistribution(), mcs.getAdjacency());
+        DFS dfs = new MCN(factors);
+        UPFactory f = new IGdlFactory();
+        UPGraph g = JunctionTreeAlgo.buildGraph(f, dfs.getFactorDistribution(), dfs.getAdjacency());
         JunctionTree jt = new JunctionTree(g);
         jt.run(100);
+        System.out.println(g);
 
         // Run the UtilityPropagation phase
         g.setFactory(factory);
+        ((IGdlGraph)g).setR(2);
         DefaultResults<UPResult> results = g.run(100);
+        System.out.println(results);
 
         // Extract a solution
-        SpanningTree st = new SpanningTree(g);
-        StResults res = st.run(100);
+        VPGraph vp = new VPGraph(g);
+        VPResults res = vp.run(100);
         Hashtable<Variable, Integer> map = res.getMapping();
 
         // The solution should be 0 0 1
-        assertEquals((int)map.get(a), 0);
-        assertEquals((int)map.get(b), 0);
-        assertEquals((int)map.get(c), 1);
+        assertEquals((int)map.get(x), 1);
+        assertEquals((int)map.get(y), 1);
+        assertEquals((int)map.get(z), 1);
+        assertEquals((int)map.get(t), 0);
+        assertEquals((int)map.get(u), 1);
+        assertEquals((int)map.get(v), 1);
+
 
         // With a total utility of 4
         double cost = 0;
         for (CostFunction fn : factors) {
             cost += fn.getValue(map);
         }
-        assertEquals(cost, 4, 0.0001);
+        assertEquals(cost, 20, 0.0001);
+    }
+
+    @Test
+    public void testGdlExample() {
+        System.out.println("RUNNING GDL");
+        // Set operating mode
+        CostFunction.Summarize summarize = CostFunction.Summarize.MIN;
+        CostFunction.Combine combine = CostFunction.Combine.SUM;
+        CostFunction.Normalize normalize = CostFunction.Normalize.NONE;
+        factory.setMode(summarize, combine, normalize);
+
+        Variable x,y,z,t,u,v;
+        x = new Variable("x", 2);
+        y = new Variable("y", 2);
+        z = new Variable("z", 2);
+        t = new Variable("t", 2);
+        u = new Variable("u", 2);
+        v = new Variable("v", 2);
+        Variable[] variables = new Variable[] {x, y, z, t, u, v};
+
+        // Simple cycle with unique solution
+        CostFunction f0 = factory.buildCostFunction(new Variable[] {x, y});
+        f0.setValues(new double[] {20, 10, 10, 0});
+        CostFunction f1 = factory.buildCostFunction(new Variable[] {y, t});
+        f1.setValues(new double[] {0, 4, 4, 12});
+        CostFunction f2 = factory.buildCostFunction(new Variable[] {z, t});
+        f2.setValues(new double[] {14, 10, 14, 10});
+        CostFunction f3 = factory.buildCostFunction(new Variable[] {t, u});
+        f3.setValues(new double[] {3, 2, 2, 0});
+        CostFunction f4 = factory.buildCostFunction(new Variable[] {z, v});
+        f4.setValues(new double[] {3, 2, 2, 0});
+        CostFunction f5 = factory.buildCostFunction(new Variable[] {u, v});
+        f5.setValues(new double[] {0, 10, 10, 0});
+        CostFunction[] factors = new CostFunction[] {f0,f1,f2,f3,f4,f5};
+
+        // Build a junction tree
+        DFS dfs = new MCN(factors);
+        GdlFactory f = new GdlFactory();
+        f.setMode(Modes.GRAPH);
+        UPGraph g = JunctionTreeAlgo.buildGraph(f, dfs.getFactorDistribution(), dfs.getAdjacency());
+        JunctionTree jt = new JunctionTree(g);
+        jt.run(100);
+        System.out.println(g);
+
+        // Run the UtilityPropagation phase
+        g.setFactory(factory);
+        //((IGdlGraph)g).setR(2);
+        DefaultResults<UPResult> results = g.run(100);
+        System.out.println(results);
+
+        // Extract a solution
+        VPGraph vp = new VPGraph(g);
+        VPResults res = vp.run(100);
+        Hashtable<Variable, Integer> map = res.getMapping();
+
+        // The solution should be 0 0 1
+        assertEquals((int)map.get(x), 1);
+        assertEquals((int)map.get(y), 1);
+        assertEquals((int)map.get(z), 1);
+        assertEquals((int)map.get(t), 0);
+        assertEquals((int)map.get(u), 1);
+        assertEquals((int)map.get(v), 1);
+
+
+        // With a total utility of 4
+        double cost = 0;
+        for (CostFunction fn : factors) {
+            cost += fn.getValue(map);
+        }
+        assertEquals(cost, 20, 0.0001);
+    }
+
+    @Test
+    public void testTesting() {
+        // Set operating mode
+        CostFunction.Summarize summarize = CostFunction.Summarize.MIN;
+        CostFunction.Combine combine = CostFunction.Combine.SUM;
+        CostFunction.Normalize normalize = CostFunction.Normalize.NONE;
+        factory.setMode(summarize, combine, normalize);
+
+        Variable x,y,z,t,u,v;
+        x = new Variable("x", 2);
+        y = new Variable("y", 2);
+        z = new Variable("z", 2);
+        t = new Variable("t", 2);
+        u = new Variable("u", 2);
+        v = new Variable("v", 2);
+        Variable[] variables = new Variable[] {x, y, z, t, u, v};
+
+        // Simple cycle with unique solution
+        CostFunction fxy = factory.buildCostFunction(new Variable[] {x, y});
+        fxy.setValues(new double[] {20, 10, 10, 0});
+        CostFunction fyt = factory.buildCostFunction(new Variable[] {y, t});
+        fyt.setValues(new double[] {0, 4, 4, 12});
+        CostFunction fzt = factory.buildCostFunction(new Variable[] {z, t});
+        fzt.setValues(new double[] {14, 10, 14, 10});
+        CostFunction ftu = factory.buildCostFunction(new Variable[] {t, u});
+        ftu.setValues(new double[] {3, 2, 2, 0});
+        CostFunction fzv = factory.buildCostFunction(new Variable[] {z, v});
+        fzv.setValues(new double[] {3, 2, 2, 0});
+        CostFunction fuv = factory.buildCostFunction(new Variable[] {u, v});
+        fuv.setValues(new double[] {0, 10, 10, 0});
+        CostFunction[] factors = new CostFunction[] {fxy,fyt,fzt,ftu,fzv,fuv};
+
+        System.out.println(ftu.combine(fuv).summarize(new Variable[]{t,v}));
     }
 
 }

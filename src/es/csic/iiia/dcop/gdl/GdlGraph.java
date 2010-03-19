@@ -39,11 +39,12 @@
 package es.csic.iiia.dcop.gdl;
 
 import es.csic.iiia.dcop.up.UPResults;
-import es.csic.iiia.dcop.CostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import java.util.HashSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility Propagation message passing algorithm implementation using the GDL
@@ -52,6 +53,8 @@ import java.util.HashSet;
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
 public class GdlGraph extends UPGraph<GdlNode,UPEdge<GdlNode, GdlMessage>,UPResults> {
+
+    private static Logger log = LoggerFactory.getLogger(UPGraph.class);
 
     /**
      * Set of variables involved in this graph.
@@ -71,17 +74,6 @@ public class GdlGraph extends UPGraph<GdlNode,UPEdge<GdlNode, GdlMessage>,UPResu
     public void addNode(GdlNode clique) {
         super.addNode(clique);
         variableSet.addAll(clique.getVariables());
-    }
-
-    /**
-     * @param summarize summarize operation to use.
-     * @param combine combine operation to use.
-     * @param normalize normalization type.
-     */
-    public void setFactory(CostFunctionFactory factory) {
-        for (GdlNode clique : getNodes()) {
-            clique.setFactory(factory);
-        }
     }
 
     public HashSet<Variable> getVariables() {

@@ -56,13 +56,16 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoint;
+import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
+import org.junit.runner.RunWith;
 import static org.junit.Assert.*;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
+@RunWith(Theories.class)
 public class MaxSumTest {
 
     private Variable a,b,c,d;

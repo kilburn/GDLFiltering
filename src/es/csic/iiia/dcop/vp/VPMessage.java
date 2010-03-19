@@ -60,4 +60,16 @@ public class VPMessage implements Message {
         return mapping;
     }
 
+    @Override
+    public String toString() {
+        StringBuffer buf = new StringBuffer("VP{");
+        int i = mapping.size();
+        for (Variable v : mapping.keySet()) {
+            buf.append(v.getName() + ":" + mapping.get(v));
+            if (--i != 0) buf.append(",");
+        }
+        buf.append("}");
+        return buf.toString();
+    }
+
 }

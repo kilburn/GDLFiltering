@@ -36,10 +36,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.st;
+package es.csic.iiia.dcop.vp;
 
-import es.csic.iiia.dcop.st.SpanningTree;
-import es.csic.iiia.dcop.st.StResults;
+import es.csic.iiia.dcop.vp.VPGraph;
+import es.csic.iiia.dcop.vp.VPResults;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunctionFactory;
 import es.csic.iiia.dcop.HypercubeCostFunctionFactory;
@@ -62,14 +62,14 @@ import static org.junit.Assert.*;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class SpanningTreeTest {
+public class VPTest {
 
     private Variable[] v;
     private CostFunction[] f;
     private UPGraph cg;
     private CostFunctionFactory factory;
 
-    public SpanningTreeTest() {
+    public VPTest() {
     }
 
     @BeforeClass
@@ -117,26 +117,26 @@ public class SpanningTreeTest {
     }
 
     /**
-     * Test of buildResults method, of class SpanningTree.
+     * Test of buildResults method, of class VPGraph.
      */
     @Test
     public void testBuildResults() {
-        SpanningTree instance = new SpanningTree(cg);
-        StResults result = instance.buildResults();
+        VPGraph instance = new VPGraph(cg);
+        VPResults result = instance.buildResults();
         assertNotNull(result);
     }
 
     /**
-     * Test of buildResults method, of class SpanningTree.
+     * Test of buildResults method, of class VPGraph.
      */
     /*@Test
     public void testSpanningTreeConstruction() {
-        SpanningTree instance = new SpanningTree(cg);
+        VPGraph instance = new VPGraph(cg);
         System.out.println(instance);
     }*/
 
     /**
-     * Test of buildResults method, of class SpanningTree.
+     * Test of buildResults method, of class VPGraph.
      */
     @Test
     public void testSpanningTreeRunMax() {
@@ -146,18 +146,18 @@ public class SpanningTreeTest {
         factory.setMode(summarize, combine, normalize);
         cg.setFactory(factory);
         cg.run(100);
-        SpanningTree instance = new SpanningTree(cg);
+        VPGraph instance = new VPGraph(cg);
 
         Hashtable<Variable, Integer> expResult = new Hashtable<Variable, Integer>();
         for (int i=0; i<5; i++) {
             expResult.put(v[i], 0);
         }
-        StResults result = instance.run(100);
+        VPResults result = instance.run(100);
         assertEquals(result.getMapping(), expResult);
     }
 
     /**
-     * Test of buildResults method, of class SpanningTree.
+     * Test of buildResults method, of class VPGraph.
      */
     @Test
     public void testSpanningTreeRunMin() {
@@ -167,13 +167,13 @@ public class SpanningTreeTest {
         factory.setMode(summarize, combine, normalize);
         cg.setFactory(factory);
         cg.run(100);
-        SpanningTree instance = new SpanningTree(cg);
+        VPGraph instance = new VPGraph(cg);
 
         Hashtable<Variable, Integer> expResult = new Hashtable<Variable, Integer>();
         for (int i=0; i<5; i++) {
             expResult.put(v[i], 1);
         }
-        StResults result = instance.run(100);
+        VPResults result = instance.run(100);
         assertEquals(result.getMapping(), expResult);
     }
 

@@ -36,43 +36,61 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.st;
+package es.csic.iiia.dcop.igdl;
 
+import es.csic.iiia.dcop.up.UPResults;
+import es.csic.iiia.dcop.CostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.mp.Result;
-import java.util.Hashtable;
+import es.csic.iiia.dcop.up.UPEdge;
+import es.csic.iiia.dcop.up.UPGraph;
+import java.util.HashSet;
 
 /**
+ * Utility Propagation message passing algorithm implementation using the GDL
+ * algorithm as described in the Action-GDL paper.
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class StResult implements Result {
+public class IGdlGraph extends UPGraph<IGdlNode,UPEdge<IGdlNode, IGdlMessage>,UPResults> {
 
-    private Hashtable<Variable, Integer> mapping;
+    /**
+     * Set of variables involved in this graph.
+     */
+    private HashSet<Variable> variableSet;
 
-    StResult(Hashtable<Variable, Integer> mapping) {
-        this.mapping = mapping;
-    }
-
-    public Hashtable<Variable, Integer> getMapping() {
-        return mapping;
+    /**
+     * Constructs a clique graph that uses the specified {@code EdgeFactory} to
+     * create it's edges.
+     */
+    public IGdlGraph() {
+        super();
+        variableSet = new HashSet<Variable>();
     }
 
     @Override
-    public String toString() {
-        StringBuffer buf = new StringBuffer("M:");
-        if (mapping != null) {
-            for(Variable v : mapping.keySet()) {
-                buf.append("(");
-                buf.append(v.getName());
-                buf.append(",");
-                buf.append(mapping.get(v));
-                buf.append(")");
-            }
-        } else {
-            buf.append("null");
+    public void addNode(IGdlNode clique) {
+        super.addNode(clique);
+        variableSet.addAll(clique.getVariables());
+    }
+
+    public HashSet<Variable> getVariables() {
+        return this.variableSet;
+    }
+
+    @Override
+    protected UPResults buildResults() {
+        return new UPResults();
+    }
+
+    @Override
+    protected void end() {
+        super.end();
+    }
+
+    public void setR(int r) {
+        for(IGdlNode n : getNodes()) {
+            n.setR(r);
         }
-        return buf.toString();
     }
 
 }

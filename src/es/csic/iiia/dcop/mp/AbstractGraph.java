@@ -103,6 +103,15 @@ public abstract class AbstractGraph<N extends Node,E extends Edge,R extends Resu
     public String toString() {
         StringBuffer buf = new StringBuffer("graph G {\n");
 
+        for (N n : nodes) {
+            buf.append("  ");
+            buf.append(n.getName());
+            buf.append( "[label=\"");
+            buf.append(n.toString());
+            buf.append("\"];");
+            buf.append("\n");
+        }
+
         for (Edge e : edges) {
             buf.append("  ");
             buf.append(e.toString());

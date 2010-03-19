@@ -47,8 +47,8 @@ package es.csic.iiia.dcop.mp;
 public interface Edge<N extends Node, M extends Message> {
 
     void tick();
-    public void sendMessage(N sender, M message);
+    public boolean sendMessage(N sender, M message);
     public M getMessage(N recipient);
     public N getDestination(N sender);
-
+    public boolean haveSentMessage(N sender);
 }

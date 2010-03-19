@@ -38,9 +38,12 @@
 
 package es.csic.iiia.dcop.up;
 
+import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.mp.AbstractEdge;
 import es.csic.iiia.dcop.mp.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility Propagation edge.
@@ -48,6 +51,8 @@ import es.csic.iiia.dcop.mp.Message;
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
 public class UPEdge<N extends UPNode, M extends Message> extends AbstractEdge<N, M> {
+
+    private static Logger log = LoggerFactory.getLogger(UPGraph.class);
     
     private Variable[] variables;
 
@@ -103,5 +108,19 @@ public class UPEdge<N extends UPNode, M extends Message> extends AbstractEdge<N,
     @Override public N getNode1() {return super.getNode1();}
     @Override public N getNode2() {return super.getNode2();}
     @Override public N getDestination(N node) {return super.getDestination(node);}
+
+    @Override public boolean sendMessage(N sender, M message) {
+        boolean res = super.sendMessage(sender, message);
+        if (res && log.isTraceEnabled())
+            log.trace(sender.getName() + " -> " + getDestination(sender).getName() + " : " + message);
+        return res;
+    }
+
+    public boolean sendMessage(N sender, M message, CostFunction optimal) {
+        boolean res = sendMessage(sender, message);
+        if (res && log.isTraceEnabled())
+            log.trace("   Opt: " + optimal);
+        return res;
+    }
 
 }

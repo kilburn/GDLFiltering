@@ -119,7 +119,7 @@ public class JTNode extends AbstractNode<JTEdge, Result> {
     }
 
     public boolean isConverged() {
-        return previousVariables.equals(reachableVariables);
+        return true;
     }
 
     public Result end() {
@@ -131,7 +131,7 @@ public class JTNode extends AbstractNode<JTEdge, Result> {
     }
 
     public String getName() {
-        return "JT" + node.getName();
+        return node.getName();
     }
 
     @Override

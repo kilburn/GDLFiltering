@@ -90,6 +90,12 @@ public abstract class AbstractNode<E extends Edge, R extends Result> implements 
      */
     private boolean updated;
 
+    /**
+     * Returns true if the node has converged or false otherwise (only valid
+     * for nodes operating in graph mode).
+     */
+    public abstract boolean isConverged();
+
     public AbstractNode() {
         edges = new ArrayList<E>();
     }
@@ -125,6 +131,29 @@ public abstract class AbstractNode<E extends Edge, R extends Result> implements 
     }
 
     /**
+     * Check if we are ready to send the message of the given edge.
+     *
+     * @param edge
+     * @return
+     */
+    protected boolean readyToSend(E edge) {
+        // We are always ready to send in graph mode
+        if (this.getMode() == Modes.GRAPH)
+            return true;
+
+        // In tree mode, we can send to one neighbor (edge) only if:
+        for (E e : getEdges()) {
+            // We have not yet sent a message to it
+            if (e == edge && e.haveSentMessage(this))
+                return false;
+            // We have received messages from all other neighbors (edges)
+            if (e != edge && e.getMessage(this) == null)
+                return false;
+        }
+        return true;
+    }
+
+    /**
      * Adds a new edge to this clique.
      *
      * Cliques don't know anything about their neighboors but can send and
@@ -145,4 +174,21 @@ public abstract class AbstractNode<E extends Edge, R extends Result> implements 
         return edges;
     }
 
+    /**
+     * Check if this node has finished operating.
+     */
+    public boolean isFinished() {
+        return mode == Modes.GRAPH ? isConverged() : sentAndReceivedAllEdges();
+    }
+
+    public boolean sentAndReceivedAllEdges() {
+        // We end after having received and sent exactly 1 message from/to each
+        // neighbor (edge).
+        for (E e : getEdges()) {
+            if (e.getMessage(this) == null || !e.haveSentMessage(this))
+                return false;
+        }
+
+        return true;
+    }
 }

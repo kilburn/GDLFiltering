@@ -36,18 +36,60 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.st;
+package es.csic.iiia.dcop.igdl;
 
-import es.csic.iiia.dcop.mp.AbstractEdge;
+import es.csic.iiia.dcop.mp.AbstractNode.Modes;
+import es.csic.iiia.dcop.up.UPResult;
+import es.csic.iiia.dcop.up.UPResults;
+import es.csic.iiia.dcop.up.UPEdge;
+import es.csic.iiia.dcop.up.UPFactory;
 
 /**
+ * Factory for the Utility Propagation GDL implementation.
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class StEdge extends AbstractEdge<StNode, StMessage> {
+public class IGdlFactory implements UPFactory<IGdlGraph, IGdlNode, UPEdge<IGdlNode, IGdlMessage>,
+    UPResult, UPResults> {
 
-    public StEdge(StNode c1, StNode c2) {
-        super(c1,c2);
+    private Modes mode = Modes.TREE;
+
+    public IGdlFactory() {};
+
+    public IGdlGraph buildGraph() {
+        return new IGdlGraph();
+    }
+
+    public IGdlNode buildNode() {
+        IGdlNode n = new IGdlNode();
+        n.setMode(mode);
+        return n;
+    }
+
+    public UPEdge<IGdlNode, IGdlMessage> buildEdge(IGdlNode node1, IGdlNode node2) {
+        return new UPEdge<IGdlNode, IGdlMessage>(node1, node2);
+    }
+
+    public UPResult buildResult(IGdlNode node) {
+        return new UPResult(node);
+    }
+
+    public UPResults buildResults() {
+        return new UPResults();
+    }
+
+    /**
+     * @return the mode
+     */
+    public Modes getMode() {
+        return mode;
+    }
+
+    /**
+     * @param mode the mode to set
+     */
+    public void setMode(Modes mode) {
+        this.mode = mode;
     }
 
 }

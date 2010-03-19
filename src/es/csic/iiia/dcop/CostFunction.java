@@ -38,8 +38,10 @@
 
 package es.csic.iiia.dcop;
 
+import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -179,16 +181,24 @@ public interface CostFunction {
      *
      * @param mapping current variable mappings.
      */
-    void getBestConfiguration(Hashtable<Variable, Integer> mapping);
+    Hashtable<Variable, Integer> getBestConfiguration(Hashtable<Variable, Integer> mapping);
 
     /**
-     * Returns the index of the values array corresponding to the specified
-     * variables mapping.
+     * Returns <strong>the first</strong> index of the values array
+     * corresponding to the specified variables mapping.
      *
      * @param mapping variable/value mapping table.
      * @return index of the values array corresponding to the given mapping.
      */
     int getIndex(Hashtable<Variable, Integer> mapping);
+
+    /**
+     * Get all the linearized indices corresponding to the given variable mapping.
+     *
+     * @param mapping of the desired configuration.
+     * @return corresponding linearized index(es).
+     */
+    public List<Integer> getIndexes(Hashtable<Variable, Integer> mapping);
 
     /**
      * Returns the variable/value mapping corresponding to the specified
@@ -240,6 +250,30 @@ public interface CostFunction {
      * @return set of variables of this factor.
      */
     Set<Variable> getVariableSet();
+
+    /**
+     * Gets the set of variables shared with the given factor.
+     *
+     * @parameter factor to compare against.
+     * @return set of variables shared with the given factor.
+     */
+    Set<Variable> getSharedVariables(CostFunction factor);
+
+    /**
+     * Gets the set of variables shared with the given variable collection.
+     *
+     * @parameter variable collection to compare against.
+     * @return set of variables shared with the given variable collection.
+     */
+    Set<Variable> getSharedVariables(Collection variables);
+
+    /**
+     * Gets the set of variables shared with the array of variables.
+     *
+     * @parameter array of variables to compare against.
+     * @return set of variables shared with the given array of variables.
+     */
+    Set<Variable> getSharedVariables(Variable[] variables);
 
     /**
      * Negates this factor, applying the inverse of the given operation to

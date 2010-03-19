@@ -116,6 +116,7 @@ public class MCSTest {
         for (Entry<Variable,char[]> e : result.entrySet()) {
             assertArrayEquals(e.getValue(), expectedResult.get(e.getKey()));
         }
+        mcs.printDFS();
     }
 
     @Test

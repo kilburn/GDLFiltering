@@ -45,6 +45,8 @@ import es.csic.iiia.dcop.mp.AbstractNode;
 import es.csic.iiia.dcop.mp.Edge;
 import java.util.ArrayList;
 import java.util.HashSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility Propagation message passing algorithm node.
@@ -54,20 +56,12 @@ import java.util.HashSet;
 public abstract class UPNode<E extends Edge, R extends UPResult> extends
         AbstractNode<E, R> {
 
+    private static Logger log = LoggerFactory.getLogger(UPGraph.class);
+
     /**
      * Clique's member variables.
      */
     protected HashSet<Variable> variables;
-
-    /**
-     * Potential of this clique.
-     */
-    protected CostFunction potential;
-
-    /**
-     * Belief of this clique.
-     */
-    protected CostFunction belief;
 
     /**
      * Factor factory to use.
@@ -78,11 +72,6 @@ public abstract class UPNode<E extends Edge, R extends UPResult> extends
      * Relations assigned to this clique.
      */
     protected ArrayList<CostFunction> relations;
-
-    /**
-     * Converged flag.
-     */
-    protected boolean converged = false;
 
     /**
      * Constructs a new clique with the specified member variable and null
@@ -169,16 +158,6 @@ public abstract class UPNode<E extends Edge, R extends UPResult> extends
         return relations;
     }
 
-    /**
-     * Checks if this clique has converged in the last iteration (it's current
-     * and previous beliefs are equal).
-     *
-     * @return true if this clique has converged or false otherwise.
-     */
-    public boolean isConverged() {
-        return converged;
-    }
-
     public int getSize() {
         // Now we have to do it the hard way...
         int size = 1;
@@ -202,18 +181,12 @@ public abstract class UPNode<E extends Edge, R extends UPResult> extends
         this.factory = factory;
     }
 
-    public CostFunction getPotential() {
-        return potential;
-    }
-
     /**
-     * Retrieves the belief of this clique.
+     * Returns this node's belief.
      *
-     * @return belief of this clique.
+     * @return node's belief
      */
-    public CostFunction getBelief() {
-        return belief;
-    }
+    public abstract CostFunction getBelief();
 
     @Override
     public String toString() {
@@ -227,12 +200,7 @@ public abstract class UPNode<E extends Edge, R extends UPResult> extends
             if (i++>0) buf.append(",");
             buf.append(f.getName());
         }
-        buf.append("] P:");
-        buf.append(potential == null ? "null" : potential.toString());
-        buf.append(" - B:");
-        buf.append(belief == null ? "null" : belief.toString());
-        buf.append(")");
-
+        buf.append("]");
         return buf.toString();
     }
 
@@ -248,6 +216,15 @@ public abstract class UPNode<E extends Edge, R extends UPResult> extends
         buf.append("");
 
         return buf.toString();
+    }
+
+    @Override
+    public boolean sentAndReceivedAllEdges() {
+        boolean res = super.sentAndReceivedAllEdges();
+        if (res && log.isTraceEnabled()) {
+            log.trace(this + " done.");
+        }
+        return res;
     }
     
 }

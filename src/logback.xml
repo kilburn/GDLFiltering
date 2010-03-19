@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : logback.xml
+    Created on : 18 de marzo de 2010, 12:21
+    Author     : marc
+    Description:
+        Logback configuration file.
+-->
+
+<configuration>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>| %msg%n</Pattern>
+        </layout>
+    </appender>
+
+    <root>
+        <level value="trace" />
+        <appender-ref ref="STDOUT" />
+    </root>
+
+</configuration>

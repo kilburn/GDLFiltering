@@ -55,17 +55,13 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
     private Hashtable<Variable, Integer> mapping;
     private UPNode node;
 
-    public boolean isSynchronous() {
-        return false;
-    }
-
     public VPNode(UPNode n) {
         node = n;
         belief = n.getBelief();
     }
 
     public void initialize() {
-        
+        setMode(Modes.TREE);
     }
 
     public long run() {
@@ -87,7 +83,7 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
         // Instantiate remaining variables
         if (belief != null) {
             cc += belief.getSize();
-            belief.getBestConfiguration(mapping);
+            mapping = belief.getBestConfiguration(mapping);
         }
 
         // Send messages

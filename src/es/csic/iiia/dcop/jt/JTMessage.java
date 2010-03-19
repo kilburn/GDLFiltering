@@ -64,4 +64,33 @@ public class JTMessage implements Message {
         variables.add(v);
     }
 
+    @Override
+    public String toString() {
+        StringBuffer buf = new StringBuffer("JT{");
+        int i = variables.size();
+        for (Variable v : variables) {
+            buf.append(v.getName());
+            if (--i != 0) buf.append(",");
+        }
+        buf.append("}");
+        return buf.toString();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (!(other instanceof JTMessage)) {
+            return false;
+        }
+
+        JTMessage msg = (JTMessage)other;
+        return (this.variables == null && msg.getVariables() == null )
+            || (this.variables.equals(msg.getVariables()));
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 71 * hash + (this.variables != null ? this.variables.hashCode() : 0);
+        return hash;
+    }
 }

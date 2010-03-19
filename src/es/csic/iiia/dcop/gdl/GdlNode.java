@@ -43,6 +43,7 @@ import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPNode;
+import java.util.TreeSet;
 
 /**
  * GDL algorithm node.
@@ -55,6 +56,21 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
      * Tolerance to use when comparing the previous and current beliefs.
      */
     private double tolerance = 0.0001;
+
+    /**
+     * Potential of this clique.
+     */
+    private CostFunction potential;
+
+    /**
+     * Belief of this clique.
+     */
+    private CostFunction belief;
+
+    /**
+     * Belief of this clique.
+     */
+    private CostFunction previousBelief;
 
     /**
      * Constructs a new clique with the specified member variable and null
@@ -92,28 +108,26 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
     public void initialize() {
 
         // Calculate our potential
+        previousBelief = null;
         potential = null;
         for (CostFunction f : relations) {
             potential = f.combine(potential);
         }
+
         if (potential == null) {
             potential = factory.buildCostFunction(new Variable[0]);
+        } else {
+            // Sort variables (this is not necessary, but useful for debugging)
+            TreeSet<Variable> ss = new TreeSet<Variable>(potential.getVariableSet());
+            CostFunction sf = factory.buildCostFunction(ss.toArray(new Variable[0]));
+            potential = sf.combine(potential);
         }
-
-        belief = getFactory().buildCostFunction(variables.toArray(new Variable[]{}));
+        // And our belief
+        belief = getFactory().buildCostFunction(variables.toArray(new Variable[0]));
         belief = potential.combine(belief);
 
         // Send initial messages
-        for (UPEdge<GdlNode, GdlMessage> e : getEdges()) {
-            CostFunction msg;
-            final Variable[] ev = e.getVariables();
-            if (potential != null) {
-                msg = belief.summarize(ev);
-            } else {
-                msg = getFactory().buildCostFunction(ev);
-            }
-            e.sendMessage(this, new GdlMessage(msg));
-        }
+        sendMessages();
     }
 
     /**
@@ -131,35 +145,24 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
         CostFunction combi = getFactory().buildCostFunction(variables.toArray(new Variable[]{}),
                 factory.getCombineOperation().getNeutralValue());
         for (UPEdge<GdlNode, GdlMessage> e : getEdges()) {
-            CostFunction msg = e.getMessage(this).getFactor();
-            combi = combi.combine(msg);
-            cc += combi.getSize();
+            GdlMessage m = e.getMessage(this);
+            if (m != null) {
+                CostFunction msg = m.getFactor();
+                combi = combi.combine(msg);
+                cc += combi.getSize();
+            }
         }
 
         // Compute our belief
-        CostFunction previousBelief = belief;
+        previousBelief = belief;
         this.belief = combi.combine(this.potential);
         cc += belief.getSize();
         this.belief.normalize();
         cc += belief.getSize();
 
         // Send updated messages
-        for (UPEdge<GdlNode, GdlMessage> e : getEdges()) {
+        cc += sendMessages();
 
-            // Instead of multiplying all incoming messages except the one
-            // from e, we "substract" the e message from the belief, which
-            // has the same result but with fewer operations.
-            CostFunction inMsg = getFactory().buildCostFunction(e.getMessage(this).getFactor());
-            inMsg.negate();
-            CostFunction msg = belief.combine(inMsg);
-            cc += msg.getSize();
-            msg = msg.summarize(e.getVariables());
-            cc += msg.getSize();
-
-            e.sendMessage(this, new GdlMessage(msg));
-        }
-
-        converged = belief.equals(previousBelief);
         setUpdated(false);
         return cc;
     }
@@ -174,6 +177,67 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
 
     public void setTolerance(double tolerance) {
         this.tolerance = tolerance;
+    }
+
+    public CostFunction getPotential() {
+        return potential;
+    }
+
+    /**
+     * Retrieves the belief of this clique.
+     *
+     * @return belief of this clique.
+     */
+    public CostFunction getBelief() {
+        return belief;
+    }
+
+    @Override
+    public String toString() {
+        StringBuffer buf = new StringBuffer(super.toString());
+        buf.append(" P:");
+        buf.append(potential == null ? "null" : potential.toString());
+        buf.append(" - B:");
+        buf.append(belief == null ? "null" : belief.toString());
+        return buf.toString();
+    }
+
+    /**
+     * Send messages to our neighboors (if applicable).
+     */
+    private long sendMessages() {
+        long cc = 0;
+
+        for (UPEdge<GdlNode, GdlMessage> e : getEdges()) {
+            // Check if we are ready to send through this edge
+            if (!readyToSend(e)) continue;
+
+            // Instead of multiplying all incoming messages except the one
+            // from e, we "substract" the e message from the belief, which
+            // has the same result but with fewer operations.
+            CostFunction msg;
+            GdlMessage im = e.getMessage(this);
+            if (im != null) {
+                CostFunction inMsg = getFactory().buildCostFunction(im.getFactor());
+                inMsg.negate();
+                msg = belief.combine(inMsg);
+                cc += msg.getSize();
+            } else {
+                msg = belief;
+            }
+
+            // Summarize to the separator and send the resulting message
+            msg = msg.summarize(e.getVariables());
+            cc += msg.getSize();
+            e.sendMessage(this, new GdlMessage(msg));
+        }
+        
+        return cc;
+    }
+
+    @Override
+    public boolean isConverged() {
+        return belief.equals(previousBelief);
     }
 
 }

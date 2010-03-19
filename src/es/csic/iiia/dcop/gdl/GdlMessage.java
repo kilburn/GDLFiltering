@@ -56,4 +56,9 @@ public class GdlMessage implements Message {
     public CostFunction getFactor() {
         return this.factor;
     }
+
+    @Override
+    public String toString() {
+        return factor.toString();
+    }
 }

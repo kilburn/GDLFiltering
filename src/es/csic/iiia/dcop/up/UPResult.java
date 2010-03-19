@@ -52,7 +52,7 @@ public class UPResult implements Result {
     private int cliqueVariables;
     private int cliqueSize;
 
-    public UPResult(GdlNode node) {
+    public UPResult(UPNode node) {
         this.factor = node.getBelief();
         cliqueVariables = node.getVariables().size();
         cliqueSize = factor.getSize();

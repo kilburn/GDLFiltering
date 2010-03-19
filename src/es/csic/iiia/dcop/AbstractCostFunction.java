@@ -40,6 +40,8 @@ package es.csic.iiia.dcop;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -185,7 +187,16 @@ public abstract class AbstractCostFunction implements CostFunction {
      *                configuration.
      * @param operation operation used to calculate the optimum.
      */
-    public void getBestConfiguration(Hashtable<Variable, Integer> mapping) {
+    public Hashtable<Variable, Integer> getBestConfiguration(Hashtable<Variable, Integer> mapping) {
+        if (mapping==null) {
+            mapping = new Hashtable<Variable, Integer>(variables.length);
+        }
+
+        // Empty costfunction have no optimal value
+        if (variables.length == 0) {
+            return mapping;
+        }
+
         // Find the maximal value
         Summarize operation = factory.getSummarizeOperation();
         ArrayList<Integer> idx = new ArrayList<Integer>();
@@ -205,25 +216,72 @@ public abstract class AbstractCostFunction implements CostFunction {
         int i = idx.get(new Random().nextInt(idx.size()));
         // Retrieve it's mapping
         mapping.putAll(getMapping(i, null));
+
+        return mapping;
     }
 
     /**
      * Get the linearized index corresponding to the given variable mapping.
+     * 
+     * @TODO: what happens when there's more than one index matching the given
+     * mapping?
      *
      * @param mapping of the desired configuration.
      * @return corresponding linearized index.
      */
     public int getIndex(Hashtable<Variable, Integer> mapping) {
         final int len = variables.length;
-        int idx = -1;
+        if (len == 0) {
+            return -1;
+        }
+
+        int idx = 0;
         for (int i = 0; i < len; i++) {
-            if (idx < 0) idx = 0;
             Integer v = mapping.get(variables[i]);
             if (v != null) {
                 idx += sizes[len - i - 1] * v;
             }
         }
         return idx;
+    }
+
+    /**
+     * Get the linearized index corresponding to the given variable mapping.
+     *
+     * @TODO: what happens when there's more than one index matching the given
+     * mapping?
+     *
+     * @param mapping of the desired configuration.
+     * @return corresponding linearized index.
+     */
+    public ArrayList<Integer> getIndexes(Hashtable<Variable, Integer> mapping) {
+        ArrayList<Integer> idxs = new ArrayList<Integer>();
+
+        final int len = variables.length;
+        if (len == 0) {
+            return idxs;
+        }
+        idxs.add(0);
+        
+        for (int i = 0; i < len; i++) {
+            Integer v = mapping.get(variables[i]);
+            if (v != null) {
+                // We might be tracking multiple valid indidces
+                for (int j = 0; j < idxs.size(); j++) {
+                    idxs.set(j, idxs.get(j) + sizes[len - i - 1] * v);
+                }
+            } else {
+                // For each current index, we have to spawn "n" new indices,
+                // where "n" is the free variable dimensionality
+                for (int j = 0, ilen = idxs.size(); j < ilen; j++) {
+                    final int n = variables[i].getDomain();
+                    for (v = 0; v < n; v++) {
+                        idxs.add(idxs.get(j) + sizes[len - i - 1] * v);
+                    }
+                }
+            }
+        }
+        return idxs;
     }
 
     /**
@@ -291,6 +349,23 @@ public abstract class AbstractCostFunction implements CostFunction {
     /** {@inheritDoc} */
     public Set<Variable> getVariableSet() {
         return variableSet;
+    }
+
+    /** {@inheritDoc} */
+    public Set<Variable> getSharedVariables(CostFunction factor) {
+        return getSharedVariables(factor.getVariableSet());
+    }
+
+    /** {@inheritDoc} */
+    public Set<Variable> getSharedVariables(Variable[] variables) {
+        return getSharedVariables(Arrays.asList(variables));
+    }
+
+    /** {@inheritDoc} */
+    public Set<Variable> getSharedVariables(Collection variables) {
+        HashSet<Variable> res = new HashSet<Variable>(variableSet);
+        res.retainAll(variables);
+        return res;
     }
 
     /**
@@ -469,10 +544,10 @@ public abstract class AbstractCostFunction implements CostFunction {
         while (it.hasNext()) {
             final int i = it.next();
             map = getMapping(i, map);
-            final int idx = result.getIndex(map);
             // This value is lost during the summarization
-            if (idx < 0) continue;
-            result.setValue(idx, operation.eval(getValue(i), result.getValue(idx)));
+            for (int idx : result.getIndexes(map)) {
+                result.setValue(idx, operation.eval(getValue(i), result.getValue(idx)));
+            }
         }
         return result;
     }

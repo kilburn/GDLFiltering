@@ -47,18 +47,20 @@ package es.csic.iiia.dcop.mp;
 public abstract class DefaultGraph<N extends Node, E extends Edge, R extends Results>
         extends AbstractGraph<N, E, R> {
 
-    public R run(int maxIterations) {
+    public void reportIteration(int i) {};
 
+    public R run(int maxIterations) {
+        int iter = 0;
+        reportIteration(iter++);
         initialize();
         R results = getResults();
 
         // Now for the "real meat":
         boolean converged = false;
-        int iter = 0;
-
         for (; iter < maxIterations && !converged; iter++) {
 
             // Tick for synchronous graphs
+            reportIteration(iter);
             for (Edge e : getEdges()) {
                 e.tick();
             }
@@ -77,8 +79,9 @@ public abstract class DefaultGraph<N extends Node, E extends Edge, R extends Res
             // Check for convergence
             converged = true;
             for (Node n : getNodes()) {
-                if (!n.isConverged()) {
+                if (!n.isFinished()) {
                     converged = false;
+                    break;
                 }
             }
 

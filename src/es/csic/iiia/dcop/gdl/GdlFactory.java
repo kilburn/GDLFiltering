@@ -38,6 +38,7 @@
 
 package es.csic.iiia.dcop.gdl;
 
+import es.csic.iiia.dcop.mp.AbstractNode.Modes;
 import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.up.UPResults;
 import es.csic.iiia.dcop.up.UPEdge;
@@ -51,6 +52,8 @@ import es.csic.iiia.dcop.up.UPFactory;
 public class GdlFactory implements UPFactory<GdlGraph, GdlNode, UPEdge<GdlNode, GdlMessage>,
     UPResult, UPResults> {
 
+    private Modes mode = Modes.GRAPH;
+
     public GdlFactory() {};
 
     public GdlGraph buildGraph() {
@@ -58,7 +61,9 @@ public class GdlFactory implements UPFactory<GdlGraph, GdlNode, UPEdge<GdlNode, 
     }
 
     public GdlNode buildNode() {
-        return new GdlNode();
+        GdlNode n = new GdlNode();
+        n.setMode(mode);
+        return n;
     }
 
     public UPEdge<GdlNode, GdlMessage> buildEdge(GdlNode node1, GdlNode node2) {
@@ -71,6 +76,20 @@ public class GdlFactory implements UPFactory<GdlGraph, GdlNode, UPEdge<GdlNode, 
 
     public UPResults buildResults() {
         return new UPResults();
+    }
+
+    /**
+     * @return the mode
+     */
+    public Modes getMode() {
+        return mode;
+    }
+
+    /**
+     * @param mode the mode to set
+     */
+    public void setMode(Modes mode) {
+        this.mode = mode;
     }
 
 }

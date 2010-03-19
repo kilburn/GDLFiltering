@@ -36,26 +36,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.st;
-
-import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.mp.Message;
-import java.util.Hashtable;
-
 /**
- *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * GDL implementation of the Utility Propagation phase as described in the
+ * Action-GDL paper.
  */
-public class StMessage implements Message {
+package es.csic.iiia.dcop.igdl;
 
-    private Hashtable<Variable, Integer> mapping;
-
-    public StMessage(Hashtable<Variable, Integer> mapping) {
-        this.mapping = mapping;
-    }
-
-    public Hashtable<Variable, Integer> getMapping() {
-        return mapping;
-    }
-
-}

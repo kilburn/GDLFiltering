@@ -44,6 +44,8 @@ import es.csic.iiia.dcop.mp.DefaultGraph;
 import es.csic.iiia.dcop.mp.Edge;
 import java.util.ArrayList;
 import java.util.HashSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility propagation graph.
@@ -52,6 +54,8 @@ import java.util.HashSet;
  */
 public abstract class UPGraph<N extends UPNode, E extends Edge, R extends UPResults>
         extends DefaultGraph<N,E,R> {
+    
+    private static Logger log = LoggerFactory.getLogger(UPGraph.class);
 
     public void setFactory(CostFunctionFactory factory) {
         for (N clique : getNodes()) {
@@ -60,6 +64,11 @@ public abstract class UPGraph<N extends UPNode, E extends Edge, R extends UPResu
     }
 
     public abstract HashSet<Variable> getVariables();
+
+    @Override
+    public void reportIteration(int i) {
+        log.trace("============== Iter " + i + " ===============");
+    }
 
     /*
      * More boilerplate code to make the compiler realize the types.

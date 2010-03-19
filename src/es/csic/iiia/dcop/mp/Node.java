@@ -54,7 +54,7 @@ public interface Node<E extends Edge, R extends Result> {
 
     public long run();
 
-    public boolean isConverged();
+    public boolean isFinished();
 
     public R end();
 
