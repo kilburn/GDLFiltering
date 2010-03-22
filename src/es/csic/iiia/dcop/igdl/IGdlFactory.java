@@ -53,8 +53,12 @@ public class IGdlFactory implements UPFactory<IGdlGraph, IGdlNode, UPEdge<IGdlNo
     UPResult, UPResults> {
 
     private Modes mode = Modes.TREE;
+    private int r = Integer.MAX_VALUE;
 
     public IGdlFactory() {};
+    public IGdlFactory(int r) {
+        this.r = r;
+    }
 
     public IGdlGraph buildGraph() {
         return new IGdlGraph();
@@ -63,6 +67,7 @@ public class IGdlFactory implements UPFactory<IGdlGraph, IGdlNode, UPEdge<IGdlNo
     public IGdlNode buildNode() {
         IGdlNode n = new IGdlNode();
         n.setMode(mode);
+        n.setR(r);
         return n;
     }
 

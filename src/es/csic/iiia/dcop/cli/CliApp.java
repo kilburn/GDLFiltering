@@ -55,6 +55,7 @@ import es.csic.iiia.dcop.dfs.DFS;
 import es.csic.iiia.dcop.dfs.MCN;
 import es.csic.iiia.dcop.dfs.MCS;
 import es.csic.iiia.dcop.gdl.GdlFactory;
+import es.csic.iiia.dcop.igdl.IGdlFactory;
 import es.csic.iiia.dcop.io.DatasetReader;
 import es.csic.iiia.dcop.io.TreeReader;
 import es.csic.iiia.dcop.jt.JTResults;
@@ -87,13 +88,18 @@ import org.slf4j.LoggerFactory;
 public class CliApp {
 
     /**
-     * Use junction tree as solving algorithm.
+     * Use GDL as solving algorithm.
      */
     public static final int ALGO_GDL = 0;
     /**
      * Use max-sum as solving algorithm.
      */
     public static final int ALGO_MAX_SUM = 1;
+    /**
+     * Use IGDL as solving algorithm.
+     */
+    public static final int ALGO_IGDL = 2;
+
     /**
      * MCS junction tree building heuristic.
      */
@@ -118,6 +124,7 @@ public class CliApp {
     private String factorGraphFile = "fgraph.dot";
     private boolean createTraceFile = false;
     private String traceFile = "trace.txt";
+    private int IGdlR = 2;
 
     /**
      * Get the maximum number of junction tree's built trying to minimize the
@@ -301,7 +308,7 @@ public class CliApp {
             rna.addNoise(cg);
         }
 
-        // Run GDL
+        // Run the solving algorithm
         cg.setFactory(factory);
         UPResults results = cg.run(1000);
             
@@ -380,9 +387,15 @@ public class CliApp {
         UPGraph cg = null;
         switch(algorithm) {
 
+            case ALGO_IGDL:
             case ALGO_GDL:
-                GdlFactory factory = new GdlFactory();
-                factory.setMode(Modes.TREE);
+                UPFactory factory = null;
+                if (algorithm == ALGO_GDL) {
+                    factory = new GdlFactory();
+                    ((GdlFactory)factory).setMode(Modes.TREE);
+                } else {
+                    factory = new IGdlFactory(this.getIGdlR());
+                }
                 int variables = 0;
                 JTResults results = null;
 
@@ -489,6 +502,20 @@ public class CliApp {
      */
     public void setCreateTraceFile(boolean createTraceFile) {
         this.createTraceFile = createTraceFile;
+    }
+
+    /**
+     * @return the IGdlR
+     */
+    public int getIGdlR() {
+        return IGdlR;
+    }
+
+    /**
+     * @param IGdlR the IGdlR to set
+     */
+    public void setIGdlR(int IGdlR) {
+        this.IGdlR = IGdlR;
     }
 
 }

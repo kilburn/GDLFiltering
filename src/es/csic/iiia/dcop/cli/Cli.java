@@ -65,6 +65,7 @@ public class Cli {
         System.err.println("  -a algorithm, --algorithm=algorithm (gdl)");
         System.err.println("    Uses the specified algorithm, where algorithm is one of: ");
         System.err.println("      - gdl : GDL over junction tree optimal solver.");
+        System.err.println("      - igdl : Iterative GDL over junction tree solver.");
         System.err.println("      - maxsum : max-sum approximation.");
         System.err.println("  -c operation, --combine=operation (sum)");
         System.err.println("    Uses the specified combining operator, where operator is one of: ");
@@ -78,6 +79,8 @@ public class Cli {
         System.err.println("    Outputs the factor graph representation in .dot format to [graphFile],\n    or \"fgraph.dot\" if unspecified.");
         System.err.println("  -g [graphFile], --clique-graph[=graphFile]");
         System.err.println("    Outputs the clique graph representation in .dot format to [graphFile],\n    or \"cgraph.dot\" if unspecified.");
+        System.err.println("  -i value, --igdl-r value (2)");
+        System.err.println("    Sets the 'r' to value in igdl.");
         System.err.println("  -h, --help");
         System.err.println("    Displays this help message.");
         System.err.println("  -l file, --load-tree=file");
@@ -108,16 +111,17 @@ public class Cli {
             new LongOpt("algorithm", LongOpt.REQUIRED_ARGUMENT, null, 'a'),
             new LongOpt("combine", LongOpt.REQUIRED_ARGUMENT, null, 'c'),
             new LongOpt("heuristic", LongOpt.REQUIRED_ARGUMENT, null, 'e'),
-            new LongOpt("jt-tries", LongOpt.REQUIRED_ARGUMENT, null, 'j'),
-            new LongOpt("load-tree", LongOpt.REQUIRED_ARGUMENT, null, 'l'),
             new LongOpt("factor-graph", LongOpt.OPTIONAL_ARGUMENT, null, 'f'),
             new LongOpt("clique-graph", LongOpt.OPTIONAL_ARGUMENT, null, 'g'),
+            new LongOpt("igdl-r", LongOpt.REQUIRED_ARGUMENT, null, 'i'),
+            new LongOpt("jt-tries", LongOpt.REQUIRED_ARGUMENT, null, 'j'),
+            new LongOpt("load-tree", LongOpt.REQUIRED_ARGUMENT, null, 'l'),
             new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
             new LongOpt("normalize", LongOpt.REQUIRED_ARGUMENT, null, 'n'),
             new LongOpt("random-noise", LongOpt.OPTIONAL_ARGUMENT, null, 'r'),
             new LongOpt("summarize", LongOpt.REQUIRED_ARGUMENT, null, 's'),
         };
-        Getopt g = new Getopt(programName, argv, "a:c:e:f::g::hj:l:m:n:r::s:", longopts);
+        Getopt g = new Getopt(programName, argv, "a:c:e:f::g::hi:j:l:m:n:r::s:", longopts);
 
         CliApp cli = new CliApp();
         int c=0;
@@ -126,12 +130,14 @@ public class Cli {
             switch(c) {
 
                 case 'a':
-                    arg = g.getOptarg();
+                    arg = g.getOptarg().toLowerCase();
                     if (arg.equals("gdl"))
                         cli.setAlgorithm(CliApp.ALGO_GDL);
                     else if (arg.equals("maxsum"))
                         cli.setAlgorithm(CliApp.ALGO_MAX_SUM);
-                    else {
+                    else if (arg.equals("igdl")) {
+                        cli.setAlgorithm(CliApp.ALGO_IGDL);
+                    } else {
                         System.err.println("Error: invalid algorithm \"" + arg + "\"");
                         System.exit(0);
                     }
@@ -179,6 +185,16 @@ public class Cli {
 
                 case 'h':
                     showLongUsage();
+                    break;
+
+                case 'i':
+                    arg = g.getOptarg();
+                    int r = Integer.parseInt(arg);
+                    if (r < 1) {
+                        System.err.println("Error: the r value must be greater than 0.");
+                        System.exit(0);
+                    }
+                    cli.setIGdlR(r);
                     break;
 
                 case 'j':

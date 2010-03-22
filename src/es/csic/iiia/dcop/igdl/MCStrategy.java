@@ -114,16 +114,14 @@ public class MCStrategy implements IGdlPartitionStrategy {
         for (CostFunction f : fs) {
             belief = f.combine(belief);
         }
+        IGdlMessage msg = new IGdlMessage();
+        msg.setBelief(belief.summarize(e.getVariables()));
 
         // Obtain separate lists for bound and free factors
         computeFreeAndBoundFactors(fs, ff, bf, e.getVariables());
 
         // Merge the free factors to bound ones
         mergeFreeFactors(ff, bf, e.getVariables());
-
-
-        IGdlMessage msg = new IGdlMessage();
-        msg.setBelief(belief.summarize(e.getVariables()));
         
         ArrayList<ArrayList<Variable>> ts = edgeTuples.getTuples(e);
         CostFunction[] msgcf = new CostFunction[ts.size()];
@@ -174,18 +172,32 @@ public class MCStrategy implements IGdlPartitionStrategy {
                 bfs.add(node.getFactory().buildCostFunction(f));
             }
         }
+
+        log.trace("-- Free factors");
+        for (CostFunction f : ffs) {
+            log.trace(f.toString());
+        }
+        log.trace("-- Bound factors");
+        for (CostFunction f : bfs) {
+            log.trace(f.toString());
+        }
     }
 
     private void mergeFreeFactors(ArrayList<CostFunction> ffs, ArrayList<CostFunction> bfs, Variable[] variables) {
-        log.trace("Merging...");
+        log.trace("-- Merging");
         for (CostFunction ff : ffs) {
             CostFunction bf = getMostSuitable(ff, bfs, variables);
-            log.trace(ff + " + " + bf);
+            log.trace("   " + ff + " + " + bf + " = ");
             ff = ff.summarize(bf.getSharedVariables(ff).toArray(new Variable[]{}));
-            log.trace(ff + " + " + bf);
+            log.trace(" = " + ff + " + " + bf + " = ");
             CostFunction res = bf.combine(ff);
-            log.trace(res.toString());
+            log.trace(" = " + res.toString());
             bfs.add(res);
+        }
+
+        log.trace("-- New bound factors");
+        for (CostFunction f : bfs) {
+            log.trace(f.toString());
         }
     }
 
