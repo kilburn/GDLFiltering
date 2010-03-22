@@ -38,49 +38,13 @@
 
 package es.csic.iiia.dcop.igdl;
 
-import es.csic.iiia.dcop.CostFunction;
-import es.csic.iiia.dcop.mp.Message;
-import java.util.ArrayList;
+import es.csic.iiia.dcop.up.UPEdge;
 
 /**
- * GDL Utility message.
- * 
+ *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class IGdlMessage implements Message {
-    private ArrayList<CostFunction> factors;
-    private CostFunction belief = null;
-
-    public IGdlMessage(ArrayList<CostFunction> factors) {
-        this.factors = factors;
-    }
-
-    public IGdlMessage() {
-        this.factors = new ArrayList<CostFunction>();
-    }
-
-    public ArrayList<CostFunction> getFactors() {
-        return this.factors;
-    }
-
-    public boolean addFactor(CostFunction factor) {
-        return factors.add(factor);
-    }
-
-    public void setBelief(CostFunction belief) {
-        this.belief = belief;
-    }
-
-    @Override
-    public String toString() {
-        StringBuffer buf = new StringBuffer();
-        for (CostFunction f : factors) {
-            buf.append("\n\t" + f);
-        }
-        if (belief != null) {
-            buf.append("\n   Opt: ");
-            buf.append(belief);
-        }
-        return buf.toString();
-    }
+public interface IGdlPartitionStrategy {
+    public void initialize(IGdlNode node);
+    public IGdlMessage getPartition(UPEdge<IGdlNode, IGdlMessage> e);
 }

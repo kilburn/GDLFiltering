@@ -223,6 +223,7 @@ public class GDLTest {
     }
 
     @Test
+    @Ignore
     public void testGdlExample() {
         System.out.println("RUNNING GDL");
         // Set operating mode

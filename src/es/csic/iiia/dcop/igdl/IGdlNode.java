@@ -75,9 +75,9 @@ public class IGdlNode extends UPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
     private ArrayList<CostFunction> costFunctions;
 
     /**
-     * Mini-monster
+     * Partitioning strategy to use
      */
-    private EdgeTuples edgeTuples;
+    private IGdlPartitionStrategy strategy = new MCStrategy();
 
     /**
      * Constructs a new clique with the specified member variable and null
@@ -116,33 +116,12 @@ public class IGdlNode extends UPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
         // Tree-based operation
         setMode(Modes.TREE);
         costFunctions = new ArrayList<CostFunction>();
-        edgeTuples = new EdgeTuples();
 
         // Populate with our assigned relations
         for (CostFunction f : relations) {
             costFunctions.add(factory.buildCostFunction(f));
-        }
-
-        Collection<UPEdge<IGdlNode, IGdlMessage>> edges = getEdges();
-        // Initialization: for each edge, create a list of tuples (max size r)
-        // of variables that we are going to send.
-        for (UPEdge<IGdlNode, IGdlMessage> e : edges) {
-            // Fetch this edge's variables
-            LinkedList<Variable> evs = new LinkedList<Variable>(variables);
-            final int numEdgeVariables = evs.size();
-            // Filter out unused ones
-            evs.retainAll(Arrays.asList(e.getVariables()));
-            Collections.shuffle(evs);
-            // Create floor(nev/r) tuples of size r
-            final int nv = numEdgeVariables / r + (numEdgeVariables % r > 0 ? 1 : 0);
-            for (int i=0; i<nv && evs.size()>0; i++) {
-                ArrayList<Variable> vs = new ArrayList<Variable>(r);
-                for (int j=0; j<r && evs.size()>0; j++) {
-                    vs.add(evs.pop());
-                }
-                edgeTuples.add(e, vs);
-            }
-        }
+        }       
+        strategy.initialize(this);
 
         // Send initial messages
         sendMessages();
@@ -195,8 +174,12 @@ public class IGdlNode extends UPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
         this.tolerance = tolerance;
     }
 
-    void setR(int r) {
+    public void setR(int r) {
         this.r = r;
+    }
+
+    public int getR() {
+        return r;
     }
 
     @Override
@@ -208,25 +191,18 @@ public class IGdlNode extends UPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
         return belief;
     }
 
+    public ArrayList<CostFunction> getCostFunctions() {
+        return costFunctions;
+    }
+
     private void sendMessages() {
         for (UPEdge<IGdlNode, IGdlMessage> e : getEdges()) {
             if (!readyToSend(e)) {
                 continue;
             }
 
-            ArrayList<CostFunction> ff = new ArrayList<CostFunction>();
-            ArrayList<CostFunction> bf = new ArrayList<CostFunction>();
-            computeFreeAndBoundFactors(costFunctions, ff, bf, e.getVariables());
-            //bf.addAll(getNegatedReceivedFunctions(e));
-            if (e.getMessage(this) != null)
-                bf.removeAll(e.getMessage(this).getFactors());
-            CostFunction belief = null;
-            for (CostFunction f : ff) {
-                belief = f.combine(belief);
-            }
-            for (CostFunction f : bf) {
-                belief = f.combine(belief);
-            }
+            IGdlMessage msg = strategy.getPartition(e);
+            
             /*
             System.out.println("Free functions:");
             for (CostFunction f : ff) {
@@ -243,137 +219,14 @@ public class IGdlNode extends UPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
             }
             */
 
-            IGdlMessage msg = new IGdlMessage();
-            ArrayList<ArrayList<Variable>> ts = edgeTuples.getTuples(e);
-            CostFunction[] msgcf = new CostFunction[ts.size()];
-            for (CostFunction f : bf) {
-                Collection<Variable> fvs = f.getVariableSet();
-                for (int i=0; i < ts.size(); i++) {
-                    ArrayList<Variable> tfvs = new ArrayList<Variable>(ts.get(i));
-                    tfvs.retainAll(fvs);
-                    if (tfvs.size() > 0) {
-                        // This function contains variables in this tuple
-                        CostFunction tmp = f.summarize(tfvs.toArray(new Variable[]{}));
-                        msgcf[i] = tmp.combine(msgcf[i]);
-                        //System.out.println("(" + i + ") f " + f + " sum " + Arrays.toString(tfvs.toArray(new Variable[]{})));
-                        //System.out.println("(" + i + ") c " + tmp + " = " + msgcf[i]);
-                    }
-                }
-            }
-            for (int i=0; i<ts.size(); i++) {
-                if (msgcf[i] != null) {
-                    msg.addFactor(msgcf[i]);
-                }
-            }
-            e.sendMessage(this, msg, belief.summarize(e.getVariables()));
+            e.sendMessage(this, msg);
         }
-    }
-
-    private ArrayList<CostFunction> getNegatedReceivedFunctions(UPEdge<IGdlNode, IGdlMessage> e) {
-        ArrayList<CostFunction> cfs = new ArrayList<CostFunction>();
-        IGdlMessage msg = e.getMessage(this);
-        if (msg == null)
-            return cfs;
-        for (CostFunction f : msg.getFactors()) {
-            CostFunction nf = factory.buildCostFunction(f);
-            nf.negate();
-            cfs.add(nf);
-        }
-        return cfs;
-    }
-
-    private void computeFreeAndBoundFactors(ArrayList<CostFunction> fs,
-            ArrayList<CostFunction> ffs, ArrayList<CostFunction> bfs,
-            Variable[] variables)
-    {
-        for (CostFunction f : fs) {
-            if (f.getSharedVariables(variables).size() == 0) {
-                ffs.add(f);
-            } else {
-                bfs.add(factory.buildCostFunction(f));
-            }
-        }
-    }
-
-    private void mergeFreeFactors(ArrayList<CostFunction> ffs, ArrayList<CostFunction> bfs, Variable[] variables) {
-        System.out.println("Merging...");
-        for (CostFunction ff : ffs) {
-            CostFunction bf = getMostSuitable(ff, bfs, variables);
-            System.out.println(ff + " + " + bf);
-            ff = ff.summarize(bf.getVariableSet().toArray(new Variable[]{}));
-            System.out.println("After summarize: " + ff);
-            bfs.add(bf.combine(ff));
-        }
-    }
-
-    private CostFunction getMostSuitable(CostFunction ff, ArrayList<CostFunction> bfs, Variable[] variables) {
-        if (bfs.size() == 0) {
-            return ff;
-        }
-
-        final int nbfs = bfs.size();
-        int max_s = -1;
-        int max_i = (int) Math.random()*nbfs;
-        for (int i=0; i<nbfs; i++) {
-            CostFunction bf = bfs.get(i);
-            int s = getSuitability(ff, bf, variables);
-            if (s > max_s) {
-                max_s = s;
-                max_i = i;
-            }
-        }
-        return bfs.remove(max_i);
-    }
-
-    private int getSuitability(CostFunction ff, CostFunction bf, Variable[] variables) {
-        // Check if we can combine these factors
-        Set<Variable> cv = new HashSet<Variable>(ff.getVariableSet());
-        cv.addAll(bf.getVariableSet());
-        if (cv.size() > this.r) {
-            return -1;
-        }
-
-        // Now count the shared variables, checking if they appear in the
-        // separator.
-        Set<Variable> sv = ff.getSharedVariables(bf);
-        int score = sv.size();
-        for (Variable v : sv) {
-            for (Variable v2 : variables) {
-                if (v == v2) {
-                    score += 9;
-                    break;
-                }
-            }
-        }
-
-        return score;
     }
 
     /* Never called because we never operate in graph mode */
     @Override
     public boolean isConverged() {
         return false;
-    }
-
-    private class EdgeTuples {
-        private HashMap<UPEdge, ArrayList<ArrayList<Variable>>> edgeToList;
-
-        public EdgeTuples() {
-            edgeToList = new HashMap<UPEdge, ArrayList<ArrayList<Variable>>>();
-        }
-
-        public void add(UPEdge e, ArrayList<Variable> tuple) {
-            ArrayList<ArrayList<Variable>> ets = edgeToList.get(e);
-            if (ets == null) {
-                ets = new ArrayList<ArrayList<Variable>>();
-                edgeToList.put(e, ets);
-            }
-            ets.add(tuple);
-        }
-
-        public ArrayList<ArrayList<Variable>> getTuples(UPEdge e) {
-            return edgeToList.get(e);
-        }
     }
 
 }

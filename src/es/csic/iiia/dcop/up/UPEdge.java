@@ -38,7 +38,6 @@
 
 package es.csic.iiia.dcop.up;
 
-import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.mp.AbstractEdge;
 import es.csic.iiia.dcop.mp.Message;
@@ -113,13 +112,6 @@ public class UPEdge<N extends UPNode, M extends Message> extends AbstractEdge<N,
         boolean res = super.sendMessage(sender, message);
         if (res && log.isTraceEnabled())
             log.trace(sender.getName() + " -> " + getDestination(sender).getName() + " : " + message);
-        return res;
-    }
-
-    public boolean sendMessage(N sender, M message, CostFunction optimal) {
-        boolean res = sendMessage(sender, message);
-        if (res && log.isTraceEnabled())
-            log.trace("   Opt: " + optimal);
         return res;
     }
 
