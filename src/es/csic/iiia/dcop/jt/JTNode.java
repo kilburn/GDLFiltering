@@ -39,7 +39,6 @@
 package es.csic.iiia.dcop.jt;
 
 import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.gdl.GdlNode;
 import es.csic.iiia.dcop.mp.AbstractNode;
 import es.csic.iiia.dcop.mp.Edge;
 import es.csic.iiia.dcop.mp.Result;

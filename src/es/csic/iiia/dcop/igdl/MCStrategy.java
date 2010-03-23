@@ -57,19 +57,18 @@ import org.slf4j.LoggerFactory;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class MCStrategy implements IGdlPartitionStrategy {
+public class MCStrategy extends IGdlPartitionStrategy {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
-
-    private IGdlNode node;
 
     /**
      * Mini-monster
      */
     private EdgeTuples edgeTuples;
 
+    @Override
     public void initialize(IGdlNode node) {
-        this.node = node;
+        super.initialize(node);
 
         edgeTuples = new EdgeTuples();
         Collection<UPEdge<IGdlNode, IGdlMessage>> edges = node.getEdges();
@@ -95,27 +94,14 @@ public class MCStrategy implements IGdlPartitionStrategy {
         }
     }
 
-    public IGdlMessage getPartition(UPEdge<IGdlNode, IGdlMessage> e) {
+    public IGdlMessage getPartition(ArrayList<CostFunction> fs,
+            UPEdge<IGdlNode, IGdlMessage> e) {
 
-        // List of all functions that would be sent (combined)
-        ArrayList<CostFunction> fs = node.getCostFunctions();
+        
         // Free factors, that do *not* contain any separator variable.
         ArrayList<CostFunction> ff = new ArrayList<CostFunction>();
         // Bound factors, that contain at least one separator variable.
         ArrayList<CostFunction> bf = new ArrayList<CostFunction>();
-        
-        // Remove the factors received through this edge
-        if (e.getMessage(node) != null) {
-            bf.removeAll(e.getMessage(node).getFactors());
-        }
-
-        // For research purposes, calculate the optimal belief
-        CostFunction belief = null;
-        for (CostFunction f : fs) {
-            belief = f.combine(belief);
-        }
-        IGdlMessage msg = new IGdlMessage();
-        msg.setBelief(belief.summarize(e.getVariables()));
 
         // Obtain separate lists for bound and free factors
         computeFreeAndBoundFactors(fs, ff, bf, e.getVariables());
@@ -134,114 +120,21 @@ public class MCStrategy implements IGdlPartitionStrategy {
                     // This function contains variables in this tuple
                     CostFunction tmp = f.summarize(tfvs.toArray(new Variable[]{}));
                     msgcf[i] = tmp.combine(msgcf[i]);
+                    break;
                     //System.out.println("(" + i + ") f " + f + " sum " + Arrays.toString(tfvs.toArray(new Variable[]{})));
                     //System.out.println("(" + i + ") c " + tmp + " = " + msgcf[i]);
                 }
             }
         }
+
+        // Build and return the message from the constructed.
+        IGdlMessage msg = new IGdlMessage();
         for (int i=0; i<ts.size(); i++) {
             if (msgcf[i] != null) {
                 msg.addFactor(msgcf[i]);
             }
         }
         return msg;
-    }
-
-    /* Unused
-    private ArrayList<CostFunction> getNegatedReceivedFunctions(UPEdge<IGdlNode, IGdlMessage> e) {
-        ArrayList<CostFunction> cfs = new ArrayList<CostFunction>();
-        IGdlMessage msg = e.getMessage(node);
-        if (msg == null)
-            return cfs;
-        for (CostFunction f : msg.getFactors()) {
-            CostFunction nf = node.getFactory().buildCostFunction(f);
-            nf.negate();
-            cfs.add(nf);
-        }
-        return cfs;
-    } */
-
-    private void computeFreeAndBoundFactors(ArrayList<CostFunction> fs,
-            ArrayList<CostFunction> ffs, ArrayList<CostFunction> bfs,
-            Variable[] variables)
-    {
-        for (CostFunction f : fs) {
-            if (f.getSharedVariables(variables).size() == 0) {
-                ffs.add(f);
-            } else {
-                bfs.add(node.getFactory().buildCostFunction(f));
-            }
-        }
-
-        log.trace("-- Free factors");
-        for (CostFunction f : ffs) {
-            log.trace(f.toString());
-        }
-        log.trace("-- Bound factors");
-        for (CostFunction f : bfs) {
-            log.trace(f.toString());
-        }
-    }
-
-    private void mergeFreeFactors(ArrayList<CostFunction> ffs, ArrayList<CostFunction> bfs, Variable[] variables) {
-        log.trace("-- Merging");
-        for (CostFunction ff : ffs) {
-            CostFunction bf = getMostSuitable(ff, bfs, variables);
-            log.trace("   " + ff + " + " + bf + " = ");
-            ff = ff.summarize(bf.getSharedVariables(ff).toArray(new Variable[]{}));
-            log.trace(" = " + ff + " + " + bf + " = ");
-            CostFunction res = bf.combine(ff);
-            log.trace(" = " + res.toString());
-            bfs.add(res);
-        }
-
-        log.trace("-- New bound factors");
-        for (CostFunction f : bfs) {
-            log.trace(f.toString());
-        }
-    }
-
-    private CostFunction getMostSuitable(CostFunction ff, ArrayList<CostFunction> bfs, Variable[] variables) {
-        if (bfs.size() == 0) {
-            return ff;
-        }
-
-        final int nbfs = bfs.size();
-        int max_s = -1;
-        int max_i = (int) Math.random()*nbfs;
-        for (int i=0; i<nbfs; i++) {
-            CostFunction bf = bfs.get(i);
-            int s = getSuitability(ff, bf, variables);
-            if (s > max_s) {
-                max_s = s;
-                max_i = i;
-            }
-        }
-        return bfs.remove(max_i);
-    }
-
-    private int getSuitability(CostFunction ff, CostFunction bf, Variable[] variables) {
-        // Check if we can combine these factors
-        Set<Variable> cv = new HashSet<Variable>(ff.getVariableSet());
-        cv.addAll(bf.getVariableSet());
-        if (cv.size() > node.getR()) {
-            return -1;
-        }
-
-        // Now count the shared variables, checking if they appear in the
-        // separator.
-        Set<Variable> sv = ff.getSharedVariables(bf);
-        int score = sv.size();
-        for (Variable v : sv) {
-            for (Variable v2 : variables) {
-                if (v == v2) {
-                    score += 9;
-                    break;
-                }
-            }
-        }
-
-        return score;
     }
 
     private class EdgeTuples {

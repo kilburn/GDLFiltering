@@ -325,7 +325,10 @@ public class GDLTest {
         fuv.setValues(new double[] {0, 10, 10, 0});
         CostFunction[] factors = new CostFunction[] {fxy,fyt,fzt,ftu,fzv,fuv};
 
-        System.out.println(ftu.combine(fuv).summarize(new Variable[]{t,v}));
+        System.out.println(ftu.combine(fuv).combine(fzv).summarize(new Variable[]{u,v,z,t}).toLongString());
+        System.out.println(ftu.combine(fuv).combine(fzv).summarize(new Variable[]{z,t}).toLongString());
+        System.out.println(fzt.combine(fxy).combine(fyt).summarize(new Variable[]{x,y,z,t}).toLongString());
+        System.out.println(fzt.combine(fxy).combine(fyt).summarize(new Variable[]{z,t}).toLongString());
     }
 
 }

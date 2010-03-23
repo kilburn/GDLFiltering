@@ -42,12 +42,16 @@ import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.mp.AbstractEdge;
 import es.csic.iiia.dcop.up.UPEdge;
 import java.util.HashSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
 public class JTEdge extends AbstractEdge<JTNode,JTMessage> {
+
+    private static Logger log = LoggerFactory.getLogger(JunctionTree.class);
 
     private UPEdge edge;
 
@@ -68,6 +72,26 @@ public class JTEdge extends AbstractEdge<JTNode,JTMessage> {
         }
         
         edge.setVariables(variables.toArray(new Variable[]{}));
+    }
+
+    @Override public boolean sendMessage(JTNode sender, JTMessage message) {
+        boolean res = super.sendMessage(sender, message);
+        if (res && log.isTraceEnabled())
+            log.trace(sender.getName() + " -> " + getDestination(sender).getName() + " : " + message);
+        return res;
+    }
+
+    @Override
+    public String toString() {
+        StringBuffer buf = new StringBuffer(super.toString());
+        buf.append(" [label=\"");
+        int i=0;
+        for (Variable v : edge.getVariables()) {
+            if (i++>0) buf.append(",");
+            buf.append(v.getName());
+        }
+        buf.append("\"];");
+        return buf.toString();
     }
 
 }

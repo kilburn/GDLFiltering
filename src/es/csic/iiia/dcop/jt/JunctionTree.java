@@ -44,12 +44,16 @@ import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.up.UPNode;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
 public class JunctionTree extends DefaultGraph<JTNode, JTEdge, JTResults> {
+
+    private static Logger log = LoggerFactory.getLogger(JunctionTree.class);
 
     /**
      * Creates a JT Message passing graph to propagate the variables
@@ -79,6 +83,14 @@ public class JunctionTree extends DefaultGraph<JTNode, JTEdge, JTResults> {
     @Override
     protected JTResults buildResults() {
         return new JTResults();
+    }
+
+    @Override
+    protected void end() {
+        super.end();
+        if (log.isTraceEnabled()) {
+            log.trace(this.toString());
+        }
     }
 
 }

@@ -336,6 +336,46 @@ public abstract class AbstractCostFunction implements CostFunction {
         return buf.toString();
     }
 
+    @Override
+    public String toString() {
+        StringBuffer buf = new StringBuffer();
+        buf.append(getName());
+        buf.append(" {");
+        if (size>0 && getValues() != null) {
+            buf.append(formatValue(getValue(0)));
+            for(int i=1; i<size; i++) {
+                buf.append(",");
+                buf.append(formatValue(getValue(i)));
+            }
+        }
+        buf.append("}");
+
+        return buf.toString();
+    }
+
+    @Override
+    public String toLongString() {
+        StringBuffer buf = new StringBuffer();
+        buf.append(getName());
+        buf.append(" {\n");
+        if (size>0 && getValues() != null) {
+            Hashtable<Variable, Integer> map = null;
+            for(int i=0; i<size; i++) {
+                map = getMapping(i, map);
+                for (Variable v : variables) {
+                    buf.append(map.get(v));
+                    buf.append(" ");
+                }
+                buf.append("| ");
+                buf.append(formatValue(getValue(i)));
+                buf.append("\n");
+            }
+        }
+        buf.append("}");
+
+        return buf.toString();
+    }
+
     /** {@inheritDoc} */
     public double getValue(int[] index) {
         return getValue(subindexToIndex(index));

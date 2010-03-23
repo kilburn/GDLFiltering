@@ -133,6 +133,9 @@ public class ListCostFunction extends AbstractCostFunction {
     }
 
     public double[] getValues() {
+        if (values == null)
+            return null;
+
         Iterator<Integer> it = iterator();
         double[] vs = new double[size];
         while (it.hasNext()) {
@@ -151,21 +154,9 @@ public class ListCostFunction extends AbstractCostFunction {
         }
     }
 
-    @Override
-    public String toString() {
-        StringBuffer buf = new StringBuffer("L");
-        buf.append(getName());
-        buf.append(" {");
-        if (values != null && size>0) {
-            buf.append(formatValue(getValue(0)));
-            for(int i=1; i<size; i++) {
-                buf.append(",");
-                buf.append(formatValue(getValue(i)));
-            }
-        }
-        buf.append("}");
-
-        return buf.toString();
+    /** {@inheritDoc} */
+    @Override public String getName() {
+        return "L" + super.getName();
     }
 
 }

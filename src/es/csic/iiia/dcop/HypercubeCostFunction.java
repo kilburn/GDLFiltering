@@ -108,8 +108,13 @@ public class HypercubeCostFunction extends AbstractCostFunction implements Seria
     }
 
     /** {@inheritDoc} */
-    public String toString() {
-        StringBuffer buf = new StringBuffer("H");
+    @Override public String getName() {
+        return "H" + super.getName();
+    }
+
+    /** {@inheritDoc} */
+    /*public String toString() {
+        StringBuffer buf = new StringBuffer();
         buf.append(getName());
         buf.append(" {");
         if (values != null && values.length>0) {
@@ -122,7 +127,7 @@ public class HypercubeCostFunction extends AbstractCostFunction implements Seria
         buf.append("}");
 
         return buf.toString();
-    }
+    }*/
 
     /**
      * Implements the Iterator interface for an hypercube, allowing to iterate

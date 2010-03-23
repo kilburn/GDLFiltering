@@ -221,6 +221,17 @@ public interface CostFunction {
     String getName();
 
     /**
+     * Get the long string representation of this function, as hypercube
+     * table.
+     *
+     * For debugging purposes, it includes the function's variables but not
+     * the hypercube's values.
+     *
+     * @return name.
+     */
+    String toLongString();
+
+    /**
      * Get the function's size (in number of possible configurations).
      * @return number of function's possible configurations.
      */

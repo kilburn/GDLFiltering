@@ -38,13 +38,113 @@
 
 package es.csic.iiia.dcop.igdl;
 
+import es.csic.iiia.dcop.CostFunction;
+import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.up.UPEdge;
+import es.csic.iiia.dcop.up.UPGraph;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public interface IGdlPartitionStrategy {
-    public void initialize(IGdlNode node);
-    public IGdlMessage getPartition(UPEdge<IGdlNode, IGdlMessage> e);
+public abstract class IGdlPartitionStrategy {
+
+    private static Logger log = LoggerFactory.getLogger(UPGraph.class);
+
+    protected IGdlNode node;
+
+    public void initialize(IGdlNode node) {
+        this.node = node;
+    }
+
+    public abstract IGdlMessage getPartition(ArrayList<CostFunction> fs,
+            UPEdge<IGdlNode, IGdlMessage> e);
+
+    protected void computeFreeAndBoundFactors(ArrayList<CostFunction> fs,
+            ArrayList<CostFunction> ffs, ArrayList<CostFunction> bfs,
+            Variable[] variables)
+    {
+        for (CostFunction f : fs) {
+            if (f.getSharedVariables(variables).size() == 0) {
+                ffs.add(f);
+            } else {
+                bfs.add(node.getFactory().buildCostFunction(f));
+            }
+        }
+
+        log.trace("-- Free factors");
+        for (CostFunction f : ffs) {
+            log.trace(f.toString());
+        }
+        log.trace("-- Bound factors");
+        for (CostFunction f : bfs) {
+            log.trace(f.toString());
+        }
+    }
+
+    protected void mergeFreeFactors(ArrayList<CostFunction> ffs, ArrayList<CostFunction> bfs, Variable[] variables) {
+        log.trace("-- Merging");
+        for (CostFunction ff : ffs) {
+            CostFunction bf = getMostSuitable(ff, bfs, variables);
+            log.trace("   " + ff + " + " + bf + " = ");
+            ff = ff.summarize(bf.getSharedVariables(ff).toArray(new Variable[]{}));
+            log.trace(" = " + ff + " + " + bf + " = ");
+            CostFunction res = bf.combine(ff);
+            log.trace(" = " + res.toString());
+            bfs.add(res);
+        }
+
+        log.trace("-- New bound factors");
+        for (CostFunction f : bfs) {
+            log.trace(f.toString());
+        }
+    }
+
+    protected CostFunction getMostSuitable(CostFunction ff, ArrayList<CostFunction> bfs, Variable[] variables) {
+        if (bfs.size() == 0) {
+            return ff;
+        }
+
+        final int nbfs = bfs.size();
+        int max_s = -1;
+        int max_i = (int) Math.random()*nbfs;
+        for (int i=0; i<nbfs; i++) {
+            CostFunction bf = bfs.get(i);
+            int s = getSuitability(ff, bf, variables);
+            if (s > max_s) {
+                max_s = s;
+                max_i = i;
+            }
+        }
+        return bfs.remove(max_i);
+    }
+
+    protected int getSuitability(CostFunction ff, CostFunction bf, Variable[] variables) {
+        // Check if we can combine these factors
+        Set<Variable> cv = new HashSet<Variable>(ff.getVariableSet());
+        cv.addAll(bf.getVariableSet());
+        if (cv.size() > node.getR()) {
+            return -1;
+        }
+
+        // Now count the shared variables, checking if they appear in the
+        // separator.
+        Set<Variable> sv = ff.getSharedVariables(bf);
+        int score = sv.size();
+        for (Variable v : sv) {
+            for (Variable v2 : variables) {
+                if (v == v2) {
+                    score += 9;
+                    break;
+                }
+            }
+        }
+
+        return score;
+    }
 }

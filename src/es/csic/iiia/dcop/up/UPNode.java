@@ -206,14 +206,14 @@ public abstract class UPNode<E extends Edge, R extends UPResult> extends
 
     public String getName() {
         StringBuffer buf = new StringBuffer();
-
-        buf.append("");
         int i=0;
         for (Variable v : variables) {
             if (i++>0) buf.append(".");
             buf.append(v.getName());
         }
-        buf.append("");
+        if (buf.length() == 0) {
+            buf.append("null");
+        }
 
         return buf.toString();
     }

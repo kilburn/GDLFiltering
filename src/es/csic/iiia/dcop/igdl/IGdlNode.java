@@ -77,7 +77,7 @@ public class IGdlNode extends UPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
     /**
      * Partitioning strategy to use
      */
-    private IGdlPartitionStrategy strategy = new MCStrategy();
+    private IGdlPartitionStrategy strategy = new AllCombStrategy();
 
     /**
      * Constructs a new clique with the specified member variable and null
@@ -201,24 +201,23 @@ public class IGdlNode extends UPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
                 continue;
             }
 
-            IGdlMessage msg = strategy.getPartition(e);
-            
-            /*
-            System.out.println("Free functions:");
-            for (CostFunction f : ff) {
-                System.out.println("\t" + f);
-            }
-            System.out.println("Bound functions:");
-            for (CostFunction f : bf) {
-                System.out.println("\t" + f);
-            }
-            mergeFreeFactors(ff, bf, e.getVariables());
-            System.out.println("Merged functions:");
-            for (CostFunction f : bf) {
-                System.out.println("\t" + f);
-            }
-            */
+            // List of all functions that would be sent (combined)
+            ArrayList<CostFunction> fs = new ArrayList<CostFunction>(costFunctions);
 
+            // Remove the factors received through this edge
+            if (e.getMessage(this) != null) {
+                fs.removeAll(e.getMessage(this).getFactors());
+            }
+
+            // For research purposes, calculate the optimal belief
+            CostFunction belief = null;
+            for (CostFunction f : fs) {
+                belief = f.combine(belief);
+            }
+
+            // Obtain the partition and send it
+            IGdlMessage msg = strategy.getPartition(fs, e);
+            msg.setBelief(belief.summarize(e.getVariables()));
             e.sendMessage(this, msg);
         }
     }
