@@ -43,6 +43,9 @@ import es.csic.iiia.dcop.CostFunctionFactory;
 import es.csic.iiia.dcop.HypercubeCostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.algo.JunctionTreeAlgo;
+import es.csic.iiia.dcop.bb.UBGraph;
+import es.csic.iiia.dcop.bb.UBResult;
+import es.csic.iiia.dcop.bb.UBResults;
 import es.csic.iiia.dcop.dfs.DFS;
 import es.csic.iiia.dcop.dfs.MCN;
 import es.csic.iiia.dcop.dfs.MCS;
@@ -220,6 +223,16 @@ public class GDLTest {
             cost += fn.getValue(map);
         }
         assertEquals(cost, 20, 0.0001);
+
+        // Extract the UB
+        UBGraph ub = new UBGraph(vp);
+        UBResults rs = ub.run(100);
+        System.out.println(rs);
+
+        // UB must be 20
+        for (UBResult r : rs.getResults()) {
+            assertEquals(20, r.getValue(), 0.0001);
+        }
     }
 
     @Test
@@ -294,6 +307,7 @@ public class GDLTest {
     }
 
     @Test
+    @Ignore
     public void testTesting() {
         // Set operating mode
         CostFunction.Summarize summarize = CostFunction.Summarize.MIN;
