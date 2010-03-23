@@ -68,6 +68,8 @@ public class JTNode extends AbstractNode<JTEdge, Result> {
     }
 
     public void initialize() {
+        setMode(Modes.GRAPH);
+
         Set variables = node.getVariables();
         for (Edge e : getEdges()) {
             e.sendMessage(this, new JTMessage(variables));
@@ -119,7 +121,7 @@ public class JTNode extends AbstractNode<JTEdge, Result> {
     }
 
     public boolean isConverged() {
-        return true;
+        return previousVariables.equals(reachableVariables);
     }
 
     public Result end() {
