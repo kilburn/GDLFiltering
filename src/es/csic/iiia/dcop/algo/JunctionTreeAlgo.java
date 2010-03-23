@@ -40,7 +40,6 @@ package es.csic.iiia.dcop.algo;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.jt.JunctionTree;
-import es.csic.iiia.dcop.mp.Graph;
 import es.csic.iiia.dcop.up.UPFactory;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.up.UPNode;

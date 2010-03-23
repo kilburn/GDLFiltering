@@ -52,7 +52,7 @@ import es.csic.iiia.dcop.up.UPFactory;
 public class IGdlFactory implements UPFactory<IGdlGraph, IGdlNode, UPEdge<IGdlNode, IGdlMessage>,
     UPResult, UPResults> {
 
-    private Modes mode = Modes.TREE;
+    private Modes mode = Modes.TREE_UP;
     private int r = Integer.MAX_VALUE;
 
     public IGdlFactory() {};

@@ -44,13 +44,7 @@ import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPNode;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Set;
 
 /**
  * GDL algorithm node.
@@ -114,7 +108,7 @@ public class IGdlNode extends UPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
      */
     public void initialize() {
         // Tree-based operation
-        setMode(Modes.TREE);
+        setMode(Modes.TREE_UP);
         costFunctions = new ArrayList<CostFunction>();
 
         // Populate with our assigned relations

@@ -52,6 +52,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge,R extends Resu
     private ArrayList<N> nodes;
     private ArrayList<E> edges;
     private R results;
+    private int root = -1;
 
     public AbstractGraph() {
         nodes = new ArrayList<N>();
@@ -99,10 +100,22 @@ public abstract class AbstractGraph<N extends Node,E extends Edge,R extends Resu
         }
     }
 
+    public int getRoot() {
+        return root;
+    }
+
+    public void setRoot(int root) {
+        this.root = root;
+    }
+
     @Override
     public String toString() {
         StringBuffer buf = new StringBuffer("graph G {\n");
-
+        if (root >= 0) {
+            buf.append("// Root: ");
+            buf.append(nodes.get(root));
+            buf.append("\n");
+        }
         for (N n : nodes) {
             buf.append("  ");
             buf.append(n.getName());

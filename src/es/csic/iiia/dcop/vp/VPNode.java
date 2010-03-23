@@ -42,7 +42,10 @@ import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.mp.AbstractNode;
 import es.csic.iiia.dcop.up.UPNode;
+import java.util.Collection;
 import java.util.Hashtable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Value Propagation algorithm node.
@@ -50,6 +53,8 @@ import java.util.Hashtable;
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
 public class VPNode extends AbstractNode<VPEdge, VPResult> {
+
+    private static Logger log = LoggerFactory.getLogger(VPGraph.class);
     
     private CostFunction belief;
     private Hashtable<Variable, Integer> mapping;
@@ -61,7 +66,7 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
     }
 
     public void initialize() {
-        setMode(Modes.TREE);
+        setMode(Modes.TREE_DOWN);
     }
 
     public long run() {
@@ -88,10 +93,14 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
 
         // Send messages
         for(VPEdge e : getEdges()) {
+            if (!readyToSend(e))
+                continue;
+
             VPMessage msg = new VPMessage(mapping);
             e.sendMessage(this, msg);
         }
 
+        setUpdated(false);
         return cc;
     }
 
@@ -112,8 +121,32 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
 
     @Override
     public String toString() {
-        return node.toString();
+        return node.getName();
+    }
+
+    @Override
+    protected boolean sentOrReceivedAnyEdge() {
+        boolean res = super.sentOrReceivedAnyEdge();
+        if (res && log.isTraceEnabled()) {
+            log.trace(this + " done.");
+        }
+        return res;
     }
     
+    public double getValue() {
+        double value = 0;
+        Collection<CostFunction> fs = node.getRelations();
+        for (CostFunction f : fs) {
+            switch(f.getFactory().getCombineOperation()) {
+                    case SUM:
+                        value += f.getValue(mapping);
+                        break;
+                    case PRODUCT:
+                        value *= f.getValue(mapping);
+                        break;
+            }
+        }
+        return value;
+    }
 
 }

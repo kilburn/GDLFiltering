@@ -38,9 +38,8 @@
 
 package es.csic.iiia.dcop.vp;
 
-import es.csic.iiia.dcop.gdl.GdlGraph;
-import es.csic.iiia.dcop.gdl.GdlNode;
-import es.csic.iiia.dcop.mp.AbstractTree;
+import es.csic.iiia.dcop.mp.AbstractNode.Modes;
+import es.csic.iiia.dcop.mp.DefaultGraph;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.up.UPNode;
@@ -48,19 +47,25 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Random;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Value Propagation graph.
  * 
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class VPGraph extends AbstractTree<VPNode,VPEdge,VPResults> {
+public class VPGraph extends DefaultGraph<VPNode,VPEdge,VPResults> {
+
+    private static Logger log = LoggerFactory.getLogger(VPGraph.class);
 
     private Random random = new Random();
     private Hashtable<UPNode, VPNode> nodes;
+    private int root = -1;
 
     public VPGraph(UPGraph cg) {
         super();
+        setMode(Modes.TREE_DOWN);
         buildRandomSpanningTree(cg);
     }
 
@@ -77,8 +82,17 @@ public class VPGraph extends AbstractTree<VPNode,VPEdge,VPResults> {
             nodes.put(n, stn);
         }
 
-        // Choose the first one randomly
-        visitedNodes.add(remainingNodes.remove(random.nextInt(remainingNodes.size())));
+
+        root = cg.getRoot();
+        if (root < 0) {
+            // It's not a tree, so we just choose a random node as root and the
+            // tree will be automatically built.
+            root = random.nextInt(remainingNodes.size());
+        }
+        setRoot(root);
+        
+        // Now construct the VPTree from the UPGraph
+        visitedNodes.add(remainingNodes.remove(root));
 
         // Now recursively make random walks until all nodes are in the tree
         walkTree(visitedNodes, remainingNodes);
@@ -146,6 +160,11 @@ public class VPGraph extends AbstractTree<VPNode,VPEdge,VPResults> {
     @Override
     protected VPResults buildResults() {
         return new VPResults();
+    }
+
+    @Override
+    public void reportIteration(int i) {
+        log.trace("============== Iter " + i + " ===============");
     }
 
 }

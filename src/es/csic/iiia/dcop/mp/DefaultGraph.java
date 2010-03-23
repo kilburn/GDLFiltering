@@ -37,6 +37,8 @@
  */
 package es.csic.iiia.dcop.mp;
 
+import es.csic.iiia.dcop.mp.AbstractNode.Modes;
+
 /**
  *
  * @param <N>
@@ -47,6 +49,8 @@ package es.csic.iiia.dcop.mp;
 public abstract class DefaultGraph<N extends Node, E extends Edge, R extends Results>
         extends AbstractGraph<N, E, R> {
 
+    private Modes mode = Modes.GRAPH;
+
     public void reportIteration(int i) {};
 
     public R run(int maxIterations) {
@@ -54,6 +58,9 @@ public abstract class DefaultGraph<N extends Node, E extends Edge, R extends Res
         reportIteration(iter++);
         initialize();
         R results = getResults();
+        if (getMode() == Modes.TREE_DOWN) {
+            getNodes().get(getRoot()).run();
+        }
 
         // Now for the "real meat":
         boolean converged = false;
@@ -91,5 +98,19 @@ public abstract class DefaultGraph<N extends Node, E extends Edge, R extends Res
         end();
 
         return results;
+    }
+
+    /**
+     * @return the mode
+     */
+    public Modes getMode() {
+        return mode;
+    }
+
+    /**
+     * @param mode the mode to set
+     */
+    public void setMode(Modes mode) {
+        this.mode = mode;
     }
 }

@@ -71,7 +71,7 @@ public abstract class AbstractNode<E extends Edge, R extends Result> implements 
      * they receive a message.
      */
     public enum Modes {
-        TREE, GRAPH
+        TREE_UP, TREE_DOWN, GRAPH
     }
 
     /**
@@ -89,6 +89,11 @@ public abstract class AbstractNode<E extends Edge, R extends Result> implements 
      * Flag to track if new messages have been received.
      */
     private boolean updated;
+
+    /**
+     * Flag to signal that this node has already finished.
+     */
+    private boolean finished;
 
     /**
      * Returns true if the node has converged or false otherwise (only valid
@@ -115,7 +120,7 @@ public abstract class AbstractNode<E extends Edge, R extends Result> implements 
      * @param updated
      */
     public void setUpdated(boolean updated) {
-        if (updated == true && getMode() == Modes.TREE) {
+        if (updated == true && mode == Modes.TREE_UP) {
             // Check if we have received messages from at least all neighboors
             // but one (the parent), meaning that all childs have messaged us.
             int n_msgs = 0;
@@ -127,6 +132,24 @@ public abstract class AbstractNode<E extends Edge, R extends Result> implements 
                 return;
             }
         }
+
+        if (updated == false) {
+            // Check if we have finished
+            switch(mode) {
+                case GRAPH:
+                    finished = isConverged();
+                    break;
+                case TREE_DOWN:
+                    finished = sentOrReceivedAnyEdge();
+                    break;
+                case TREE_UP:
+                    finished = sentAndReceivedAllEdges();
+                    break;
+                default:
+                    throw new RuntimeException("Unsupported operational mode");
+            }
+        }
+        
         this.updated = updated;
     }
 
@@ -137,20 +160,26 @@ public abstract class AbstractNode<E extends Edge, R extends Result> implements 
      * @return
      */
     protected boolean readyToSend(E edge) {
-        // We are always ready to send in graph mode
-        if (this.getMode() == Modes.GRAPH)
-            return true;
-
-        // In tree mode, we can send to one neighbor (edge) only if:
-        for (E e : getEdges()) {
-            // We have not yet sent a message to it
-            if (e == edge && e.haveSentMessage(this))
-                return false;
-            // We have received messages from all other neighbors (edges)
-            if (e != edge && e.getMessage(this) == null)
-                return false;
+        switch(mode) {
+            case GRAPH:
+                return true;
+            case TREE_UP:
+                // In tree up mode, we can send to one neighbor (edge) only if:
+                for (E e : getEdges()) {
+                    // We have not yet sent a message to it
+                    if (e == edge && e.haveSentMessage(this))
+                        return false;
+                    // We have received messages from all other neighbors (edges)
+                    if (e != edge && e.getMessage(this) == null)
+                        return false;
+                }
+                return true;
+            case TREE_DOWN:
+                // In tree down mode, we can send to all neighbors except the
+                // parent (this is, except the one from whom we have a message)
+                return edge.getMessage(this) == null;
         }
-        return true;
+        throw new RuntimeException("Unsupported operational mode");
     }
 
     /**
@@ -178,10 +207,21 @@ public abstract class AbstractNode<E extends Edge, R extends Result> implements 
      * Check if this node has finished operating.
      */
     public boolean isFinished() {
-        return mode == Modes.GRAPH ? isConverged() : sentAndReceivedAllEdges();
+        return finished;
     }
 
-    public boolean sentAndReceivedAllEdges() {
+    protected boolean sentOrReceivedAnyEdge() {
+        // Used in tree_down mode, where messages propagate from root to the
+        // leafs and there are no replies.
+        for (E e : getEdges()) {
+            if (e.getMessage(this) != null || e.haveSentMessage(this))
+                return true;
+        }
+
+        return false;
+    }
+
+    protected boolean sentAndReceivedAllEdges() {
         // We end after having received and sent exactly 1 message from/to each
         // neighbor (edge).
         for (E e : getEdges()) {

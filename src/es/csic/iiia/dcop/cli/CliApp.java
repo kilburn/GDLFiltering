@@ -38,10 +38,6 @@
 
 package es.csic.iiia.dcop.cli;
 
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.joran.action.LoggerAction;
-import ch.qos.logback.classic.sift.AppenderFactory;
-import ch.qos.logback.core.Appender;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunctionFactory;
 import es.csic.iiia.dcop.FactorGraph;
@@ -77,7 +73,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import org.slf4j.LoggerFactory;
 
 /**
  * Command Line Interface application logic handler.
@@ -392,7 +387,7 @@ public class CliApp {
                 UPFactory factory = null;
                 if (algorithm == ALGO_GDL) {
                     factory = new GdlFactory();
-                    ((GdlFactory)factory).setMode(Modes.TREE);
+                    ((GdlFactory)factory).setMode(Modes.TREE_UP);
                 } else {
                     factory = new IGdlFactory(this.getIGdlR());
                 }
@@ -403,6 +398,7 @@ public class CliApp {
                     TreeReader treeReader = new TreeReader();
                     treeReader.read(treeFile, factors);
                     cg = JunctionTreeAlgo.buildGraph(factory, treeReader.getFactorDistribution(), treeReader.getAdjacency());
+                    cg.setRoot(treeReader.getRoot());
                     JunctionTree jt = new JunctionTree(cg);
                     results = jt.run(100);
                     variables = results.getMaxVariables();
@@ -422,6 +418,7 @@ public class CliApp {
                         }
 
                         cg = JunctionTreeAlgo.buildGraph(factory, dfs.getFactorDistribution(), dfs.getAdjacency());
+                        cg.setRoot(dfs.getRoot());
                         JunctionTree jt = new JunctionTree(cg);
                         results = jt.run(100);
                         variables = results.getMaxVariables();

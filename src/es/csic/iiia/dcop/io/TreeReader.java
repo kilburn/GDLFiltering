@@ -64,6 +64,8 @@ public class TreeReader {
     private HashMap<String, Node> nodes = new HashMap<String, Node>();
     private Node currentNode;
     private HashMap<String, String> links = new HashMap<String, String>();
+    private HashSet<Node> rootCandidates = new HashSet<Node>();
+    private int root = -1;
 
     // tree results
     private CostFunction[][] factorDistribution;
@@ -77,6 +79,7 @@ public class TreeReader {
         String id = node.group(1);
         currentNode = new Node(id);
         nodes.put(id, currentNode);
+        rootCandidates.add(currentNode);
     }
 
     public void parseF(String line) {
@@ -93,6 +96,10 @@ public class TreeReader {
         }
 
         links.put(link.group(1), link.group(2));
+        // The root node is the only one that has no incoming edges. Therefore,
+        // we keep removing destination nodes from the candidate list, and the
+        // one that's left at the end must be the root.
+        rootCandidates.remove(nodes.get(link.group(1)));
     }
 
     public void read(InputStream problem, CostFunction[] factors) {
@@ -128,7 +135,7 @@ public class TreeReader {
             i++;
         }
 
-        // And finally the adjacency matrix
+        // Compute the adjacency matrix
         adjacency = new char[nodes.size()][nodes.size()];
         for (String n1 : links.keySet()) {
             String n2 = links.get(n1);
@@ -137,11 +144,18 @@ public class TreeReader {
             adjacency[idx1][idx2] = 1;
         }
 
+        // And mark the root node index
+        root = nodeToIdx.get(rootCandidates.iterator().next());
+
         return;
     }
 
     public CostFunction[][] getFactorDistribution() {
         return factorDistribution;
+    }
+
+    public int getRoot() {
+        return root;
     }
 
     public char[][] getAdjacency() {

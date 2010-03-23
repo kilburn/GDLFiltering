@@ -39,6 +39,8 @@
 package es.csic.iiia.dcop.vp;
 
 import es.csic.iiia.dcop.mp.AbstractEdge;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -46,8 +48,17 @@ import es.csic.iiia.dcop.mp.AbstractEdge;
  */
 public class VPEdge extends AbstractEdge<VPNode, VPMessage> {
 
+    private static Logger log = LoggerFactory.getLogger(VPGraph.class);
+
     public VPEdge(VPNode c1, VPNode c2) {
         super(c1,c2);
+    }
+
+    @Override public boolean sendMessage(VPNode sender, VPMessage message) {
+        boolean res = super.sendMessage(sender, message);
+        if (res && log.isTraceEnabled())
+            log.trace(sender.getName() + " -> " + getDestination(sender).getName() + " : " + message);
+        return res;
     }
 
 }

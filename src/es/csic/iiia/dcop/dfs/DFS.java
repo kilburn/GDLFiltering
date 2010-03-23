@@ -64,10 +64,15 @@ public abstract class DFS {
     private Variable root;
     private char[][] adjacency = null;
     private Hashtable<Variable, Integer> variableDepths;
+    private int rootIndex = -1;
 
     public DFS(CostFunction[] factors) {
         this.factors = factors;
         this.initialize();
+    }
+
+    public int getRoot() {
+        return rootIndex;
     }
 
     private void initialize() {
@@ -127,6 +132,7 @@ public abstract class DFS {
         // Choose root node
         HashSet<Variable> next = getMostConnectedNodes(remainingVariables);
         root = this.pickRandomly(next);
+        rootIndex = variableIndices.get(root);
 
         // Now build the tree
         buildTree(adjacency, root, 0);
