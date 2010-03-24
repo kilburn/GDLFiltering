@@ -59,11 +59,6 @@ public class IGdlNode extends UPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
     private int r;
 
     /**
-     * Tolerance to use when comparing the previous and current beliefs.
-     */
-    private double tolerance = 0.0001;
-
-    /**
      * Cost Functions known by this node.
      */
     private ArrayList<CostFunction> costFunctions;
@@ -158,14 +153,6 @@ public class IGdlNode extends UPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
 
     public UPResult end() {
         return new UPResult(this);
-    }
-
-    public double getTolerance() {
-        return tolerance;
-    }
-
-    public void setTolerance(double tolerance) {
-        this.tolerance = tolerance;
     }
 
     public void setR(int r) {
