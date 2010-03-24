@@ -38,6 +38,8 @@
 
 package es.csic.iiia.dcop.igdl;
 
+import es.csic.iiia.dcop.igdl.strategy.AllCombStrategy;
+import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
 import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;

@@ -36,10 +36,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.igdl;
+package es.csic.iiia.dcop.igdl.strategy;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
+import es.csic.iiia.dcop.igdl.IGdlMessage;
+import es.csic.iiia.dcop.igdl.IGdlNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import java.util.ArrayList;
