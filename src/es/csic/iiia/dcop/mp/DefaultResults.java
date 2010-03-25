@@ -159,8 +159,9 @@ public class DefaultResults<R extends Result> implements Results<R> {
         buf.append(maximalCcc);
         buf.append("ccc, ");
         buf.append(maximalCcc/(double)totalCcc);
-        buf.append("lf\n");
+        buf.append("lf");
         for(Result r : results) {
+            buf.append("\n");
             buf.append(r);
         }
         return buf.toString();
