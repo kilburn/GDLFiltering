@@ -98,8 +98,8 @@ public class Cli {
         System.err.println("    Uses the specified summarizing operator, where operator is one of: ");
         System.err.println("      - min : summarizes using the minimum value (for costs).");
         System.err.println("      - max : summarizes using the maximum value (for utilites).");
-        System.err.println("  -t file, --trace=file");
-        System.err.println("    Save algorithms' traces in <file>.");
+        //System.err.println("  -t file, --trace=file");
+        //System.err.println("    Save algorithms' traces in <file>.");
         System.err.println();
         System.exit(0);
     }

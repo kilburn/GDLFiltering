@@ -74,10 +74,16 @@ public class IGdlMessage implements Message {
     @Override
     public String toString() {
         StringBuffer buf = new StringBuffer();
+        CostFunction combi = null;
         for (CostFunction f : factors) {
             buf.append("\n\t" + f);
+            if (belief != null) {
+                combi = f.combine(combi);
+            }
         }
         if (belief != null) {
+            buf.append("\n   Apr: ");
+            buf.append(combi);
             buf.append("\n   Opt: ");
             buf.append(belief);
         }

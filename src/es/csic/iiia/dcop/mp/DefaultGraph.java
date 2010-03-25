@@ -52,8 +52,12 @@ public abstract class DefaultGraph<N extends Node, E extends Edge, R extends Res
     private Modes mode = Modes.GRAPH;
 
     public void reportIteration(int i) {};
+    public void reportStart() {};
+    public void reportResults(R results) {};
 
     public R run(int maxIterations) {
+        reportStart();
+
         int iter = 0;
         reportIteration(iter++);
         initialize();
@@ -97,6 +101,7 @@ public abstract class DefaultGraph<N extends Node, E extends Edge, R extends Res
         // Result collection
         end();
 
+        reportResults(results);
         return results;
     }
 

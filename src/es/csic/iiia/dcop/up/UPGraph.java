@@ -67,7 +67,17 @@ public abstract class UPGraph<N extends UPNode, E extends Edge, R extends UPResu
 
     @Override
     public void reportIteration(int i) {
-        log.trace("============== Iter " + i + " ===============");
+        log.trace("------- Iter " + i);
+    }
+
+    @Override
+    public void reportStart() {
+        log.trace("\n======= PROPAGATING UTILITIES");
+    }
+
+    @Override
+    public void reportResults(R results) {
+        log.trace("------- " + results);
     }
 
     /*

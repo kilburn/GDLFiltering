@@ -164,7 +164,17 @@ public class VPGraph extends DefaultGraph<VPNode,VPEdge,VPResults> {
 
     @Override
     public void reportIteration(int i) {
-        log.trace("============== Iter " + i + " ===============");
+        log.trace("------- Iter " + i);
+    }
+
+    @Override
+    public void reportStart() {
+        log.trace("\n======= ACCORDING A GLOBAL SOLUTION");
+    }
+
+    @Override
+    public void reportResults(VPResults results) {
+        log.trace("------- " + results);
     }
 
 }

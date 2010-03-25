@@ -130,7 +130,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge,R extends Resu
             buf.append(e.toString());
             buf.append("\n");
         }
-        buf.append("}\n");
+        buf.append("}");
 
         return buf.toString();
     }

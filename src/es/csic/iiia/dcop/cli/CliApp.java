@@ -46,6 +46,8 @@ import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.algo.JunctionTreeAlgo;
 import es.csic.iiia.dcop.algo.MaxSum;
 import es.csic.iiia.dcop.algo.RandomNoiseAdder;
+import es.csic.iiia.dcop.bb.UBGraph;
+import es.csic.iiia.dcop.bb.UBResults;
 import es.csic.iiia.dcop.up.UPResults;
 import es.csic.iiia.dcop.dfs.DFS;
 import es.csic.iiia.dcop.dfs.MCN;
@@ -315,6 +317,12 @@ public class CliApp {
         VPGraph st = new VPGraph(cg);
         VPResults res = st.run(100);
         Hashtable<Variable, Integer> map = res.getMapping();
+
+        // Compute UB for IGdl
+        if (algorithm == ALGO_IGDL) {
+            UBGraph ub = new UBGraph(st);
+            UBResults ubres = ub.run(100);
+        }
 
         System.out.print("SOLUTION");
         SortedSet foo = new TreeSet(map.keySet());

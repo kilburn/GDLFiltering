@@ -85,7 +85,17 @@ public class UBGraph extends DefaultGraph<UBNode, UBEdge, UBResults> {
 
     @Override
     public void reportIteration(int i) {
-        log.trace("============== Iter " + i + " ===============");
+        log.trace("------- Iter " + i);
+    }
+
+    @Override
+    public void reportStart() {
+        log.trace("\n======= CALCULATING UPPER BOUNDS");
+    }
+
+    @Override
+    public void reportResults(UBResults results) {
+        log.trace("------- " + results);
     }
 
 }

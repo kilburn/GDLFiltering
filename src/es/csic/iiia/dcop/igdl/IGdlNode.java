@@ -43,6 +43,7 @@ import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
 import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
+import es.csic.iiia.dcop.igdl.strategy.LazyStrategy;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPNode;
 import java.util.ArrayList;
@@ -68,7 +69,7 @@ public class IGdlNode extends UPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
     /**
      * Partitioning strategy to use
      */
-    private IGdlPartitionStrategy strategy = new AllCombStrategy();
+    private IGdlPartitionStrategy strategy = new LazyStrategy();
 
     /**
      * Constructs a new clique with the specified member variable and null

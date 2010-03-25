@@ -40,12 +40,16 @@ package es.csic.iiia.dcop.bb;
 
 import es.csic.iiia.dcop.mp.AbstractNode;
 import es.csic.iiia.dcop.vp.VPNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
 public class UBNode extends AbstractNode<UBEdge, UBResult> {
+
+    private static Logger log = LoggerFactory.getLogger(UBGraph.class);
 
     private double value;
     private double localValue;
@@ -114,6 +118,15 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
             msg.setValue(v);
             e.sendMessage(this, msg);
         }
+    }
+
+    @Override
+    public boolean sentAndReceivedAllEdges() {
+        boolean res = super.sentAndReceivedAllEdges();
+        if (res && log.isTraceEnabled()) {
+            log.trace("Node " + this.getName() + " done.");
+        }
+        return res;
     }
 
 }

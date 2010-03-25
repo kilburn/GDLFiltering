@@ -162,7 +162,6 @@ public class DefaultResults<R extends Result> implements Results<R> {
         buf.append("lf\n");
         for(Result r : results) {
             buf.append(r);
-            buf.append("\n");
         }
         return buf.toString();
     }

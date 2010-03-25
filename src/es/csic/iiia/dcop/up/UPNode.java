@@ -222,7 +222,7 @@ public abstract class UPNode<E extends Edge, R extends UPResult> extends
     public boolean sentAndReceivedAllEdges() {
         boolean res = super.sentAndReceivedAllEdges();
         if (res && log.isTraceEnabled()) {
-            log.trace(this + " done.");
+            log.trace("Node " + this.getName() + " done.");
         }
         return res;
     }

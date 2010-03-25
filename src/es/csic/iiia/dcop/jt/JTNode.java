@@ -47,12 +47,16 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map.Entry;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
 public class JTNode extends AbstractNode<JTEdge, Result> {
+
+    private static Logger log = LoggerFactory.getLogger(JunctionTree.class);
 
     private UPNode node;
     private Set<Variable> previousVariables;
@@ -120,7 +124,11 @@ public class JTNode extends AbstractNode<JTEdge, Result> {
     }
 
     public boolean isConverged() {
-        return previousVariables.equals(reachableVariables);
+        boolean res = previousVariables.equals(reachableVariables);
+        if (res && log.isTraceEnabled()) {
+            log.trace("Node " + this.getName() + " done.");
+        }
+        return res;
     }
 
     public Result end() {
@@ -128,6 +136,7 @@ public class JTNode extends AbstractNode<JTEdge, Result> {
         for (JTEdge e : getEdges()) {
             e.updateVariables();
         }
+
         return new JTResult(node);
     }
 

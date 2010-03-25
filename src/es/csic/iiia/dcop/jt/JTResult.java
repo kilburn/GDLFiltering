@@ -61,4 +61,9 @@ public class JTResult implements Result {
         return clique.getVariables().size();
     }
 
+    @Override
+    public String toString() {
+        return clique.getName();
+    }
+
 }

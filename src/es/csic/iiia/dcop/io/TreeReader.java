@@ -46,8 +46,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -63,7 +66,7 @@ public class TreeReader {
 
     private HashMap<String, Node> nodes = new HashMap<String, Node>();
     private Node currentNode;
-    private HashMap<String, String> links = new HashMap<String, String>();
+    private Collection<List<String>> links = new ArrayList<List<String>>();
     private HashSet<Node> rootCandidates = new HashSet<Node>();
     private int root = -1;
 
@@ -95,11 +98,14 @@ public class TreeReader {
             return;
         }
 
-        links.put(link.group(1), link.group(2));
+        ArrayList<String> lnk = new ArrayList<String>();
+        lnk.add(link.group(1));
+        lnk.add(link.group(2));
+        links.add(lnk);
         // The root node is the only one that has no incoming edges. Therefore,
         // we keep removing destination nodes from the candidate list, and the
         // one that's left at the end must be the root.
-        rootCandidates.remove(nodes.get(link.group(1)));
+        rootCandidates.remove(nodes.get(link.group(2)));
     }
 
     public void read(InputStream problem, CostFunction[] factors) {
@@ -130,21 +136,34 @@ public class TreeReader {
                 if (functions.get(foo) == null) {
                     System.err.println("Function not found?");
                 }
-                factorDistribution[i][j] = functions.get(foo);
+                factorDistribution[i][j] = functions.remove(foo);
             }
             i++;
+        }
+        // Ensure that all functions are assigned to some node
+        if (!functions.isEmpty()) {
+            System.err.println("Error: the input tree does not assign the following functions to any node:.");
+            for (Entry<HashSet<String>,CostFunction> e : functions.entrySet()) {
+                System.err.println("\t" + e.getValue());
+            }
+            System.exit(0);
         }
 
         // Compute the adjacency matrix
         adjacency = new char[nodes.size()][nodes.size()];
-        for (String n1 : links.keySet()) {
-            String n2 = links.get(n1);
+        for (List<String> lnk : links) {
+            String n1 = lnk.get(0);
+            String n2 = lnk.get(1);
             int idx1 = nodeToIdx.get(nodes.get(n1));
             int idx2 = nodeToIdx.get(nodes.get(n2));
             adjacency[idx1][idx2] = 1;
         }
 
         // And mark the root node index
+        if (rootCandidates.size() != 1) {
+            System.err.println("Error: the input tree is not connected.");
+            System.exit(0);
+        }
         root = nodeToIdx.get(rootCandidates.iterator().next());
 
         return;

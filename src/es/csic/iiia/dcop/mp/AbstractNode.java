@@ -111,7 +111,7 @@ public abstract class AbstractNode<E extends Edge, R extends Result> implements 
      * @return true if this clique has received new messages or false otherwise.
      */
     public boolean isUpdated() {
-        return updated;
+        return mode == Modes.GRAPH ? true : updated;
     }
 
     /**

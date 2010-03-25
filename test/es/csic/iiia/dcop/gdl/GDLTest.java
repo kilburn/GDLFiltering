@@ -199,7 +199,7 @@ public class GDLTest {
 
         // Run the UtilityPropagation phase
         g.setFactory(factory);
-        ((IGdlGraph)g).setR(2);
+        ((IGdlGraph)g).setR(1);
         DefaultResults<UPResult> results = g.run(100);
         System.out.println(results);
 
@@ -209,12 +209,12 @@ public class GDLTest {
         Hashtable<Variable, Integer> map = res.getMapping();
 
         // The solution should be 0 0 1
-        assertEquals((int)map.get(x), 1);
-        assertEquals((int)map.get(y), 1);
-        assertEquals((int)map.get(z), 1);
-        assertEquals((int)map.get(t), 0);
-        assertEquals((int)map.get(u), 1);
-        assertEquals((int)map.get(v), 1);
+        assertEquals(1, (int)map.get(x));
+        assertEquals(1, (int)map.get(y));
+        assertEquals(1, (int)map.get(z));
+        assertEquals(0, (int)map.get(t));
+        assertEquals(1, (int)map.get(u));
+        assertEquals(1, (int)map.get(v));
 
 
         // With a total utility of 4

@@ -88,7 +88,22 @@ public class JunctionTree extends DefaultGraph<JTNode, JTEdge, JTResults> {
     @Override
     protected void end() {
         super.end();
+    }
+
+    @Override
+    public void reportIteration(int i) {
+        log.trace("------- Iter " + i);
+    }
+
+    @Override
+    public void reportStart() {
+        log.trace("\n======= ENSURING RIP PROPERTY");
+    }
+
+    @Override
+    public void reportResults(JTResults results) {
         if (log.isTraceEnabled()) {
+            log.trace("\n======= CLIQUE TREE/GRAPH");
             log.trace(this.toString());
         }
     }
