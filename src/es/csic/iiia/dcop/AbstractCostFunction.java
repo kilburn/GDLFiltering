@@ -178,25 +178,24 @@ public abstract class AbstractCostFunction implements CostFunction {
      */
     public abstract Iterator<Integer> iterator();
 
-    /**
-     * Get the optimal variable configuration according to the given
-     * operation. If there are multiple optimal configurations, a randomly
-     * chosen one is returned.
-     *
-     * @param mapping variable mapping table to be filled with the optimal
-     *                configuration.
-     * @param operation operation used to calculate the optimum.
-     */
-    public Hashtable<Variable, Integer> getBestConfiguration(Hashtable<Variable, Integer> mapping) {
-        if (mapping==null) {
+    /** {@inheritDoc} */
+    public Hashtable<Variable, Integer> getOptimalConfiguration(Hashtable<Variable, Integer> mapping) {
+        if (mapping == null) {
             mapping = new Hashtable<Variable, Integer>(variables.length);
         }
 
-        // Empty costfunction have no optimal value
+        // Empty cost functions have no optimal value
         if (variables.length == 0) {
             return mapping;
         }
 
+        int i = getOptimalConfiguration();
+        mapping.putAll(getMapping(i, null));
+        return mapping;
+    }
+
+    /** {@inheritDoc} */
+    public int getOptimalConfiguration() {
         // Find the maximal value
         Summarize operation = factory.getSummarizeOperation();
         ArrayList<Integer> idx = new ArrayList<Integer>();
@@ -213,11 +212,8 @@ public abstract class AbstractCostFunction implements CostFunction {
                 idx.add(i);
             }
         }
-        int i = idx.get(new Random().nextInt(idx.size()));
-        // Retrieve it's mapping
-        mapping.putAll(getMapping(i, null));
 
-        return mapping;
+        return idx.get(new Random().nextInt(idx.size()));
     }
 
     /**
@@ -383,7 +379,10 @@ public abstract class AbstractCostFunction implements CostFunction {
 
     /** {@inheritDoc} */
     public double getValue(Hashtable<Variable, Integer> mapping) {
-        return getValue(this.getIndex(mapping));
+        int idx = this.getIndex(mapping);
+        if (idx < 0)
+            return getFactory().getCombineOperation().getNeutralValue();
+        return getValue(idx);
     }
 
     /** {@inheritDoc} */

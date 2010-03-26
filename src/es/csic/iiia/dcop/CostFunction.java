@@ -172,16 +172,24 @@ public interface CostFunction {
     /**
      * {@inheritDoc}
      */
-    @Override
-    boolean equals(Object obj);
+    @Override boolean equals(Object obj);
 
     /**
-     * Instantiates the variables of this factor into the given mapping such
-     * that it is an "optimal" configuration.
+     * Returns the optimal assignment for this factor.
+     *
+     * If an existing mapping is passed, the new assignments will be appended
+     * to it. <strong>Warning:</strong> this function does not take into
+     * account these pre-assigned variables to do the calculation.
+     *
+     * For example, if this factor is F(x,y){0,10,2,6}, summarization is set to
+     * MIN and it receives {x:1,z:1} through the mapping, it will return
+     * {x:0,z:1,y:0} as the new mapping. If you want to ensure an assignment
+     * consistent with an existing mapping, use
+     * {@link #reduce(java.util.Hashtable)} first.
      *
      * @param mapping current variable mappings.
      */
-    Hashtable<Variable, Integer> getBestConfiguration(Hashtable<Variable, Integer> mapping);
+    Hashtable<Variable, Integer> getOptimalConfiguration(Hashtable<Variable, Integer> mapping);
 
     /**
      * Returns <strong>the first</strong> index of the values array
