@@ -46,24 +46,35 @@ import es.csic.iiia.dcop.mp.Result;
  */
 public class UBResult implements Result {
 
-    private double value;
+    private double ub;
+    private double lb;
 
-    public UBResult(double value) {
-        this.value = value;
+    public UBResult(double ub, double lb) {
+        this.ub = ub;
+        this.lb = lb;
     }
 
     /**
-     * Retrieve the result value.
+     * Retrieve the result ub.
      *
-     * @return the value.
+     * @return the ub.
      */
-    public double getValue() {
-        return value;
+    public double getUB() {
+        return ub;
+    }
+
+    /**
+     * Retrieve the result lb.
+     *
+     * @return the lb.
+     */
+    public double getLB() {
+        return lb;
     }
 
     @Override
     public String toString() {
-        return "UB: " + String.valueOf(value);
+        return "B: [" + lb + " - " + ub + "]";
     }
 
 

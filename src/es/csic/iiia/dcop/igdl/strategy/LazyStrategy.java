@@ -100,6 +100,24 @@ public class LazyStrategy extends IGdlPartitionStrategy {
             // Obtain a set of edge variables in inFunction
             Collection<Variable> sev = inFunction.getSharedVariables(e.getVariables());
 
+            // Check if the source function is already bigger than what we
+            // can manage.
+            while (sev.size() > r) {
+                // Remove one variable
+                Variable v = sev.iterator().next();
+                sev.remove(v);
+                Collection<Variable> nfv = new HashSet<Variable>(inFunction.getVariableSet());
+                nfv.remove(v);
+
+                if (log.isTraceEnabled()) {
+                    log.trace("\tRemoving " + v.getName() + " from " + inFunction);
+                }
+                inFunction = inFunction.summarize(nfv.toArray(new Variable[0]));
+                if (log.isTraceEnabled()) {
+                    log.trace("\t-> " + inFunction);
+                }
+            }
+
             // Check if there's a suitable existing part where we can merge
             // inFunction
             boolean merged = false;

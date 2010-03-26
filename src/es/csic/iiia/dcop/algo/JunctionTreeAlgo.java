@@ -57,6 +57,19 @@ public abstract class JunctionTreeAlgo {
 
         // Add the nodes
         for (int i=0; i<factors.length; i++) {
+
+            // If the node's potentital is empty and it only has one link, then
+            // it can be safely removed.
+            if (factors[i].length == 0) {
+                int nlinks = 0;
+                for (int j=0; j<factors.length; j++) {
+                    if (adjacency[i][j] > 0 || adjacency[j][i] > 0) nlinks++;
+                }
+                if (nlinks < 2) {
+                    continue;
+                }
+            }
+
             nodes[i] = factory.buildNode();
             for (CostFunction f : factors[i]) {
                 nodes[i].addRelation(f);
@@ -68,7 +81,7 @@ public abstract class JunctionTreeAlgo {
         for (int i=0; i<adjacency.length; i++) {
             
             for (int j=0; j<adjacency[i].length; j++) {
-                if (adjacency[i][j] > 0) {
+                if (adjacency[i][j] > 0 && nodes[i] != null && nodes[j] != null) {
                     cg.addEdge(factory.buildEdge(nodes[i], nodes[j]));
                 }
             }

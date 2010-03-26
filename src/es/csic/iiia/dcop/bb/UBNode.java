@@ -51,8 +51,10 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
 
     private static Logger log = LoggerFactory.getLogger(UBGraph.class);
 
-    private double value;
-    private double localValue;
+    private double ub;
+    private double localUB;
+    private double lb;
+    private double localLB;
     private VPNode node;
 
     public UBNode(VPNode node) {
@@ -73,10 +75,13 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
         setMode(Modes.TREE_UP);
 
         // Calculate the local optimum acording to the agreed solution
-        localValue = node.getValue();
+        localUB = node.getGlobalValue();
+        localLB = node.getOptimalValue();
+        //log.trace(this.getName() + " llb: " + localLB + ", lub: " + localUB);
 
         // Send initial messages (if applicable)
-        value = localValue;
+        ub = localUB;
+        lb = localLB;
         sendMessages();
     }
 
@@ -84,11 +89,13 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
         long cc = 0;
 
         // Collect received values
-        value = localValue;
+        ub = localUB;
+        lb = localLB;
         for (UBEdge e : getEdges()) {
             UBMessage msg = e.getMessage(this);
             if (msg != null) {
-                value += msg.getValue();
+                ub += msg.getUB();
+                lb = Math.max(lb, msg.getLB());
             }
         }
 
@@ -101,7 +108,7 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
     }
 
     public UBResult end() {
-        return new UBResult(value);
+        return new UBResult(ub,lb);
     }
 
     private void sendMessages() {
@@ -109,13 +116,14 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
             if (!readyToSend(e))
                 continue;
 
-            double v = value;
+            double mub = ub;
             UBMessage inMsg = e.getMessage(this);
             if (inMsg != null) {
-                v -= inMsg.getValue();
+                mub -= inMsg.getUB();
             }
             UBMessage msg = new UBMessage();
-            msg.setValue(v);
+            msg.setUB(mub);
+            msg.setLB(lb);
             e.sendMessage(this, msg);
         }
     }

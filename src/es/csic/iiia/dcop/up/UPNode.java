@@ -226,5 +226,7 @@ public abstract class UPNode<E extends Edge, R extends UPResult> extends
         }
         return res;
     }
+
+    public abstract double getOptimalValue();
     
 }

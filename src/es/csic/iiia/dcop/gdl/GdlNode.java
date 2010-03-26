@@ -240,4 +240,9 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
         return belief.equals(previousBelief);
     }
 
+    @Override
+    public double getOptimalValue() {
+        return belief.getValue(belief.getOptimalConfiguration(null));
+    }
+
 }

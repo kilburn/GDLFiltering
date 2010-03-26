@@ -88,7 +88,7 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
         // Instantiate remaining variables
         if (belief != null) {
             cc += belief.getSize();
-            mapping = belief.getBestConfiguration(mapping);
+            mapping = belief.getOptimalConfiguration(mapping);
         }
 
         // Send messages
@@ -133,7 +133,7 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
         return res;
     }
     
-    public double getValue() {
+    public double getGlobalValue() {
         double value = 0;
         Collection<CostFunction> fs = node.getRelations();
         for (CostFunction f : fs) {
@@ -147,6 +147,10 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
             }
         }
         return value;
+    }
+
+    public double getOptimalValue() {
+        return node.getOptimalValue();
     }
 
 }
