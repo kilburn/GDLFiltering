@@ -179,9 +179,9 @@ public abstract class AbstractCostFunction implements CostFunction {
     public abstract Iterator<Integer> iterator();
 
     /** {@inheritDoc} */
-    public Hashtable<Variable, Integer> getOptimalConfiguration(Hashtable<Variable, Integer> mapping) {
+    public VariableAssignment getOptimalConfiguration(VariableAssignment mapping) {
         if (mapping == null) {
-            mapping = new Hashtable<Variable, Integer>(variables.length);
+            mapping = new VariableAssignment(variables.length);
         }
 
         // Empty cost functions have no optimal value
@@ -225,7 +225,7 @@ public abstract class AbstractCostFunction implements CostFunction {
      * @param mapping of the desired configuration.
      * @return corresponding linearized index.
      */
-    public int getIndex(Hashtable<Variable, Integer> mapping) {
+    public int getIndex(VariableAssignment mapping) {
         final int len = variables.length;
         if (len == 0) {
             return -1;
@@ -250,7 +250,7 @@ public abstract class AbstractCostFunction implements CostFunction {
      * @param mapping of the desired configuration.
      * @return corresponding linearized index.
      */
-    public ArrayList<Integer> getIndexes(Hashtable<Variable, Integer> mapping) {
+    public ArrayList<Integer> getIndexes(VariableAssignment mapping) {
         ArrayList<Integer> idxs = new ArrayList<Integer>();
 
         final int len = variables.length;
@@ -288,9 +288,9 @@ public abstract class AbstractCostFunction implements CostFunction {
      *                is automatically instantiated.
      * @return variable mapping filled with the desired configuration.
      */
-    public Hashtable<Variable, Integer> getMapping(int index, Hashtable<Variable, Integer> mapping) {
+    public VariableAssignment getMapping(int index, VariableAssignment mapping) {
         if (mapping == null) {
-            mapping = new Hashtable<Variable, Integer>(variables.length);
+            mapping = new VariableAssignment(variables.length);
         } else {
             mapping.clear();
         }
@@ -355,7 +355,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         buf.append(getName());
         buf.append(" {\n");
         if (size>0 && getValues() != null) {
-            Hashtable<Variable, Integer> map = null;
+            VariableAssignment map = null;
             for(int i=0; i<size; i++) {
                 map = getMapping(i, map);
                 for (Variable v : variables) {
@@ -378,7 +378,7 @@ public abstract class AbstractCostFunction implements CostFunction {
     }
 
     /** {@inheritDoc} */
-    public double getValue(Hashtable<Variable, Integer> mapping) {
+    public double getValue(VariableAssignment mapping) {
         int idx = this.getIndex(mapping);
         if (idx < 0)
             return getFactory().getCombineOperation().getNeutralValue();
@@ -463,7 +463,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         CostFunction result = factory.buildCostFunction(vars.toArray(new Variable[0]),
                 operation.getNeutralValue());
 
-        Hashtable<Variable, Integer> map = null;
+        VariableAssignment map = null;
         for (int i=0; i<result.getSize(); i++) {
             map = result.getMapping(i, map);
 
@@ -521,7 +521,7 @@ public abstract class AbstractCostFunction implements CostFunction {
     }
 
     /** {@inheritDoc} */
-    public CostFunction reduce(Hashtable<Variable, Integer> mapping) {
+    public CostFunction reduce(VariableAssignment mapping) {
         // Calculate the new factor's variables
         LinkedHashSet<Variable> newVariables = new LinkedHashSet<Variable>(variableSet);
         newVariables.removeAll(mapping.keySet());
@@ -531,7 +531,7 @@ public abstract class AbstractCostFunction implements CostFunction {
 
         // Instantiate it
         CostFunction result = factory.buildCostFunction(newVariables.toArray(new Variable[0]));
-        Hashtable<Variable, Integer> map = null;
+        VariableAssignment map = null;
         Iterator<Integer> it = result.iterator();
         for (int i = 0, len = result.getSize(); i < len; i++) {
             map = result.getMapping(i, map);
@@ -578,7 +578,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         varSet.retainAll(variableSet);*/
         AbstractCostFunction result = (AbstractCostFunction)factory.buildCostFunction(vars,
                 operation.getNoGood());
-        Hashtable<Variable, Integer> map = null;
+        VariableAssignment map = null;
         Iterator<Integer> it = iterator();
         while (it.hasNext()) {
             final int i = it.next();
@@ -628,7 +628,7 @@ public abstract class AbstractCostFunction implements CostFunction {
             return false;
         }
 
-        Hashtable<Variable, Integer> map = null;
+        VariableAssignment map = null;
         for (int i=0; i<size; i++) {
             map = this.getMapping(i, map);
             final double v1 = getValue(i);

@@ -43,8 +43,8 @@ import es.csic.iiia.dcop.mp.AbstractNode;
 import es.csic.iiia.dcop.mp.Edge;
 import es.csic.iiia.dcop.mp.Result;
 import es.csic.iiia.dcop.up.UPNode;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Map.Entry;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -90,7 +90,7 @@ public class JTNode extends AbstractNode<JTEdge, Result> {
         previousVariables.addAll(reachableVariables);
 
         // Count incoming variable occurrences
-        Hashtable<Variable,Integer> count = new Hashtable<Variable,Integer>();
+        HashMap<Variable,Integer> count = new HashMap<Variable,Integer>();
         for (JTEdge e : getEdges()) {
             JTMessage msg = e.getMessage(this);
             for (Variable v : msg.getVariables()) {

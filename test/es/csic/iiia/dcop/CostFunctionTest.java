@@ -38,10 +38,6 @@
 
 package es.csic.iiia.dcop;
 
-import es.csic.iiia.dcop.CostFunction;
-import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.HypercubeCostFunctionFactory;
-import java.util.Hashtable;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -59,12 +55,12 @@ public abstract class CostFunctionTest {
 
     protected CostFunction instance;
     private Variable[] variables;
-    protected HypercubeCostFunctionFactory factory;
+    protected CostFunctionFactory factory;
 
     private Variable a,b,c,d;
     private CostFunction f1, fda, fdc, fa, fb;
 
-    public abstract HypercubeCostFunctionFactory buildFactory();
+    public abstract CostFunctionFactory buildFactory();
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -175,7 +171,7 @@ public abstract class CostFunctionTest {
      */
     @Test
     public void testGetIndex1() {
-        Hashtable<Variable, Integer> map = new Hashtable<Variable,Integer>();
+        VariableAssignment map = new VariableAssignment();
         map.put(variables[0], 0);
         map.put(variables[1], 0);
         map.put(variables[2], 0);
@@ -187,7 +183,7 @@ public abstract class CostFunctionTest {
      */
     @Test
     public void testGetIndex2() {
-        Hashtable<Variable, Integer> map = new Hashtable<Variable,Integer>();
+        VariableAssignment map = new VariableAssignment();
         map.put(variables[0], 1);
         map.put(variables[1], 2);
         map.put(variables[2], 0);
@@ -199,7 +195,7 @@ public abstract class CostFunctionTest {
      */
     @Test
     public void testGetIndex3() {
-        Hashtable<Variable, Integer> map = new Hashtable<Variable,Integer>();
+        VariableAssignment map = new VariableAssignment();
         map.put(variables[0], 2);
         map.put(variables[1], 2);
         map.put(variables[2], 2);
@@ -211,7 +207,7 @@ public abstract class CostFunctionTest {
      */
     @Test
     public void testGetIndex4() {
-        Hashtable<Variable, Integer> map = new Hashtable<Variable,Integer>();
+        VariableAssignment map = new VariableAssignment();
         map.put(variables[0], 2);
         map.put(variables[1], 2);
         map.put(variables[2], 2);
@@ -226,7 +222,7 @@ public abstract class CostFunctionTest {
      */
     @Test
     public void testGetIndex5() {
-        Hashtable<Variable, Integer> map = new Hashtable<Variable,Integer>();
+        VariableAssignment map = new VariableAssignment();
         map.put(variables[0], 2);
         map.put(variables[1], 2);
         map.put(variables[2], 2);
@@ -243,7 +239,7 @@ public abstract class CostFunctionTest {
      */
     @Test
     public void testGetMapping1() {
-        Hashtable<Variable, Integer> map = new Hashtable<Variable,Integer>();
+        VariableAssignment map = new VariableAssignment();
         map.put(variables[0], 0);
         map.put(variables[1], 0);
         map.put(variables[2], 0);
@@ -255,7 +251,7 @@ public abstract class CostFunctionTest {
      */
     @Test
     public void testGetMapping2() {
-        Hashtable<Variable, Integer> map = new Hashtable<Variable,Integer>();
+        VariableAssignment map = new VariableAssignment();
         map.put(variables[0], 1);
         map.put(variables[1], 2);
         map.put(variables[2], 0);
@@ -267,7 +263,7 @@ public abstract class CostFunctionTest {
      */
     @Test
     public void testGetMapping3() {
-        Hashtable<Variable, Integer> map = new Hashtable<Variable,Integer>();
+        VariableAssignment map = new VariableAssignment();
         map.put(variables[0], 2);
         map.put(variables[1], 2);
         map.put(variables[2], 2);
@@ -285,7 +281,7 @@ public abstract class CostFunctionTest {
             new Variable("c", 3),
         };
         CostFunction f = factory.buildCostFunction(vars);
-        Hashtable<Variable, Integer> map = new Hashtable<Variable,Integer>();
+        VariableAssignment map = new VariableAssignment();
         map.put(vars[0], 0);
         map.put(vars[1], 1);
         map.put(vars[2], 1);
@@ -731,7 +727,7 @@ public abstract class CostFunctionTest {
      */
     @Test
     public void testReduce1() {
-        Hashtable<Variable, Integer> map = new Hashtable<Variable, Integer>();
+        VariableAssignment map = new VariableAssignment();
         map.put(a, 0);
         CostFunction red = f1.reduce(map);
 
@@ -748,7 +744,7 @@ public abstract class CostFunctionTest {
      */
     @Test
     public void testReduce2() {
-        Hashtable<Variable, Integer> map = new Hashtable<Variable, Integer>();
+        VariableAssignment map = new VariableAssignment();
         map.put(b, 0);
         CostFunction red = f1.reduce(map);
 
@@ -765,7 +761,7 @@ public abstract class CostFunctionTest {
      */
     @Test
     public void testReduce3() {
-        Hashtable<Variable, Integer> map = new Hashtable<Variable, Integer>();
+        VariableAssignment map = new VariableAssignment();
         map.put(c, 0);
         CostFunction red = f1.reduce(map);
 
@@ -782,7 +778,7 @@ public abstract class CostFunctionTest {
      */
     @Test
     public void testReduce4() {
-        Hashtable<Variable, Integer> map = new Hashtable<Variable, Integer>();
+        VariableAssignment map = new VariableAssignment();
         map.put(a, 0);
         map.put(b, 0);
         map.put(c, 0);

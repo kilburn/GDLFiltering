@@ -38,19 +38,17 @@
 
 package es.csic.iiia.dcop;
 
-import es.csic.iiia.dcop.HypercubeCostFunctionFactory;
 import org.junit.Ignore;
 
 /**
  *
  * @author marc
  */
-@Ignore
 public class ListCostFunctionTest extends AbstractCostFunctionTest {
 
     @Override
-    public HypercubeCostFunctionFactory buildFactory() {
-        return new HypercubeCostFunctionFactory();
+    public CostFunctionFactory buildFactory() {
+        return new ListCostFunctionFactory();
     }
 
 }

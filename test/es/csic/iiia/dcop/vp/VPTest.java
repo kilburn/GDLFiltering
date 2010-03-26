@@ -38,19 +38,16 @@
 
 package es.csic.iiia.dcop.vp;
 
-import es.csic.iiia.dcop.vp.VPGraph;
-import es.csic.iiia.dcop.vp.VPResults;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunctionFactory;
 import es.csic.iiia.dcop.HypercubeCostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
+import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.algo.JunctionTreeAlgo;
-import es.csic.iiia.dcop.gdl.GdlGraph;
 import es.csic.iiia.dcop.dfs.MCS;
 import es.csic.iiia.dcop.gdl.GdlFactory;
 import es.csic.iiia.dcop.up.UPFactory;
 import es.csic.iiia.dcop.up.UPGraph;
-import java.util.Hashtable;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -148,7 +145,7 @@ public class VPTest {
         cg.run(100);
         VPGraph instance = new VPGraph(cg);
 
-        Hashtable<Variable, Integer> expResult = new Hashtable<Variable, Integer>();
+        VariableAssignment expResult = new VariableAssignment();
         for (int i=0; i<5; i++) {
             expResult.put(v[i], 0);
         }
@@ -169,7 +166,7 @@ public class VPTest {
         cg.run(100);
         VPGraph instance = new VPGraph(cg);
 
-        Hashtable<Variable, Integer> expResult = new Hashtable<Variable, Integer>();
+        VariableAssignment expResult = new VariableAssignment();
         for (int i=0; i<5; i++) {
             expResult.put(v[i], 1);
         }

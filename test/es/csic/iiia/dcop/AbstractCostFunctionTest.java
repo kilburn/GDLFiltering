@@ -37,8 +37,6 @@
  */
 
 package es.csic.iiia.dcop;
-import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.AbstractCostFunction;
 import org.junit.Ignore;
 import static org.junit.Assert.*;
 

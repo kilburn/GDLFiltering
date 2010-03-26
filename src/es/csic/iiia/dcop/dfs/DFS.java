@@ -58,12 +58,12 @@ public abstract class DFS {
     private HashSet<Variable> remainingVariables;
     private int[] nPlacedNeighs;
     private Hashtable<Variable, HashSet<Variable>> neighboors;
-    private Hashtable<Variable, Integer> variableIndices;
-    private Hashtable<Variable, Integer> nConnections;
+    private VariableAssignment variableIndices;
+    private VariableAssignment nConnections;
     private Random random = new Random();
     private Variable root;
     private char[][] adjacency = null;
-    private Hashtable<Variable, Integer> variableDepths;
+    private VariableAssignment variableDepths;
     private int rootIndex = -1;
 
     public DFS(CostFunction[] factors) {
@@ -77,7 +77,7 @@ public abstract class DFS {
 
     private void initialize() {
         neighboors = new Hashtable<Variable, HashSet<Variable>>();
-        nConnections = new Hashtable<Variable, Integer>();
+        nConnections = new VariableAssignment();
         remainingVariables = new HashSet<Variable>();
         for (CostFunction f : factors) {
             Set<Variable> vars = f.getVariableSet();
@@ -101,7 +101,7 @@ public abstract class DFS {
         }
         variables = remainingVariables.toArray(new Variable[]{});
 
-        variableIndices = new Hashtable<Variable, Integer>(variables.length);
+        variableIndices = new VariableAssignment(variables.length);
         for(int i=0; i<variables.length; i++) {
             variableIndices.put(variables[i], i);
         }
@@ -126,7 +126,7 @@ public abstract class DFS {
             return;
         }
 
-        variableDepths = new Hashtable<Variable, Integer>(variables.length);
+        variableDepths = new VariableAssignment(variables.length);
         adjacency = new char[variables.length][variables.length];
 
         // Choose root node

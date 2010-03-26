@@ -38,7 +38,6 @@
 
 package es.csic.iiia.dcop;
 
-import es.csic.iiia.dcop.Variable;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

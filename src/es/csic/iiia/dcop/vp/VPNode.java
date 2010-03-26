@@ -39,11 +39,10 @@
 package es.csic.iiia.dcop.vp;
 
 import es.csic.iiia.dcop.CostFunction;
-import es.csic.iiia.dcop.Variable;
+import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.mp.AbstractNode;
 import es.csic.iiia.dcop.up.UPNode;
 import java.util.Collection;
-import java.util.Hashtable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +56,7 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
     private static Logger log = LoggerFactory.getLogger(VPGraph.class);
     
     private CostFunction belief;
-    private Hashtable<Variable, Integer> mapping;
+    private VariableAssignment mapping;
     private UPNode node;
 
     public VPNode(UPNode n) {
@@ -73,7 +72,7 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
         long cc = 0;
 
         // Receive incoming messages
-        mapping = new Hashtable<Variable, Integer>();
+        mapping = new VariableAssignment();
         for(VPEdge e : getEdges()) {
             VPMessage msg = e.getMessage(this);
             if (msg != null) {

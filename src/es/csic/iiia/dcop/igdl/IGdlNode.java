@@ -43,12 +43,11 @@ import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
 import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.igdl.strategy.LazyStrategy;
+import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPNode;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Hashtable;
 
 /**
  * GDL algorithm node.
@@ -215,7 +214,7 @@ public class IGdlNode extends UPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
 
     @Override
     public double getOptimalValue() {
-        Hashtable<Variable, Integer> map;
+        VariableAssignment map;
         CostFunction belief = getBelief();
         map = belief.getOptimalConfiguration(null);
         return belief.getValue(map);

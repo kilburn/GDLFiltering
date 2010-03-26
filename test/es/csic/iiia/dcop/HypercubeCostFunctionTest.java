@@ -38,8 +38,6 @@
 
 package es.csic.iiia.dcop;
 
-import es.csic.iiia.dcop.HypercubeCostFunctionFactory;
-
 /**
  *
  * @author marc

@@ -39,8 +39,8 @@
 package es.csic.iiia.dcop.vp;
 
 import es.csic.iiia.dcop.Variable;
+import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.mp.DefaultResults;
-import java.util.Hashtable;
 
 /**
  * Value Propagation algorithm's collection of results.
@@ -49,12 +49,12 @@ import java.util.Hashtable;
  */
 public class VPResults extends DefaultResults<VPResult> {
     
-    public Hashtable<Variable, Integer> getMapping() {
+    public VariableAssignment getMapping() {
 
         // Simple result collection
-        Hashtable<Variable, Integer> result = new Hashtable<Variable, Integer>();
+        VariableAssignment result = new VariableAssignment();
         for (VPResult r : getResults()) {
-            Hashtable<Variable, Integer> map = r.getMapping();
+            VariableAssignment map = r.getMapping();
             if (map!=null) {
                 result.putAll(map);
             }
@@ -66,15 +66,11 @@ public class VPResults extends DefaultResults<VPResult> {
     @Override
     public String toString() {
         StringBuffer buf = new StringBuffer(super.toString().split("\\n", 2)[0]);
-        Hashtable<Variable, Integer> map = getMapping();
-        buf.append("\nM:");
-        for (Variable v : map.keySet()) {
-            buf.append("(");
-            buf.append(v.getName());
-            buf.append(",");
-            buf.append(map.get(v));
-            buf.append(")");
+        buf.append("\nGlobal : ").append(getMapping().toString());
+        for (VPResult r : getResults()) {
+            buf.append("\n").append(r.toString());
         }
+
         return buf.toString();
     }
 

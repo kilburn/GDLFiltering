@@ -43,6 +43,7 @@ import es.csic.iiia.dcop.CostFunctionFactory;
 import es.csic.iiia.dcop.FactorGraph;
 import es.csic.iiia.dcop.HypercubeCostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
+import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.algo.JunctionTreeAlgo;
 import es.csic.iiia.dcop.algo.MaxSum;
 import es.csic.iiia.dcop.algo.RandomNoiseAdder;
@@ -71,7 +72,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -316,7 +316,7 @@ public class CliApp {
         // Extract a solution
         VPGraph st = new VPGraph(cg);
         VPResults res = st.run(100);
-        Hashtable<Variable, Integer> map = res.getMapping();
+        VariableAssignment map = res.getMapping();
 
         // Compute UB for IGdl
         if (algorithm == ALGO_IGDL) {

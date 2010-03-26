@@ -42,6 +42,7 @@ import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunctionFactory;
 import es.csic.iiia.dcop.HypercubeCostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
+import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.algo.JunctionTreeAlgo;
 import es.csic.iiia.dcop.bb.UBGraph;
 import es.csic.iiia.dcop.bb.UBResult;
@@ -59,7 +60,6 @@ import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.VPResults;
-import java.util.Hashtable;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -131,7 +131,7 @@ public class GDLTest {
         g.setFactory(factory);
         DefaultResults<UPResult> results = g.run(100);
         for (UPResult r : results.getResults()) {
-            Hashtable<Variable, Integer> map2 = r.getFactor().getBestConfiguration(null);
+            VariableAssignment map2 = r.getFactor().getOptimalConfiguration(null);
             for (Variable v : map2.keySet()) {
                 System.out.println(v.getName() + ":" + map2.get(v));
             }
@@ -141,7 +141,7 @@ public class GDLTest {
         // Extract a solution
         VPGraph vp = new VPGraph(g);
         VPResults res = vp.run(100);
-        Hashtable<Variable, Integer> map = res.getMapping();
+        VariableAssignment map = res.getMapping();
 
         // The solution should be 0 0 1
         assertEquals((int)map.get(a), 0);
@@ -157,6 +157,31 @@ public class GDLTest {
     }
 
     @Test
+    public void testThings() {
+        CostFunction.Summarize summarize = CostFunction.Summarize.MIN;
+        CostFunction.Combine combine = CostFunction.Combine.SUM;
+        CostFunction.Normalize normalize = CostFunction.Normalize.NONE;
+        factory.setMode(summarize, combine, normalize);
+
+        Variable x,y,z,t,u,v;
+        x = new Variable("x", 2);
+        y = new Variable("y", 2);
+        z = new Variable("z", 2);
+        t = new Variable("t", 2);
+        u = new Variable("u", 2);
+        v = new Variable("v", 2);
+        Variable[] variables = new Variable[] {x, y, z, t, u, v};
+
+        CostFunction fxy = factory.buildCostFunction(new Variable[] {x, y});
+        fxy.setValues(new double[] {10, 5, 2, 8});
+        CostFunction res = fxy.summarize(new Variable[]{x})
+                .combine(fxy.summarize(new Variable[]{y}));
+        System.out.println(fxy);
+        System.out.println(res);
+    }
+
+    @Test
+    @Ignore
     public void testIGdlExample() {
         System.out.println("RUNNING IGDL");
         // Set operating mode
@@ -206,7 +231,7 @@ public class GDLTest {
         // Extract a solution
         VPGraph vp = new VPGraph(g);
         VPResults res = vp.run(100);
-        Hashtable<Variable, Integer> map = res.getMapping();
+        VariableAssignment map = res.getMapping();
 
         // The solution should be 0 0 1
         assertEquals(1, (int)map.get(x));
@@ -231,7 +256,7 @@ public class GDLTest {
 
         // UB must be 20
         for (UBResult r : rs.getResults()) {
-            assertEquals(20, r.getValue(), 0.0001);
+            assertEquals(20, r.getUB(), 0.0001);
         }
     }
 
@@ -287,7 +312,7 @@ public class GDLTest {
         // Extract a solution
         VPGraph vp = new VPGraph(g);
         VPResults res = vp.run(100);
-        Hashtable<Variable, Integer> map = res.getMapping();
+        VariableAssignment map = res.getMapping();
 
         // The solution should be 0 0 1
         assertEquals((int)map.get(x), 1);

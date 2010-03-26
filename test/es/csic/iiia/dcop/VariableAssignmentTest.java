@@ -36,33 +36,82 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.vp;
+package es.csic.iiia.dcop;
 
-import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.VariableAssignment;
-import es.csic.iiia.dcop.mp.Message;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import static org.junit.Assert.*;
 
 /**
- * Value propagation message, carrying the variable/value pairs assigned by
- * the ancestor nodes.
- * 
+ *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class VPMessage implements Message {
+@Ignore
+public class VariableAssignmentTest {
 
-    private VariableAssignment mapping;
+    private static int SIZE = 20;
+    private static long ITERS = 10000000;
+    private Variable[] v;
 
-    public VPMessage(VariableAssignment mapping) {
-        this.mapping = mapping;
+    public VariableAssignmentTest() {
     }
 
-    public VariableAssignment getMapping() {
-        return mapping;
+    @BeforeClass
+    public static void setUpClass() throws Exception {
     }
 
-    @Override
-    public String toString() {
-        return "VP" + mapping.toString();
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+    }
+
+    @Before
+    public void setUp() {
+        v = new Variable[SIZE];
+        for (int i=0; i<SIZE; i++) {
+            v[i] = new Variable(i);
+        }
+    }
+
+    @After
+    public void tearDown() {
+    }
+
+    @Test
+    public void testHashtable() {
+        for (int j=0; j<ITERS; j++) {
+            Hashtable<Variable, Integer> map = new Hashtable<Variable, Integer>();
+            for (int i=0; i<SIZE; i++) {
+                map.put(v[i], i);
+            }
+        }
+    }
+
+    @Test
+    public void testHashMap() {
+        for (int j=0; j<ITERS; j++) {
+            HashMap<Variable, Integer> map = new HashMap<Variable, Integer>();
+            for (int i=0; i<SIZE; i++) {
+                map.put(v[i], i);
+            }
+        }
+    }
+
+    @Test
+    public void testVariableAssignment() {
+        for (int j=0; j<ITERS; j++) {
+            VariableAssignment map = new VariableAssignment();
+            for (int i=0; i<SIZE; i++) {
+                map.put(v[i], i);
+            }
+        }
     }
 
 }

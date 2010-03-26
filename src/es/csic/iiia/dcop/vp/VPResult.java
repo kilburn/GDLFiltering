@@ -39,8 +39,8 @@
 package es.csic.iiia.dcop.vp;
 
 import es.csic.iiia.dcop.Variable;
+import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.mp.Result;
-import java.util.Hashtable;
 
 /**
  * Value Propagation results for a single node.
@@ -49,27 +49,21 @@ import java.util.Hashtable;
  */
 public class VPResult implements Result {
 
-    private Hashtable<Variable, Integer> mapping;
+    private VariableAssignment mapping;
 
-    VPResult(Hashtable<Variable, Integer> mapping) {
+    VPResult(VariableAssignment mapping) {
         this.mapping = mapping;
     }
 
-    public Hashtable<Variable, Integer> getMapping() {
+    public VariableAssignment getMapping() {
         return mapping;
     }
 
     @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer("M:");
+        StringBuffer buf = new StringBuffer("A : ");
         if (mapping != null) {
-            for(Variable v : mapping.keySet()) {
-                buf.append("(");
-                buf.append(v.getName());
-                buf.append(",");
-                buf.append(mapping.get(v));
-                buf.append(")");
-            }
+            buf.append(mapping);
         } else {
             buf.append("null");
         }

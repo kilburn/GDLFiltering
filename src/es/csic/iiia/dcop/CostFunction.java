@@ -189,7 +189,7 @@ public interface CostFunction {
      *
      * @param mapping current variable mappings.
      */
-    Hashtable<Variable, Integer> getOptimalConfiguration(Hashtable<Variable, Integer> mapping);
+    VariableAssignment getOptimalConfiguration(VariableAssignment mapping);
 
     /**
      * Returns <strong>the first</strong> index of the values array
@@ -198,7 +198,7 @@ public interface CostFunction {
      * @param mapping variable/value mapping table.
      * @return index of the values array corresponding to the given mapping.
      */
-    int getIndex(Hashtable<Variable, Integer> mapping);
+    int getIndex(VariableAssignment mapping);
 
     /**
      * Get all the linearized indices corresponding to the given variable mapping.
@@ -206,7 +206,7 @@ public interface CostFunction {
      * @param mapping of the desired configuration.
      * @return corresponding linearized index(es).
      */
-    public List<Integer> getIndexes(Hashtable<Variable, Integer> mapping);
+    public List<Integer> getIndexes(VariableAssignment mapping);
 
     /**
      * Returns the variable/value mapping corresponding to the specified
@@ -216,7 +216,7 @@ public interface CostFunction {
      * @param mapping mapping table to fill, instantiated if null.
      * @return variable/value mapping corresponding to the given index.
      */
-    Hashtable<Variable, Integer> getMapping(int index, Hashtable<Variable, Integer> mapping);
+    VariableAssignment getMapping(int index, VariableAssignment mapping);
 
     /**
      * Get a short string representation of this function.
@@ -259,7 +259,7 @@ public interface CostFunction {
      * @param mapping variable/value mapping.
      * @return value corresponding factor value.
      */
-    double getValue(Hashtable<Variable, Integer> mapping);
+    double getValue(VariableAssignment mapping);
 
     double[] getValues();
 
@@ -314,7 +314,7 @@ public interface CostFunction {
      * @param mapping variable-value pairs to fix.
      * @return new reduced factor.
      */
-    CostFunction reduce(Hashtable<Variable, Integer> mapping);
+    CostFunction reduce(VariableAssignment mapping);
 
     /**
      * Sets the value of this factor for the given variable states.
