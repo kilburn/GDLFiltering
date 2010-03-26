@@ -46,27 +46,41 @@ import es.csic.iiia.dcop.mp.Message;
  */
 public class UBMessage implements Message {
 
-    private double value;
+    private double ub;
+    private double lb;
 
     /**
      * @return the value
      */
-    public double getValue() {
-        return value;
+    public double getUB() {
+        return ub;
     }
 
     /**
      * @param value the value to set
      */
-    public void setValue(double value) {
-        this.value = value;
+    public void setUB(double ub) {
+        this.ub = ub;
+    }
+
+    /**
+     * @return the value
+     */
+    public double getLB() {
+        return lb;
+    }
+
+    /**
+     * @param value the value to set
+     */
+    public void setLB(double lb) {
+        this.lb = lb;
     }
 
     @Override
     public String toString() {
-        return String.valueOf(value);
+        return "[" + this.lb + " - " + this.ub + "]";
     }
-
 
 
 }

@@ -39,6 +39,7 @@
 package es.csic.iiia.dcop.igdl;
 
 import es.csic.iiia.dcop.CostFunction;
+import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.mp.Message;
 import java.util.ArrayList;
 
@@ -82,10 +83,21 @@ public class IGdlMessage implements Message {
             }
         }
         if (belief != null) {
+            Variable[] vars = belief.getVariableSet().toArray(new Variable[0]);
+            if (combi == null) {
+                combi = belief.getFactory().buildCostFunction(vars);
+            } else {
+                combi = combi.summarize(vars);
+            }
+        }
+        if (belief != null) {
             buf.append("\n   Apr: ");
             buf.append(combi);
             buf.append("\n   Opt: ");
             buf.append(belief);
+            combi.negate();
+            buf.append("\n   Err: ");
+            buf.append(belief.combine(combi));
         }
         return buf.toString();
     }

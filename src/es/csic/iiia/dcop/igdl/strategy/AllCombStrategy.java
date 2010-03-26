@@ -59,9 +59,13 @@ public class AllCombStrategy extends IGdlPartitionStrategy {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
 
+    private IGdlPartitionStrategy subStrategy;
+
     @Override
     public void initialize(IGdlNode node) {
         super.initialize(node);
+        subStrategy = new LazyStrategy();
+        subStrategy.initialize(node);
     }
 
     public IGdlMessage getPartition(ArrayList<CostFunction> fs,
@@ -73,7 +77,7 @@ public class AllCombStrategy extends IGdlPartitionStrategy {
         // Bound factors, that contain at least one separator variable.
         ArrayList<CostFunction> bf = new ArrayList<CostFunction>();
 
-        log.trace("-- Functions");
+        log.trace("- Node functions");
         for (CostFunction f : fs) {
             log.trace("\t " + f);
         }
@@ -90,9 +94,10 @@ public class AllCombStrategy extends IGdlPartitionStrategy {
         // Separate bound factors in set of functions that do *not* share
         // any variable
         ArrayList<CFSet> fsets = computeDisjointSets(bf);
-        log.trace("-- " + fsets.size() + " disjoint bf sets");
+        log.trace("- " + fsets.size() + " disjoint BF sets");
         for(int i=0; i<fsets.size(); i++) {
             CFSet set = fsets.get(i);
+            /*
             CostFunction setf = null;
 
             log.trace("  Set " + i + ":");
@@ -106,7 +111,11 @@ public class AllCombStrategy extends IGdlPartitionStrategy {
             int nCombinations = binom(nBoundVariables, node.getR());
             log.trace("Number of combinations: " + nCombinations);
 
-            msg.addFactor(setf);
+            msg.addFactor(setf);*/
+            IGdlMessage pmsg = subStrategy.getPartition(set.functions, e);
+            for(CostFunction f : pmsg.getFactors()) {
+                msg.addFactor(f);
+            }
         }
         
         return msg;

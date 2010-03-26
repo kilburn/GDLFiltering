@@ -48,6 +48,7 @@ import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPNode;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Hashtable;
 
 /**
  * GDL algorithm node.
@@ -69,7 +70,7 @@ public class IGdlNode extends UPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
     /**
      * Partitioning strategy to use
      */
-    private IGdlPartitionStrategy strategy = new LazyStrategy();
+    private IGdlPartitionStrategy strategy = new AllCombStrategy();
 
     /**
      * Constructs a new clique with the specified member variable and null
@@ -194,7 +195,7 @@ public class IGdlNode extends UPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
             }
 
             // For research purposes, calculate the optimal belief
-            CostFunction belief = null;
+            CostFunction belief = getFactory().buildCostFunction(e.getVariables());
             for (CostFunction f : fs) {
                 belief = f.combine(belief);
             }
@@ -210,6 +211,14 @@ public class IGdlNode extends UPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
     @Override
     public boolean isConverged() {
         return false;
+    }
+
+    @Override
+    public double getOptimalValue() {
+        Hashtable<Variable, Integer> map;
+        CostFunction belief = getBelief();
+        map = belief.getOptimalConfiguration(null);
+        return belief.getValue(map);
     }
 
 }
