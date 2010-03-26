@@ -38,6 +38,7 @@
 
 package es.csic.iiia.dcop.bb;
 
+import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.mp.AbstractNode;
 import es.csic.iiia.dcop.vp.VPNode;
 import org.slf4j.Logger;
@@ -57,8 +58,13 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
     private double localLB;
     private VPNode node;
 
+    CostFunction.Summarize summarize;
+    CostFunction.Combine combine;
+
     public UBNode(VPNode node) {
         this.node = node;
+         summarize = node.getFactory().getSummarizeOperation();
+         combine = node.getFactory().getCombineOperation();
     }
 
     public String getName() {
@@ -94,8 +100,10 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
         for (UBEdge e : getEdges()) {
             UBMessage msg = e.getMessage(this);
             if (msg != null) {
-                ub += msg.getUB();
-                lb = Math.max(lb, msg.getLB());
+                ub = combine.eval(ub, msg.getUB());
+                if (summarize.isBetter(lb, msg.getLB())) {
+                    lb = msg.getLB();
+                }
             }
         }
 
@@ -119,7 +127,7 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
             double mub = ub;
             UBMessage inMsg = e.getMessage(this);
             if (inMsg != null) {
-                mub -= inMsg.getUB();
+                mub = combine.eval(ub, combine.invert(inMsg.getUB()));
             }
             UBMessage msg = new UBMessage();
             msg.setUB(mub);

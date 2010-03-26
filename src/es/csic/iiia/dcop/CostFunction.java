@@ -57,15 +57,54 @@ public interface CostFunction {
         /**
          * Perform the combine operator using product.
          */
-        PRODUCT (1),
+        PRODUCT {
+            public double getNeutralValue() {return 1;}
+            public double eval(double x, double y) {return x*y;}
+            public double invert(double x) {return 1/x;}
+        },
         /**
          * Perform the combine operator using addition.
          */
-        SUM (0);
+        SUM {
+            public double getNeutralValue() {return 0;}
+            public double eval(double x, double y) {return x+y;}
+            public double invert(double x) {return -x;}
+        };
 
-        private double n;
-        Combine(double n) {this.n = n;}
-        public double getNeutralValue() {return n;}
+        /**
+         * Performs the combination of the given values according to the
+         * current combination mode.
+         *
+         * @param x first value.
+         * @param y second value.
+         * @return combination result.
+         */
+        public abstract double eval(double x, double y);
+
+        /**
+         * Returns the neutral value of the combination mode.
+         *
+         * This is, it returns <em>0</em> when SUM-combining, or <em>1</em>
+         * when PRODUCT-combining.
+         *
+         * @return combination <em>neutral</em> value.
+         */
+        public abstract double getNeutralValue();
+
+        /**
+         * Returns the inverse of the given value.
+         *
+         * Given {@link #eval(x, y)} and {@link #getNeutralValue()}, this function
+         * returns the value such that:
+         *
+         * <code>
+         * eval(x, inverse(x)) == getNeutralValue()
+         * </code>
+         *
+         * @param x value.
+         * @return the inverse of the given value.
+         */
+        public abstract double invert(double x);
     }
 
     /**

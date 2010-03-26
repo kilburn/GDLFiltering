@@ -39,6 +39,7 @@
 package es.csic.iiia.dcop.vp;
 
 import es.csic.iiia.dcop.CostFunction;
+import es.csic.iiia.dcop.CostFunctionFactory;
 import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.mp.AbstractNode;
 import es.csic.iiia.dcop.up.UPNode;
@@ -134,22 +135,20 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
     
     public double getGlobalValue() {
         double value = 0;
+        final CostFunction.Combine op = node.getFactory().getCombineOperation();
         Collection<CostFunction> fs = node.getRelations();
         for (CostFunction f : fs) {
-            switch(f.getFactory().getCombineOperation()) {
-                    case SUM:
-                        value += f.getValue(mapping);
-                        break;
-                    case PRODUCT:
-                        value *= f.getValue(mapping);
-                        break;
-            }
+            value = op.eval(value, f.getValue(mapping));
         }
         return value;
     }
 
     public double getOptimalValue() {
         return node.getOptimalValue();
+    }
+
+    public CostFunctionFactory getFactory() {
+        return node.getFactory();
     }
 
 }

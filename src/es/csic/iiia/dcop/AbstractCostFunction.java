@@ -432,14 +432,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         Iterator<Integer> it = iterator();
         while(it.hasNext()) {
             final int i = it.next();
-            switch (operation) {
-                case PRODUCT:
-                    setValue(i, 1 / getValue(i));
-                    break;
-                case SUM:
-                    setValue(i, -getValue(i));
-                    break;
-            }
+            setValue(i, operation.invert(getValue(i)));
         }
     }
 
