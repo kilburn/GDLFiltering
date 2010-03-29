@@ -45,9 +45,12 @@ import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.up.UPEdge;
+import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.up.UPNode;
 import java.util.ArrayList;
 import java.util.Collection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * GDL algorithm node.
@@ -55,6 +58,8 @@ import java.util.Collection;
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
 public class IGdlNode extends UPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
+
+    private static Logger log = LoggerFactory.getLogger(UPGraph.class);
 
     /**
      * Maximum cost function arity
@@ -193,15 +198,18 @@ public class IGdlNode extends UPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
                 fs.removeAll(e.getMessage(this).getFactors());
             }
 
+            // Obtain the partition
+            IGdlMessage msg = strategy.getPartition(fs, e);
+
             // For research purposes, calculate the optimal belief
-            CostFunction belief = getFactory().buildCostFunction(e.getVariables());
-            for (CostFunction f : fs) {
-                belief = f.combine(belief);
+            if (log.isTraceEnabled()) {
+                CostFunction belief = getFactory().buildCostFunction(e.getVariables());
+                for (CostFunction f : fs) {
+                    belief = f.combine(belief);
+                }
+                msg.setBelief(belief.summarize(e.getVariables()));
             }
 
-            // Obtain the partition and send it
-            IGdlMessage msg = strategy.getPartition(fs, e);
-            msg.setBelief(belief.summarize(e.getVariables()));
             e.sendMessage(this, msg);
         }
     }

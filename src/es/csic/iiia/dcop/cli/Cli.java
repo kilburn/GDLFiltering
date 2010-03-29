@@ -98,8 +98,8 @@ public class Cli {
         System.err.println("    Uses the specified summarizing operator, where operator is one of: ");
         System.err.println("      - min : summarizes using the minimum value (for costs).");
         System.err.println("      - max : summarizes using the maximum value (for utilites).");
-        //System.err.println("  -t file, --trace=file");
-        //System.err.println("    Save algorithms' traces in <file>.");
+        System.err.println("  -t [file], --trace=file");
+        System.err.println("    Save algorithms' traces in [file], or \"trace.txt\" if unspecified.");
         System.err.println();
         System.exit(0);
     }
@@ -120,8 +120,9 @@ public class Cli {
             new LongOpt("normalize", LongOpt.REQUIRED_ARGUMENT, null, 'n'),
             new LongOpt("random-noise", LongOpt.OPTIONAL_ARGUMENT, null, 'r'),
             new LongOpt("summarize", LongOpt.REQUIRED_ARGUMENT, null, 's'),
+            new LongOpt("trace", LongOpt.OPTIONAL_ARGUMENT, null, 't'),
         };
-        Getopt g = new Getopt(programName, argv, "a:c:e:f::g::hi:j:l:m:n:r::s:", longopts);
+        Getopt g = new Getopt(programName, argv, "a:c:e:f::g::hi:j:l:m:n:r::s:t::", longopts);
 
         CliApp cli = new CliApp();
         int c=0;

@@ -293,6 +293,14 @@ public interface CostFunction {
     double getValue(int[] index);
 
     /**
+     * Gets the value of this factor for the given linearized index.
+     *
+     * @param index of the state.
+     * @return value corresponding factor value.
+     */
+    double getValue(int index);
+
+    /**
      * Gets the value of this factor for the given variable/value mapping.
      *
      * @param mapping variable/value mapping.

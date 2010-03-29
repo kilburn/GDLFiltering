@@ -101,7 +101,7 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
             UBMessage msg = e.getMessage(this);
             if (msg != null) {
                 ub = combine.eval(ub, msg.getUB());
-                if (summarize.isBetter(lb, msg.getLB())) {
+                if (summarize.isBetter(msg.getLB(), lb)) {
                     lb = msg.getLB();
                 }
             }

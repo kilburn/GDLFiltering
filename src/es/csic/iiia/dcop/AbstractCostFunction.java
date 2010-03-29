@@ -38,6 +38,7 @@
 
 package es.csic.iiia.dcop;
 
+import es.csic.iiia.dcop.util.CostFunctionStats;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -160,7 +161,7 @@ public abstract class AbstractCostFunction implements CostFunction {
      * @param index linearized index.
      * @return value corresponding factor value.
      */
-    protected abstract double getValue(int index);
+    public abstract double getValue(int index);
 
     /**
      * Gets the value of this factor for the given linearized index.
@@ -338,10 +339,10 @@ public abstract class AbstractCostFunction implements CostFunction {
         buf.append(getName());
         buf.append(" {");
         if (size>0 && getValues() != null) {
-            buf.append(formatValue(getValue(0)));
+            buf.append(CostFunctionStats.formatValue(getValue(0)));
             for(int i=1; i<size; i++) {
                 buf.append(",");
-                buf.append(formatValue(getValue(i)));
+                buf.append(CostFunctionStats.formatValue(getValue(i)));
             }
         }
         buf.append("}");
@@ -363,7 +364,7 @@ public abstract class AbstractCostFunction implements CostFunction {
                     buf.append(" ");
                 }
                 buf.append("| ");
-                buf.append(formatValue(getValue(i)));
+                buf.append(CostFunctionStats.formatValue(getValue(i)));
                 buf.append("\n");
             }
         }
@@ -646,12 +647,4 @@ public abstract class AbstractCostFunction implements CostFunction {
         return hash;
     }
 
-    protected String formatValue(double value) {
-        String res = String.valueOf(value);
-        final int idx = res.indexOf('.');
-        if (idx > 0) {
-            res = res.substring(0, Math.min(res.length(), idx+4));
-        }
-        return res;
-    }
 }

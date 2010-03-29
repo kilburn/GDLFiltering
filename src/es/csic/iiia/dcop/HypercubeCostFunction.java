@@ -98,7 +98,7 @@ public class HypercubeCostFunction extends AbstractCostFunction implements Seria
     }
 
     /** {@inheritDoc} */
-    protected double getValue(int index) {
+    public double getValue(int index) {
         return values[index];
     }
 

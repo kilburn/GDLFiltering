@@ -38,6 +38,9 @@
 
 package es.csic.iiia.dcop.cli;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.core.joran.spi.JoranException;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunctionFactory;
 import es.csic.iiia.dcop.FactorGraph;
@@ -71,10 +74,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import org.slf4j.LoggerFactory;
 
 /**
  * Command Line Interface application logic handler.
@@ -276,6 +281,9 @@ public class CliApp {
     }
 
     void run() {
+        // Setup log handling
+        setupLogHandling();
+
         // Parameter combination checks
         if (algorithm == ALGO_MAX_SUM && normalization == CostFunction.Normalize.NONE) {
             System.err.println("Warning: maxsum doesn't converge without normalization, using sum0.");
@@ -322,6 +330,7 @@ public class CliApp {
         if (algorithm == ALGO_IGDL) {
             UBGraph ub = new UBGraph(st);
             UBResults ubres = ub.run(100);
+            System.out.println(ubres);
         }
 
         System.out.print("SOLUTION");
@@ -521,6 +530,26 @@ public class CliApp {
      */
     public void setIGdlR(int IGdlR) {
         this.IGdlR = IGdlR;
+    }
+
+    private void setupLogHandling() {
+        if (!isCreateTraceFile()) {
+            return;
+        }
+
+        LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+        try {
+            JoranConfigurator configurator = new JoranConfigurator();
+            configurator.setContext(lc);
+            lc.reset();
+            if (this.createTraceFile) {
+                lc.putProperty("file.name", traceFile);
+                URL cURL = getClass().getClassLoader().getResource("logback-trace.xml");
+                configurator.doConfigure(cURL);
+            }
+        } catch (JoranException je) {
+            je.printStackTrace();
+        }
     }
 
 }

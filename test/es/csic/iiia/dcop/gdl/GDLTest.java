@@ -52,12 +52,14 @@ import es.csic.iiia.dcop.dfs.MCN;
 import es.csic.iiia.dcop.dfs.MCS;
 import es.csic.iiia.dcop.igdl.IGdlFactory;
 import es.csic.iiia.dcop.igdl.IGdlGraph;
+import es.csic.iiia.dcop.igdl.IGdlMessage;
 import es.csic.iiia.dcop.jt.JunctionTree;
 import es.csic.iiia.dcop.mp.AbstractNode.Modes;
 import es.csic.iiia.dcop.mp.DefaultResults;
 import es.csic.iiia.dcop.up.UPFactory;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.up.UPResult;
+import es.csic.iiia.dcop.util.CostFunctionStats;
 import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.VPResults;
 import org.junit.After;
@@ -157,6 +159,7 @@ public class GDLTest {
     }
 
     @Test
+    @Ignore
     public void testThings() {
         CostFunction.Summarize summarize = CostFunction.Summarize.MIN;
         CostFunction.Combine combine = CostFunction.Combine.SUM;
@@ -332,7 +335,6 @@ public class GDLTest {
     }
 
     @Test
-    @Ignore
     public void testTesting() {
         // Set operating mode
         CostFunction.Summarize summarize = CostFunction.Summarize.MIN;
@@ -341,33 +343,59 @@ public class GDLTest {
         factory.setMode(summarize, combine, normalize);
 
         Variable x,y,z,t,u,v;
-        x = new Variable("x", 2);
-        y = new Variable("y", 2);
-        z = new Variable("z", 2);
-        t = new Variable("t", 2);
-        u = new Variable("u", 2);
+        x = new Variable("9", 2);
+        y = new Variable("0", 2);
+        z = new Variable("7", 2);
+        t = new Variable("5", 2);
+        u = new Variable("18", 2);
         v = new Variable("v", 2);
         Variable[] variables = new Variable[] {x, y, z, t, u, v};
 
         // Simple cycle with unique solution
-        CostFunction fxy = factory.buildCostFunction(new Variable[] {x, y});
-        fxy.setValues(new double[] {20, 10, 10, 0});
-        CostFunction fyt = factory.buildCostFunction(new Variable[] {y, t});
-        fyt.setValues(new double[] {0, 4, 4, 12});
-        CostFunction fzt = factory.buildCostFunction(new Variable[] {z, t});
-        fzt.setValues(new double[] {14, 10, 14, 10});
-        CostFunction ftu = factory.buildCostFunction(new Variable[] {t, u});
-        ftu.setValues(new double[] {3, 2, 2, 0});
-        CostFunction fzv = factory.buildCostFunction(new Variable[] {z, v});
-        fzv.setValues(new double[] {3, 2, 2, 0});
-        CostFunction fuv = factory.buildCostFunction(new Variable[] {u, v});
-        fuv.setValues(new double[] {0, 10, 10, 0});
-        CostFunction[] factors = new CostFunction[] {fxy,fyt,fzt,ftu,fzv,fuv};
+        CostFunction f1 = factory.buildCostFunction(new Variable[] {x});
+        f1.setValues(new double[] {-0.210,-0.25});
+        CostFunction f2 = factory.buildCostFunction(new Variable[] {y, z});
+        f2.setValues(new double[] {-3.110,-3.909,-3.89,-2.969});
+        CostFunction f3 = factory.buildCostFunction(new Variable[] {t, z});
+        f3.setValues(new double[] {-17.02,-15.8,-15.899,-16.96});
+        CostFunction f4 = factory.buildCostFunction(new Variable[] {u, t});
+        f4.setValues(new double[] {-1.81,-0.229,-0.25,-1.83});
+        CostFunction f5 = factory.buildCostFunction(new Variable[] {x, u});
+        f5.setValues(new double[] {0.71,-0.71,-0.71,0.71});
+        CostFunction f6 = factory.buildCostFunction(new Variable[] {u});
+        f6.setValues(new double[] {-0.04,0.04});
+        CostFunction[] factors = new CostFunction[] {f1,f2,f3,f4,f5,f6};
 
-        System.out.println(ftu.combine(fuv).combine(fzv).summarize(new Variable[]{u,v,z,t}).toLongString());
-        System.out.println(ftu.combine(fuv).combine(fzv).summarize(new Variable[]{z,t}).toLongString());
-        System.out.println(fzt.combine(fxy).combine(fyt).summarize(new Variable[]{x,y,z,t}).toLongString());
-        System.out.println(fzt.combine(fxy).combine(fyt).summarize(new Variable[]{z,t}).toLongString());
+        CostFunction p1 = f4.combine(f5).combine(f6).combine(f1).summarize(new Variable[]{u});
+        CostFunction p2 = f2.combine(f3).summarize(new Variable[]{y, z});
+        CostFunction ok=null;
+        for (CostFunction f : factors) {
+            System.err.println(f);
+            System.err.println(new CostFunctionStats(f));
+            ok = f.combine(ok);
+        }
+        ok.summarize(new Variable[]{y,z,u});
+        IGdlMessage m = new IGdlMessage();
+        m.addFactor(p1);
+        m.addFactor(p2);
+        m.setBelief(ok);
+        System.err.println(m);
+
+        p1 = f1.combine(f3).combine(f4).combine(f5).combine(f6).summarize(new Variable[]{u,z});
+        p2 = f2.summarize(new Variable[]{y,z});
+        m = new IGdlMessage();
+        m.addFactor(p1);
+        m.addFactor(p2);
+        m.setBelief(ok);
+        System.err.println(m);
+
+        p1 = f1.combine(f2.summarize(new Variable[]{z})).combine(f3).combine(f4)
+                .combine(f5).combine(f6).summarize(new Variable[]{u,z});
+        m = new IGdlMessage();
+        m.addFactor(p1);
+        m.setBelief(ok);
+        System.err.println(m);
+
     }
 
 }

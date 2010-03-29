@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +66,7 @@ public class AllCombStrategy extends IGdlPartitionStrategy {
     @Override
     public void initialize(IGdlNode node) {
         super.initialize(node);
-        subStrategy = new LazyStrategy();
+        subStrategy = new RankStrategy();
         subStrategy.initialize(node);
     }
 
@@ -97,21 +99,18 @@ public class AllCombStrategy extends IGdlPartitionStrategy {
         log.trace("- " + fsets.size() + " disjoint BF sets");
         for(int i=0; i<fsets.size(); i++) {
             CFSet set = fsets.get(i);
-            /*
-            CostFunction setf = null;
-
-            log.trace("  Set " + i + ":");
-            for (CostFunction f : set.functions) {
-                log.trace("\t" + f);
-                setf = f.combine(setf);
-            }
-
+            
             set.variables.retainAll(Arrays.asList(e.getVariables()));
             int nBoundVariables = set.variables.size();
             int nCombinations = binom(nBoundVariables, node.getR());
             log.trace("Number of combinations: " + nCombinations);
 
-            msg.addFactor(setf);*/
+            /*
+            PartitionGenerator pgen = new PartitionGenerator(set.variables, node.getR());
+            while(pgen.hasNext()) {
+                pgen.next()
+             }*/
+
             IGdlMessage pmsg = subStrategy.getPartition(set.functions, e);
             for(CostFunction f : pmsg.getFactors()) {
                 msg.addFactor(f);
@@ -186,6 +185,70 @@ public class AllCombStrategy extends IGdlPartitionStrategy {
             variables.addAll(set.variables);
             functions.addAll(set.functions);
         }
+    }
+
+    private class PartitionGenerator implements Iterator<Set<Variable>> {
+        private int n;
+        private int r;
+        private int total;
+        private int left;
+        private int[] a;
+        private Variable[] vars;
+        private Set<Variable> set;
+
+        public PartitionGenerator(Set<Variable> vars, int r) {
+            this.n = vars.size();
+            this.r = r;
+            this.vars = vars.toArray(this.vars);
+            this.a = new int[this.n];
+            this.total = binom(this.n, this.r);
+            this.reset();
+        }
+
+        public void reset() {
+            set = new HashSet<Variable>();
+            for (int i=0; i<a.length; i++) {
+                a[i] = i;
+            }
+            left = total;
+        }
+
+        public boolean hasNext() {
+            return left > 0;
+        }
+
+        public Set<Variable> next() {
+            this.generateNextA();
+            if (left < 0) {
+                throw new IllegalStateException("No elements left");
+            }
+            set.clear();
+            for (int i=0; i<a.length; i++) {
+                set.add(vars[a[i]]);
+            }
+            return set;
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        private void generateNextA() {
+            if (left == total || left < 0) {
+                left--;
+                return;
+            }
+            int i = r-1;
+            while (a[i] == n - r + i) {
+                i--;
+            }
+            for (int j = i+1; j<r; j++) {
+                a[j] = a[i] + j - i;
+            }
+            left--;
+            return;
+        }
+
     }
 
 }

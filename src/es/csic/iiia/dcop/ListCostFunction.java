@@ -115,7 +115,7 @@ public class ListCostFunction extends AbstractCostFunction {
     }
 
     @Override
-    protected double getValue(int index) {
+    public double getValue(int index) {
         if (values.containsKey(index)) {
             return values.get(index);
         }

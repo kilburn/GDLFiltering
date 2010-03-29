@@ -36,73 +36,69 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.igdl;
+package es.csic.iiia.dcop.util;
 
 import es.csic.iiia.dcop.CostFunction;
-import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.mp.Message;
-import es.csic.iiia.dcop.util.CostFunctionStats;
-import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
- * GDL Utility message.
- * 
+ *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class IGdlMessage implements Message {
-    private ArrayList<CostFunction> factors;
-    private CostFunction belief = null;
+public class CostFunctionStats {
 
-    public IGdlMessage(ArrayList<CostFunction> factors) {
-        this.factors = factors;
+    private CostFunction f;
+    
+    public CostFunctionStats(CostFunction f) {
+        this.f = f;
     }
+    @Override public String toString() {
 
-    public IGdlMessage() {
-        this.factors = new ArrayList<CostFunction>();
-    }
+        // Gather statistics
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
+        double sum = 0;
+        for (Iterator<Integer> i = f.iterator(); i.hasNext(); ) {
+            final double v = f.getValue(i.next());
+            min = Math.min(min, v);
+            max = Math.max(max, v);
+            sum = sum + v;
+        }
+        final double size = f.getSize();
+        final double avg = size == 0 ? 0 : sum/size;
 
-    public ArrayList<CostFunction> getFactors() {
-        return this.factors;
-    }
-
-    public boolean addFactor(CostFunction factor) {
-        return factors.add(factor);
-    }
-
-    public void setBelief(CostFunction belief) {
-        this.belief = belief;
-    }
-
-    @Override
-    public String toString() {
+        // Output them
         StringBuffer buf = new StringBuffer();
-        CostFunction combi = null;
-        for (CostFunction f : factors) {
-            buf.append("\n\t" + f);
-            if (belief != null) {
-                combi = f.combine(combi);
-            }
-        }
-        if (belief != null) {
-            Variable[] vars = belief.getVariableSet().toArray(new Variable[0]);
-            if (combi == null) {
-                combi = belief.getFactory().buildCostFunction(vars);
-            } else {
-                combi = combi.summarize(vars);
-            }
-        }
-        if (belief != null) {
-            buf.append("\n   Apr: ");
-            buf.append(combi);
-            buf.append("\n   Opt: ");
-            buf.append(belief);
-            combi.negate();
-            buf.append("\n   Err: ");
-            CostFunction err = belief.combine(combi);
-            buf.append(err);
-            buf.append("\n  Stat: ");
-            buf.append(new CostFunctionStats(err));
-        }
+        buf.append("Min: ").append(formatValue(min));
+        buf.append(", Avg: ").append(formatValue(avg));
+        buf.append(", Max: ").append(formatValue(max));
+        buf.append(", Dif: ").append(formatValue(max-min));
+        buf.append(", Tot: ").append(formatValue(sum));
+
         return buf.toString();
     }
+
+    public static String formatValue(double value) {
+        String res = String.valueOf(value);
+        if (Math.abs(value) < 1e-5) {
+            return "0";
+        }
+        final int idx = res.indexOf('.');
+        if (idx > 0) {
+            res = res.substring(0, Math.min(res.length(), idx+4));
+        }
+        return res;
+    }
+
+    public static double getRank(CostFunction f) {
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
+        for (Iterator<Integer> i = f.iterator(); i.hasNext();) {
+            final double v = f.getValue(i.next());
+            min = Math.min(min, v);
+            max = Math.max(max, v);
+        }
+        return max-min;
+    }
+
 }

@@ -44,9 +44,12 @@ import es.csic.iiia.dcop.igdl.IGdlMessage;
 import es.csic.iiia.dcop.igdl.IGdlNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
+import es.csic.iiia.dcop.util.CostFunctionStats;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.TreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +57,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class LazyStrategy extends IGdlPartitionStrategy {
+public class RankStrategy extends IGdlPartitionStrategy {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
 
@@ -75,9 +78,6 @@ public class LazyStrategy extends IGdlPartitionStrategy {
                 if (--i != 0) buf.append(",");
             }
             log.trace("-- Edge vars: {" + buf.toString() + "}, Functions:");
-            for (CostFunction f : fs) {
-                log.trace("\t" + f);
-            }
         }
         
         // Message to be sent
@@ -90,6 +90,15 @@ public class LazyStrategy extends IGdlPartitionStrategy {
         // Partsev is a list containing the sets of edge variables present
         // in the corresponding part.
         ArrayList<Collection<Variable>> partsev = new ArrayList<Collection<Variable>>();
+
+        // Sort the functions according to their rank (max - min)
+        fs = sortFunctions(fs);
+        if (log.isTraceEnabled()) {
+            log.trace("-- Sorted:");
+            for (CostFunction f : fs) {
+                log.trace("\t" + CostFunctionStats.formatValue(CostFunctionStats.getRank(f)) + "\t" + f);
+            }
+        }
 
         // Iterate over the functions, merging them whenever it's possible
         // or creating a new function when it's not.
@@ -166,6 +175,14 @@ public class LazyStrategy extends IGdlPartitionStrategy {
         }
         
         return msg;
+    }
+
+    private ArrayList<CostFunction> sortFunctions(ArrayList<CostFunction> fs) {
+        TreeMap<Double, CostFunction> m = new TreeMap<Double, CostFunction>();
+        for (CostFunction f : fs) {
+            m.put(CostFunctionStats.getRank(f)*-1, f);
+        }
+        return new ArrayList<CostFunction>(m.values());
     }
 
 }
