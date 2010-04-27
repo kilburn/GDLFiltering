@@ -36,18 +36,16 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.bb;
+package es.csic.iiia.dcop.util.metrics;
 
-import es.csic.iiia.dcop.mp.DefaultResults;
+import es.csic.iiia.dcop.CostFunction;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class UBResults extends DefaultResults<UBResult> {
+public interface Metric {
 
-    public double getBound() {
-        return getResults().get(1).getLB();
-    }
+    public double getValue(CostFunction f);
 
 }

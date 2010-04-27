@@ -38,8 +38,6 @@
 
 package es.csic.iiia.dcop;
 
-import org.junit.Ignore;
-
 /**
  *
  * @author marc

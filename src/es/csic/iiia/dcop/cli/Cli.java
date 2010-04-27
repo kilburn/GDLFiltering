@@ -60,7 +60,8 @@ public class Cli {
 
     public static void showLongUsage() {
         System.err.println("Usage: " + programName + "[options] [input] [output]");
-        System.err.println("Solves the DCOP problem described in [input] file (stdin if not specified)\n    and stores the found solution to [output] file (stdout if not specified).");
+        System.err.println("Solves the DCOP problem described in [input] file (stdin if not specified)");
+        System.err.println("and stores the found solution to [output] file (stdout if not specified).");
         System.err.println("Options:");
         System.err.println("  -a algorithm, --algorithm=algorithm (gdl)");
         System.err.println("    Uses the specified algorithm, where algorithm is one of: ");
@@ -72,13 +73,16 @@ public class Cli {
         System.err.println("      - sum : combine using addition.");
         System.err.println("      - prod : combine using product.");
         System.err.println("  -e heuristic, --heuristic=heuristic (mcs)");
-        System.err.println("    Uses the specified heuristic function to build the Junction Tree,\n    where it is one of: ");
+        System.err.println("    Uses the specified heuristic function to build the Junction Tree,");
+        System.err.println("    where heuristic is one of: ");
         System.err.println("      - mcn : chooses the most connected node next, randomly breaking ties.");
         System.err.println("      - mcs : chooses the most related node next, then mcn to break ties.");
         System.err.println("  -f [graphFile], --factor-graph[=graphFile]");
-        System.err.println("    Outputs the factor graph representation in .dot format to [graphFile],\n    or \"fgraph.dot\" if unspecified.");
+        System.err.println("    Outputs the factor graph representation in .dot format to [graphFile],");
+        System.err.println("    or \"fgraph.dot\" if unspecified.");
         System.err.println("  -g [graphFile], --clique-graph[=graphFile]");
-        System.err.println("    Outputs the clique graph representation in .dot format to [graphFile],\n    or \"cgraph.dot\" if unspecified.");
+        System.err.println("    Outputs the clique graph representation in .dot format to [graphFile],");
+        System.err.println("    or \"cgraph.dot\" if unspecified.");
         System.err.println("  -i value, --igdl-r value (2)");
         System.err.println("    Sets the 'r' to value in igdl.");
         System.err.println("  -h, --help");
@@ -92,6 +96,13 @@ public class Cli {
         System.err.println("      - none : do not perform any normalization (default for junction tree algorithm).");
         System.err.println("      - sum0 : values are normalized to sum zero (default for maxsum).");
         System.err.println("      - sum1 : values are normalized to sum one.");
+        System.err.println("  -p strategy, --partition-strategy=strategy (rank)");
+        System.err.println("    Uses the specified partitioning strategy, where strategy is one of: ");
+        System.err.println("      - lazy     : merges functions in the order being received, without any");
+        System.err.println("                   special consideration.");
+        System.err.println("      - rankup   : merges functions from lowest ranked (max-min value) to highest.");
+        System.err.println("      - rankdown : merges functions from highest ranked (max-min value) to lowest.");
+        System.err.println("      - exp      : merges functions using the lastest experimental strategy (dev only).");
         System.err.println("  -r [variance], --random-noise=[variance]");
         System.err.println("    Adds random noise with <variance> variance, or 0.001 if unspecified.");
         System.err.println("  -s operation, --summarize=operation (min)");
@@ -118,11 +129,12 @@ public class Cli {
             new LongOpt("load-tree", LongOpt.REQUIRED_ARGUMENT, null, 'l'),
             new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
             new LongOpt("normalize", LongOpt.REQUIRED_ARGUMENT, null, 'n'),
+            new LongOpt("partition-strategy", LongOpt.REQUIRED_ARGUMENT, null, 'p'),
             new LongOpt("random-noise", LongOpt.OPTIONAL_ARGUMENT, null, 'r'),
             new LongOpt("summarize", LongOpt.REQUIRED_ARGUMENT, null, 's'),
             new LongOpt("trace", LongOpt.OPTIONAL_ARGUMENT, null, 't'),
         };
-        Getopt g = new Getopt(programName, argv, "a:c:e:f::g::hi:j:l:m:n:r::s:t::", longopts);
+        Getopt g = new Getopt(programName, argv, "a:c:e:f::g::hi:j:l:m:n:p:r::s:t::", longopts);
 
         CliApp cli = new CliApp();
         int c=0;
@@ -238,6 +250,24 @@ public class Cli {
                         cli.setNormalization(CostFunction.Normalize.SUM1);
                     else if (arg.equals("sum0"))
                         cli.setNormalization(CostFunction.Normalize.SUM0);
+                    else {
+                        System.err.println("Error: invalid heuristic \"" + arg + "\"");
+                        System.exit(0);
+                    }
+                    break;
+
+                case 'p':
+                    arg = g.getOptarg();
+                    if (arg.equals("lazy"))
+                        cli.setPartitionStrategy(CliApp.PS_LAZY);
+                    else if (arg.equals("rankup"))
+                        cli.setPartitionStrategy(CliApp.PS_RANKUP);
+                    else if (arg.equals("rankdown"))
+                        cli.setPartitionStrategy(CliApp.PS_RANKDOWN);
+                    else if (arg.equals("exp"))
+                        cli.setPartitionStrategy(CliApp.PS_EXP);
+                    else if (arg.equals("entropy"))
+                        cli.setPartitionStrategy(CliApp.PS_ENTROPY);
                     else {
                         System.err.println("Error: invalid heuristic \"" + arg + "\"");
                         System.exit(0);

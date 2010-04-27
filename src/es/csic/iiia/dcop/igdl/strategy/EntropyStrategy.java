@@ -46,7 +46,6 @@ import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.util.CostFunctionStats;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import org.slf4j.Logger;
@@ -56,7 +55,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public abstract class RankStrategy extends IGdlPartitionStrategy {
+public class EntropyStrategy extends IGdlPartitionStrategy {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
     private IGdlPartitionStrategy strategy;
@@ -87,11 +86,11 @@ public abstract class RankStrategy extends IGdlPartitionStrategy {
 
         // Sort the functions according to their rank (max - min)
         if (log.isTraceEnabled()) {
-            ArrayList<CostFunction> prev = new ArrayList<CostFunction>(fs);
+            ArrayList<CostFunction> prev = fs;
             fs = sortFunctions(fs);
             log.trace("-- Sorted:");
             for (CostFunction f : fs) {
-                log.trace("\t" + CostFunctionStats.formatValue(CostFunctionStats.getRank(f)) + "\t" + f);
+                log.trace("\t" + CostFunctionStats.formatValue(CostFunctionStats.getEntropy(f)) + "\t" + f);
             }
             // Check that the list hasn't been modified
             for(CostFunction f : fs) {
@@ -110,26 +109,15 @@ public abstract class RankStrategy extends IGdlPartitionStrategy {
 
     private ArrayList<CostFunction> sortFunctions(ArrayList<CostFunction> fs) {
         ArrayList<CostFunction> res = new ArrayList<CostFunction>(fs);
-        Collections.sort(res, new RankComparator());
+        Collections.sort(res, new EntropyComparator());
         return res;
     }
 
-    /**
-     * Returns 1 to sort in ascending order, -1 to sort descending.
-     *
-     * @return
-     */
-    protected abstract int getOrder();
-
-    private class RankComparator implements Comparator<CostFunction> {
-        private int order;
-        public RankComparator() {
-            order = getOrder();
-        }
+    private class EntropyComparator implements Comparator<CostFunction> {
         public int compare(CostFunction o1, CostFunction o2) {
-            double r1 = CostFunctionStats.getRank(o1);
-            double r2 = CostFunctionStats.getRank(o2);
-            return r1 == r2 ? 0 : (r1 < r2 ? -order : order);
+            double r1 = CostFunctionStats.getEntropy(o1);
+            double r2 = CostFunctionStats.getEntropy(o1);
+            return r1 == r2 ? 0 : (r1 < r2 ? -1 : 1);
         }
     }
 

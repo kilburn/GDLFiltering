@@ -58,6 +58,7 @@ import es.csic.iiia.dcop.dfs.MCN;
 import es.csic.iiia.dcop.dfs.MCS;
 import es.csic.iiia.dcop.gdl.GdlFactory;
 import es.csic.iiia.dcop.igdl.IGdlFactory;
+import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
 import es.csic.iiia.dcop.io.DatasetReader;
 import es.csic.iiia.dcop.io.TreeReader;
 import es.csic.iiia.dcop.jt.JTResults;
@@ -79,6 +80,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -88,6 +90,8 @@ import org.slf4j.LoggerFactory;
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
 public class CliApp {
+
+    private static Logger log = LoggerFactory.getLogger(CliApp.class);
 
     /**
      * Use GDL as solving algorithm.
@@ -110,6 +114,15 @@ public class CliApp {
      * MCN junction tree building heuristic.
      */
     public static final int JT_HEURISTIC_MCN = 1;
+    /**
+     * Lazy partitioning strategy
+     */
+    public static final int PS_LAZY     = 0;
+    public static final int PS_RANKUP   = 1;
+    public static final int PS_RANKDOWN = 2;
+    public static final int PS_EXP      = 3;
+    public static final int PS_ENTROPY  = 4;
+
 
     private int algorithm = ALGO_GDL;
     private int heuristic = JT_HEURISTIC_MCS;
@@ -127,6 +140,7 @@ public class CliApp {
     private boolean createTraceFile = false;
     private String traceFile = "trace.txt";
     private int IGdlR = 2;
+    private int partitionStrategy = PS_RANKUP;
 
     /**
      * Get the maximum number of junction tree's built trying to minimize the
@@ -330,7 +344,7 @@ public class CliApp {
         if (algorithm == ALGO_IGDL) {
             UBGraph ub = new UBGraph(st);
             UBResults ubres = ub.run(100);
-            System.out.println(ubres);
+            System.out.println("BOUND " + ubres.getBound());
         }
 
         System.out.print("SOLUTION");
@@ -406,7 +420,26 @@ public class CliApp {
                     factory = new GdlFactory();
                     ((GdlFactory)factory).setMode(Modes.TREE_UP);
                 } else {
-                    factory = new IGdlFactory(this.getIGdlR());
+                    IGdlPartitionStrategy strategy = null;
+                    switch (partitionStrategy) {
+                        case PS_LAZY:
+                            strategy = new es.csic.iiia.dcop.igdl.strategy.LazyStrategy();
+                            break;
+                        case PS_RANKUP:
+                            strategy = new es.csic.iiia.dcop.igdl.strategy.RankUpStrategy();
+                            break;
+                        case PS_RANKDOWN:
+                            strategy = new es.csic.iiia.dcop.igdl.strategy.RankDownStrategy();
+                            break;
+                        case PS_EXP:
+                            log.trace("Using exp strategy");
+                            strategy = new es.csic.iiia.dcop.igdl.strategy.ExpStrategy();
+                            break;
+                        case PS_ENTROPY:
+                            strategy = new es.csic.iiia.dcop.igdl.strategy.EntropyStrategy();
+                            break;
+                    }
+                    factory = new IGdlFactory(this.getIGdlR(), strategy);
                 }
                 int variables = 0;
                 JTResults results = null;
@@ -434,14 +467,16 @@ public class CliApp {
                                 break;
                         }
 
-                        cg = JunctionTreeAlgo.buildGraph(factory, dfs.getFactorDistribution(), dfs.getAdjacency());
-                        cg.setRoot(dfs.getRoot());
-                        JunctionTree jt = new JunctionTree(cg);
+                        UPGraph candidateCg = null;
+                        candidateCg = JunctionTreeAlgo.buildGraph(factory, dfs.getFactorDistribution(), dfs.getAdjacency());
+                        candidateCg.setRoot(dfs.getRoot());
+                        JunctionTree jt = new JunctionTree(candidateCg);
                         results = jt.run(100);
                         variables = results.getMaxVariables();
 
                         if (variables < minVariables) {
                             minVariables = variables;
+                            cg = candidateCg;
                         }
                     }
                 }
@@ -550,6 +585,10 @@ public class CliApp {
         } catch (JoranException je) {
             je.printStackTrace();
         }
+    }
+
+    void setPartitionStrategy(int partitionStrategy) {
+        this.partitionStrategy = partitionStrategy;
     }
 
 }

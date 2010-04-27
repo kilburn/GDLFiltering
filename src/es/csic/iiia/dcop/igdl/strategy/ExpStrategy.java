@@ -45,8 +45,9 @@ import es.csic.iiia.dcop.igdl.IGdlNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.util.CostFunctionStats;
+import es.csic.iiia.dcop.util.metrics.Metric;
+import es.csic.iiia.dcop.util.metrics.Norm0;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import org.slf4j.Logger;
@@ -56,7 +57,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public abstract class RankStrategy extends IGdlPartitionStrategy {
+public class ExpStrategy extends IGdlPartitionStrategy {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
     private IGdlPartitionStrategy strategy;
@@ -84,53 +85,25 @@ public abstract class RankStrategy extends IGdlPartitionStrategy {
                 log.trace("\t" + f);
             }
         }
+        
+        // Message to be sent
+        IGdlMessage msg = new IGdlMessage();
 
-        // Sort the functions according to their rank (max - min)
-        if (log.isTraceEnabled()) {
-            ArrayList<CostFunction> prev = new ArrayList<CostFunction>(fs);
-            fs = sortFunctions(fs);
-            log.trace("-- Sorted:");
-            for (CostFunction f : fs) {
-                log.trace("\t" + CostFunctionStats.formatValue(CostFunctionStats.getRank(f)) + "\t" + f);
-            }
-            // Check that the list hasn't been modified
-            for(CostFunction f : fs) {
-                prev.remove(f);
-            }
-            if (prev.size() > 0) {
-                System.err.println("List differs!");
-                System.exit(0);
-            }
-        } else {
-            fs = sortFunctions(fs);
+        // Combine everything
+        CostFunction belief = null;
+        for (CostFunction f : fs) {
+            belief = f.combine(belief);
+        }
+        belief = belief.summarize(e.getVariables());
+        msg.setBelief(belief);
+
+        // Obtain the best approximation
+        CostFunction res[] = CostFunctionStats.getVotedBestApproximation(belief, node.getR(), 1000);
+        for (int i=0; i<res.length-1; i++) {
+            msg.addFactor(res[i]);
         }
 
-        return strategy.getPartition(fs, e);
-    }
-
-    private ArrayList<CostFunction> sortFunctions(ArrayList<CostFunction> fs) {
-        ArrayList<CostFunction> res = new ArrayList<CostFunction>(fs);
-        Collections.sort(res, new RankComparator());
-        return res;
-    }
-
-    /**
-     * Returns 1 to sort in ascending order, -1 to sort descending.
-     *
-     * @return
-     */
-    protected abstract int getOrder();
-
-    private class RankComparator implements Comparator<CostFunction> {
-        private int order;
-        public RankComparator() {
-            order = getOrder();
-        }
-        public int compare(CostFunction o1, CostFunction o2) {
-            double r1 = CostFunctionStats.getRank(o1);
-            double r2 = CostFunctionStats.getRank(o2);
-            return r1 == r2 ? 0 : (r1 < r2 ? -order : order);
-        }
+        return msg;
     }
 
 }

@@ -36,18 +36,24 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.bb;
+package es.csic.iiia.dcop.util.metrics;
 
-import es.csic.iiia.dcop.mp.DefaultResults;
+import es.csic.iiia.dcop.CostFunction;
+import java.util.Iterator;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class UBResults extends DefaultResults<UBResult> {
+public class Norm2 implements Metric {
 
-    public double getBound() {
-        return getResults().get(1).getLB();
+    public double getValue(CostFunction f) {
+        double s = 0;
+        for (Iterator<Integer> i = f.iterator(); i.hasNext();) {
+            final double v = f.getValue(i.next());
+            s += v*v;
+        }
+        return s;
     }
 
 }

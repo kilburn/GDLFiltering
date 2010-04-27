@@ -36,18 +36,17 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.bb;
-
-import es.csic.iiia.dcop.mp.DefaultResults;
+package es.csic.iiia.dcop.igdl.strategy;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class UBResults extends DefaultResults<UBResult> {
+public class RankUpStrategy extends RankStrategy {
 
-    public double getBound() {
-        return getResults().get(1).getLB();
+    @Override
+    protected int getOrder() {
+        return 1;
     }
 
 }

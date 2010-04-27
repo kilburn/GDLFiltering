@@ -36,76 +36,100 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.igdl;
+package es.csic.iiia.dcop.util;
 
-import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
-import es.csic.iiia.dcop.mp.AbstractNode.Modes;
-import es.csic.iiia.dcop.up.UPResult;
-import es.csic.iiia.dcop.up.UPResults;
-import es.csic.iiia.dcop.up.UPEdge;
-import es.csic.iiia.dcop.up.UPFactory;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import es.csic.iiia.dcop.Variable;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
- * Factory for the Utility Propagation GDL implementation.
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class IGdlFactory implements UPFactory<IGdlGraph, IGdlNode, UPEdge<IGdlNode, IGdlMessage>,
-    UPResult, UPResults> {
+public class CombinationGenerator implements Iterator<Set<Variable>> {
+    private int n;
+    private int r;
+    private int total;
+    private int left;
+    private int[] a;
+    private Variable[] vars;
+    private Set<Variable> set;
 
-    private Modes mode = Modes.TREE_UP;
-    private int r = Integer.MAX_VALUE;
-    private IGdlPartitionStrategy partitionStrategy;
-
-    public IGdlFactory(int r, IGdlPartitionStrategy partitionStrategy) {
+    public CombinationGenerator(Variable[] vars, int r) {
+        this.n = vars.length;
         this.r = r;
-        this.partitionStrategy = partitionStrategy;
+        this.vars = vars;
+        this.a = new int[r];
+        this.total = binom(this.n, this.r);
+        this.reset();
     }
 
-    public IGdlGraph buildGraph() {
-        return new IGdlGraph();
-    }
-
-    public IGdlNode buildNode() {
-        IGdlNode n = new IGdlNode();
-        n.setMode(mode);
-        n.setR(r);
-        try {
-            n.setPartitionStrategy(partitionStrategy.getClass().newInstance());
-        } catch (InstantiationException ex) {
-            Logger.getLogger(IGdlFactory.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            Logger.getLogger(IGdlFactory.class.getName()).log(Level.SEVERE, null, ex);
+    public void reset() {
+        set = new HashSet<Variable>(r);
+        for (int i=0; i<a.length; i++) {
+            a[i] = i;
         }
-        return n;
+        left = total;
     }
 
-    public UPEdge<IGdlNode, IGdlMessage> buildEdge(IGdlNode node1, IGdlNode node2) {
-        return new UPEdge<IGdlNode, IGdlMessage>(node1, node2);
+    public boolean hasNext() {
+        return left > 0;
     }
 
-    public UPResult buildResult(IGdlNode node) {
-        return new UPResult(node);
+    public Set<Variable> next() {
+        if (left == total || left < 0) {
+            left--;
+            genSet();
+            return set;
+        }
+
+        int i = r-1;
+        while (a[i] == n - r + i) {
+            i--;
+        }
+        a[i] = a[i] + 1;
+        for (int j = i+1; j<r; j++) {
+            a[j] = a[i] + j - i;
+        }
+        left--;
+
+        genSet();
+        return set;
     }
 
-    public UPResults buildResults() {
-        return new UPResults();
+    private void genSet() {
+        set.clear();
+        for (int i=0; i<a.length; i++) {
+            set.add(vars[a[i]]);
+        }
     }
 
-    /**
-     * @return the mode
-     */
-    public Modes getMode() {
-        return mode;
+    public void remove() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    /**
-     * @param mode the mode to set
-     */
-    public void setMode(Modes mode) {
-        this.mode = mode;
+    public static int binom(int n, int r) {
+        if (r > n) {
+            return 1;
+        }
+        if (n < 1) {
+            throw new IllegalArgumentException();
+        }
+
+        int[] b = new int[n+1];
+        b[0] = 1;
+        for (int i=1; i<=n; i++) {
+            b[i] = 1;
+            for (int j=i-1; j>0; j--) {
+                b[j] += b[j-1];
+            }
+        }
+        return b[r];
+    }
+
+    int size() {
+        return total;
     }
 
 }

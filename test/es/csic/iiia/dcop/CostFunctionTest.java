@@ -530,6 +530,24 @@ public abstract class CostFunctionTest {
     }
 
     /**
+     * Test of summarize method, of class CostFunction.
+     */
+    @Test
+    public void testSummarize11() {
+        Variable[] vars = new Variable[]{};
+        factory.setSummarizeOperation(CostFunction.Summarize.MIN);
+        CostFunction sum = fa.summarize(vars);
+        assertSame(sum.getFactory(), fa.getFactory());
+        CostFunction res = factory.buildCostFunction(new Variable[]{});
+        assertSame(sum.getFactory(), res.getFactory());
+        res.setValues(new double[]{
+            0.3
+        });
+        assertEquals(sum, res);
+        assertSame(sum.getFactory(), res.getFactory());
+    }
+
+    /**
      * Test of combine method, of class CostFunction.
      */
     @Test
@@ -604,6 +622,36 @@ public abstract class CostFunctionTest {
         CostFunction com = fda.combine(sf);
         assertEquals(fda, com);
         assertSame(fda.getFactory(), com.getFactory());
+    }
+
+    /**
+     * Test of combine method, of class CostFunction.
+     */
+    @Test
+    public void testCombineConstantFunction() {
+        factory.setCombineOperation(CostFunction.Combine.SUM);
+        CostFunction sf  = factory.buildCostFunction(new Variable[]{});
+        sf.setValue(0, 0.3);
+        CostFunction com = fa.combine(sf);
+        CostFunction res = factory.buildCostFunction(new Variable[]{a});
+        res.setValues(new double[]{0.6, 1.0});
+        assertEquals(res, com);
+        assertSame(com.getFactory(), res.getFactory());
+    }
+
+    /**
+     * Test of combine method, of class CostFunction.
+     */
+    @Test
+    public void testCombineConstantFunction2() {
+        factory.setCombineOperation(CostFunction.Combine.SUM);
+        CostFunction sf  = factory.buildCostFunction(new Variable[]{});
+        sf.setValue(0, 0.3);
+        CostFunction com = sf.combine(fa);
+        CostFunction res = factory.buildCostFunction(new Variable[]{a});
+        res.setValues(new double[]{0.6, 1.0});
+        assertEquals(res, com);
+        assertSame(com.getFactory(), res.getFactory());
     }
 
     /**

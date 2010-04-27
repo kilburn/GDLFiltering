@@ -43,7 +43,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Random;
@@ -138,7 +137,7 @@ public abstract class AbstractCostFunction implements CostFunction {
      */
     private void computeFunctionSize() {
         final int len = variables.length;
-        size = len>0 ? 1 : 0;
+        size = 1;
         sizes = new int[len];
         boolean overflow = false;
         for (int i=0; i<len; i++) {
@@ -229,7 +228,8 @@ public abstract class AbstractCostFunction implements CostFunction {
     public int getIndex(VariableAssignment mapping) {
         final int len = variables.length;
         if (len == 0) {
-            return -1;
+            // This can be an empty or a constant factor
+            return size == 0 ? -1 : 0;
         }
 
         int idx = 0;
@@ -256,6 +256,9 @@ public abstract class AbstractCostFunction implements CostFunction {
 
         final int len = variables.length;
         if (len == 0) {
+            if (size > 0) {
+                idxs.add(0);
+            }
             return idxs;
         }
         idxs.add(0);
@@ -620,6 +623,12 @@ public abstract class AbstractCostFunction implements CostFunction {
                 !this.variableSet.equals(other.getVariableSet())))
         {
             return false;
+        }
+
+        // Constant cost function handling
+        if (variableSet.size() == 0) {
+            final double e = getValue(0) - other.getValue(0);
+            return Math.abs(e) <= delta;
         }
 
         VariableAssignment map = null;

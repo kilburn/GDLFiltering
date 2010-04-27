@@ -53,6 +53,8 @@ import es.csic.iiia.dcop.dfs.MCS;
 import es.csic.iiia.dcop.igdl.IGdlFactory;
 import es.csic.iiia.dcop.igdl.IGdlGraph;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
+import es.csic.iiia.dcop.igdl.strategy.RankStrategy;
+import es.csic.iiia.dcop.igdl.strategy.RankUpStrategy;
 import es.csic.iiia.dcop.jt.JunctionTree;
 import es.csic.iiia.dcop.mp.AbstractNode.Modes;
 import es.csic.iiia.dcop.mp.DefaultResults;
@@ -219,7 +221,7 @@ public class GDLTest {
 
         // Build a junction tree
         DFS dfs = new MCN(factors);
-        UPFactory f = new IGdlFactory();
+        UPFactory f = new IGdlFactory(Integer.MAX_VALUE, new RankUpStrategy());
         UPGraph g = JunctionTreeAlgo.buildGraph(f, dfs.getFactorDistribution(), dfs.getAdjacency());
         JunctionTree jt = new JunctionTree(g);
         jt.run(100);

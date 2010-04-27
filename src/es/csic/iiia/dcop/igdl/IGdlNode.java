@@ -118,7 +118,7 @@ public class IGdlNode extends UPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
         for (CostFunction f : relations) {
             costFunctions.add(factory.buildCostFunction(f));
         }       
-        strategy.initialize(this);
+        getPartitionStrategy().initialize(this);
 
         // Send initial messages
         sendMessages();
@@ -199,7 +199,7 @@ public class IGdlNode extends UPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
             }
 
             // Obtain the partition
-            IGdlMessage msg = strategy.getPartition(fs, e);
+            IGdlMessage msg = getPartitionStrategy().getPartition(fs, e);
 
             // For research purposes, calculate the optimal belief
             if (log.isTraceEnabled()) {
@@ -226,6 +226,20 @@ public class IGdlNode extends UPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
         CostFunction belief = getBelief();
         map = belief.getOptimalConfiguration(null);
         return belief.getValue(map);
+    }
+
+    /**
+     * @return the strategy
+     */
+    public IGdlPartitionStrategy getPartitionStrategy() {
+        return strategy;
+    }
+
+    /**
+     * @param strategy the strategy to set
+     */
+    public void setPartitionStrategy(IGdlPartitionStrategy strategy) {
+        this.strategy = strategy;
     }
 
 }
