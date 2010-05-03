@@ -122,7 +122,8 @@ public class CliApp {
     public static final int PS_RANKDOWN = 2;
     public static final int PS_EXP      = 3;
     public static final int PS_ENTROPY  = 4;
-
+    public static final int PS_SHARED   = 5;
+    public static final int PS_REXP     = 6;
 
     private int algorithm = ALGO_GDL;
     private int heuristic = JT_HEURISTIC_MCS;
@@ -432,11 +433,16 @@ public class CliApp {
                             strategy = new es.csic.iiia.dcop.igdl.strategy.RankDownStrategy();
                             break;
                         case PS_EXP:
-                            log.trace("Using exp strategy");
                             strategy = new es.csic.iiia.dcop.igdl.strategy.ExpStrategy();
                             break;
                         case PS_ENTROPY:
                             strategy = new es.csic.iiia.dcop.igdl.strategy.EntropyStrategy();
+                            break;
+                        case PS_SHARED:
+                            strategy = new es.csic.iiia.dcop.igdl.strategy.SharedVarsStrategy();
+                            break;
+                        case PS_REXP:
+                            strategy = new es.csic.iiia.dcop.igdl.strategy.RefinedExpStrategy();
                             break;
                     }
                     factory = new IGdlFactory(this.getIGdlR(), strategy);

@@ -77,7 +77,7 @@ public class IGdlMessage implements Message {
     public String toString() {
         StringBuffer buf = new StringBuffer();
         CostFunction combi = null;
-        for (CostFunction f : factors) {
+        for (CostFunction f : getFactors()) {
             buf.append("\n\t" + f);
             if (belief != null) {
                 combi = f.combine(combi);

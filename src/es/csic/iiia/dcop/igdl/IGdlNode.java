@@ -198,15 +198,18 @@ public class IGdlNode extends UPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
                 fs.removeAll(e.getMessage(this).getFactors());
             }
 
-            // Obtain the partition
-            IGdlMessage msg = getPartitionStrategy().getPartition(fs, e);
-
             // For research purposes, calculate the optimal belief
+            CostFunction belief = null;
             if (log.isTraceEnabled()) {
-                CostFunction belief = getFactory().buildCostFunction(e.getVariables());
+                belief = getFactory().buildCostFunction(e.getVariables());
                 for (CostFunction f : fs) {
                     belief = f.combine(belief);
                 }
+            }
+
+            // Obtain the partition
+            IGdlMessage msg = getPartitionStrategy().getPartition(fs, e);
+            if (log.isTraceEnabled()) {
                 msg.setBelief(belief.summarize(e.getVariables()));
             }
 

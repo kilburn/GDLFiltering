@@ -40,12 +40,16 @@ package es.csic.iiia.dcop.igdl.strategy;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
+import es.csic.iiia.dcop.igdl.IGdlDedupMessage;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
 import es.csic.iiia.dcop.igdl.IGdlNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.util.CostFunctionStats;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +57,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class ExpStrategy extends IGdlPartitionStrategy {
+public class RefinedExpStrategy extends IGdlPartitionStrategy {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
     private IGdlPartitionStrategy strategy;
@@ -83,21 +87,35 @@ public class ExpStrategy extends IGdlPartitionStrategy {
         }
         
         // Message to be sent
-        IGdlMessage msg = new IGdlMessage();
+        IGdlMessage msg = new IGdlDedupMessage();
 
-        // Combine everything
-        CostFunction belief = null;
-        for (CostFunction f : fs) {
-            belief = f.combine(belief);
+        // Separate functions containing only separator variables, and calculate
+        // the belief
+        CostFunction remaining = null;
+        Set<Variable> vs = new HashSet<Variable>(Arrays.asList(e.getVariables()));
+        for (int i=fs.size()-1; i>=0; i--) {
+            final CostFunction f = fs.get(i);
+            if (vs.containsAll(f.getVariableSet())) {
+                log.trace("\t Contained: " + f);
+                msg.addFactor(f);
+            } else {
+                fs.remove(i);
+                remaining = f.combine(remaining);
+            }
         }
-        belief = belief.summarize(e.getVariables());
-        msg.setBelief(belief);
 
         // Obtain the best approximation
-        CostFunction res[] = CostFunctionStats.getVotedBestApproximation(belief, node.getR(), 1000);
-        for (int i=0; i<res.length-1; i++) {
-            msg.addFactor(res[i]);
+        if (remaining != null) {
+            remaining = remaining.summarize(e.getVariables());
+            CostFunction res[] = CostFunctionStats.getVotedBestApproximation(remaining, node.getR(), 1000);
+            for (int i=0; i<res.length-1; i++) {
+                msg.addFactor(res[i]);
+            }
         }
+
+        // Test even further merging
+        //msg = strategy.getPartition(msg.getFactors(), e);
+        //msg.setBelief(belief);
 
         return msg;
     }

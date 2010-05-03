@@ -36,70 +36,51 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.igdl.strategy;
+package es.csic.iiia.dcop.igdl;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.igdl.IGdlMessage;
-import es.csic.iiia.dcop.igdl.IGdlNode;
-import es.csic.iiia.dcop.up.UPEdge;
-import es.csic.iiia.dcop.up.UPGraph;
-import es.csic.iiia.dcop.util.CostFunctionStats;
 import java.util.ArrayList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.HashMap;
+import java.util.Set;
 
 /**
- *
+ * GDL Utility message.
+ * 
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class ExpStrategy extends IGdlPartitionStrategy {
+public class IGdlDedupMessage extends IGdlMessage {
+    private HashMap<Set<Variable>, CostFunction> factors;
 
-    private static Logger log = LoggerFactory.getLogger(UPGraph.class);
-    private IGdlPartitionStrategy strategy;
+    public IGdlDedupMessage(ArrayList<CostFunction> factors) {
+        this();
+        for (CostFunction f : factors) {
+            addFactor(f);
+        }
+    }
+
+    public IGdlDedupMessage() {
+        this.factors = new HashMap<Set<Variable>, CostFunction>();
+    }
 
     @Override
-    public void initialize(IGdlNode node) {
-        strategy = new LazyStrategy();
-        strategy.initialize(node);
-        super.initialize(node);
+    public ArrayList<CostFunction> getFactors() {
+        ArrayList<CostFunction> fs = new ArrayList<CostFunction>();
+        for (Set<Variable> key : factors.keySet()) {
+            fs.add(factors.get(key));
+        }
+        return fs;
     }
 
-    public IGdlMessage getPartition(ArrayList<CostFunction> fs,
-            UPEdge<IGdlNode, IGdlMessage> e) {
-
-        // Informational, just for debugging
-        if (log.isTraceEnabled()) {
-            StringBuffer buf = new StringBuffer();
-            int i = e.getVariables().length;
-            for (Variable v : e.getVariables()) {
-                buf.append(v.getName());
-                if (--i != 0) buf.append(",");
-            }
-            log.trace("-- Edge vars: {" + buf.toString() + "}, Functions:");
-            for (CostFunction f : fs) {
-                log.trace("\t" + f);
-            }
+    @Override
+    public boolean addFactor(CostFunction factor) {
+        Set<Variable> set = factor.getVariableSet();
+        if (factors.containsKey(set)) {
+            CostFunction f = factors.remove(set);
+            factors.put(set, factor.combine(f));
+        } else {
+            factors.put(set, factor);
         }
-        
-        // Message to be sent
-        IGdlMessage msg = new IGdlMessage();
-
-        // Combine everything
-        CostFunction belief = null;
-        for (CostFunction f : fs) {
-            belief = f.combine(belief);
-        }
-        belief = belief.summarize(e.getVariables());
-        msg.setBelief(belief);
-
-        // Obtain the best approximation
-        CostFunction res[] = CostFunctionStats.getVotedBestApproximation(belief, node.getR(), 1000);
-        for (int i=0; i<res.length-1; i++) {
-            msg.addFactor(res[i]);
-        }
-
-        return msg;
+        return true;
     }
-
 }

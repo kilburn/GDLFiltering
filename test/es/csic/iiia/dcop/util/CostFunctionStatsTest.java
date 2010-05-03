@@ -47,8 +47,6 @@ import es.csic.iiia.dcop.util.metrics.Norm0;
 import es.csic.iiia.dcop.util.metrics.Norm1;
 import es.csic.iiia.dcop.util.metrics.Norm2;
 import es.csic.iiia.dcop.util.metrics.NormInf;
-import java.util.ArrayList;
-import java.util.Arrays;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

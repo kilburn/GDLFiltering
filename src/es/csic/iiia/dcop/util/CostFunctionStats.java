@@ -186,6 +186,15 @@ public class CostFunctionStats {
         return gains;
     }
 
+    public static double getGain(CostFunction f, Variable[] vars) {
+        Metric m = new Norm1();
+        CostFunction res = f.summarize(vars);
+        res = res.summarize(f.getVariableSet().toArray(new Variable[0]));
+        res.negate();
+        res = f.combine(res);
+        return m.getValue(res);
+    }
+
     public static CostFunction[] getBestApproximation(CostFunction f, 
             int r, Metric m, int n) {
         ArrayList<CostFunction> res = new ArrayList<CostFunction>();

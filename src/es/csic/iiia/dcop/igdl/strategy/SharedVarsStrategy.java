@@ -44,8 +44,10 @@ import es.csic.iiia.dcop.igdl.IGdlMessage;
 import es.csic.iiia.dcop.igdl.IGdlNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
-import es.csic.iiia.dcop.util.CostFunctionStats;
+import es.csic.iiia.dcop.util.KWayPartitioner;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,15 +55,12 @@ import org.slf4j.LoggerFactory;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class ExpStrategy extends IGdlPartitionStrategy {
+public class SharedVarsStrategy extends IGdlPartitionStrategy {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
-    private IGdlPartitionStrategy strategy;
 
     @Override
     public void initialize(IGdlNode node) {
-        strategy = new LazyStrategy();
-        strategy.initialize(node);
         super.initialize(node);
     }
 
@@ -83,22 +82,10 @@ public class ExpStrategy extends IGdlPartitionStrategy {
         }
         
         // Message to be sent
-        IGdlMessage msg = new IGdlMessage();
-
-        // Combine everything
-        CostFunction belief = null;
-        for (CostFunction f : fs) {
-            belief = f.combine(belief);
-        }
-        belief = belief.summarize(e.getVariables());
-        msg.setBelief(belief);
-
-        // Obtain the best approximation
-        CostFunction res[] = CostFunctionStats.getVotedBestApproximation(belief, node.getR(), 1000);
-        for (int i=0; i<res.length-1; i++) {
-            msg.addFactor(res[i]);
-        }
-
+        HashSet<Variable> evs = new HashSet<Variable>(Arrays.asList(e.getVariables()));
+        KWayPartitioner p = new KWayPartitioner(fs, evs, node.getR());
+        IGdlMessage msg = p.getPartitions();
+        
         return msg;
     }
 
