@@ -105,6 +105,7 @@ public class Cli {
         System.err.println("      - shared   : merges functions using greedy graph-cutting heuristics.");
         System.err.println("      - exp      : merges functions using the lastest experimental strategy (dev only).");
         System.err.println("      - rexp     : merges functions using the lastest experimental strategy (refined).");
+        System.err.println("      - fexp     : merges functions using the lastest experimental strategy (fast).");
         System.err.println("  -r [variance], --random-noise=[variance]");
         System.err.println("    Adds random noise with <variance> variance, or 0.001 if unspecified.");
         System.err.println("  -s operation, --summarize=operation (min)");
@@ -274,6 +275,8 @@ public class Cli {
                         cli.setPartitionStrategy(CliApp.PS_SHARED);
                     else if (arg.equals("rexp"))
                         cli.setPartitionStrategy(CliApp.PS_REXP);
+                    else if (arg.equals("fexp"))
+                        cli.setPartitionStrategy(CliApp.PS_FEXP);
                     else {
                         System.err.println("Error: invalid heuristic \"" + arg + "\"");
                         System.exit(0);

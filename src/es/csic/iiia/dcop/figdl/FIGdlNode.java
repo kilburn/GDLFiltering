@@ -36,7 +36,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.igdl;
+package es.csic.iiia.dcop.figdl;
 
 import es.csic.iiia.dcop.igdl.strategy.AllCombStrategy;
 import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
@@ -44,6 +44,7 @@ import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.VariableAssignment;
+import es.csic.iiia.dcop.igdl.IGdlMessage;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
@@ -57,7 +58,7 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class IGdlNode extends IUPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
+public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult> {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
 
@@ -77,7 +78,7 @@ public class IGdlNode extends IUPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
      *
      * @param variable member variable of this clique.
      */
-    public IGdlNode(Variable variable) {
+    public FIGdlNode(Variable variable) {
         super(variable);
     }
 
@@ -89,14 +90,14 @@ public class IGdlNode extends IUPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
      *
      * @param potential potential of the clique.
      */
-    public IGdlNode(CostFunction potential) {
+    public FIGdlNode(CostFunction potential) {
         super(potential);
     }
 
     /**
      * Constructs a new empty clique.
      */
-    public IGdlNode() {
+    public FIGdlNode() {
         super();
     }
 
@@ -138,8 +139,8 @@ public class IGdlNode extends IUPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
             costFunctions.add(factory.buildCostFunction(f));
         }
         // And the received messages
-        Collection<UPEdge<IGdlNode, IGdlMessage>> edges = getEdges();
-        for (UPEdge<IGdlNode, IGdlMessage> e : edges) {
+        Collection<UPEdge<FIGdlNode, IGdlMessage>> edges = getEdges();
+        for (UPEdge<FIGdlNode, IGdlMessage> e : edges) {
             IGdlMessage msg = e.getMessage(this);
             if (msg != null)
                 costFunctions.addAll(msg.getFactors());
@@ -172,7 +173,7 @@ public class IGdlNode extends IUPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
     }
 
     private void sendMessages() {
-        for (UPEdge<IGdlNode, IGdlMessage> e : getEdges()) {
+        for (UPEdge<FIGdlNode, IGdlMessage> e : getEdges()) {
             if (!readyToSend(e)) {
                 continue;
             }

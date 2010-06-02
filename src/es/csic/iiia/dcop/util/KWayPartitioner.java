@@ -75,13 +75,13 @@ public class KWayPartitioner {
                 Set<Variable> vs = new HashSet(n1.cf.getVariableSet());
                 vs.retainAll(n2.cf.getVariableSet());
                 vs.removeAll(evs);
-                if (vs.size() > 0) {
+                //if (vs.size() > 0) {
                     double w = CostFunctionStats.getGain(n1.cf.combine(n2.cf),
                             vs.toArray(new Variable[0]));
                     Edge e = new Edge(n1, n2, w);
                     n1.edges.add(e);
                     n2.edges.add(e);
-                }
+                //}
             }
         }
 
@@ -128,10 +128,10 @@ public class KWayPartitioner {
         Node sel = null;
         double minw = Double.POSITIVE_INFINITY;
 
-        System.out.println("Round, " + candidates.size());
+        //System.out.println("Round, " + candidates.size());
         for (Node n : candidates) {
             double w = Diff(n, partition);
-            System.out.println("Diff: " + w);
+            //System.out.println("Diff: " + w);
             if (w < minw) {
                 minw = w;
                 sel = n;

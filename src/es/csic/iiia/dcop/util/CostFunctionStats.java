@@ -41,6 +41,7 @@ package es.csic.iiia.dcop.util;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
+import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.util.metrics.Metric;
 import es.csic.iiia.dcop.util.metrics.Norm0;
 import es.csic.iiia.dcop.util.metrics.Norm1;
@@ -48,9 +49,11 @@ import es.csic.iiia.dcop.util.metrics.Norm2;
 import es.csic.iiia.dcop.util.metrics.NormInf;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  *
@@ -315,6 +318,129 @@ public class CostFunctionStats {
         }
 
         return res[idx];
+    }
+
+    public static CostFunction[] getApproximation(CostFunction f, int r) {
+        ArrayList<CostFunction> res = new ArrayList<CostFunction>();
+        
+        CombinationGenerator c = new CombinationGenerator(f.getVariableSet().toArray(new Variable[0]), r);
+        ArrayList<CostFunction> cfs = new ArrayList<CostFunction>(c.size());
+        while(c.hasNext()) {
+            cfs.add(f.getFactory().buildCostFunction(c.next().toArray(new Variable[0]), 1));
+        }
+
+        while(!cfs.isEmpty()) {
+            VariableAssignment map = null;
+            for(Iterator<Integer> i = f.iterator(); i.hasNext();) {
+                final int idx = i.next();
+                final double v = f.getValue(idx);
+                if (Math.abs(v) < 1e-3) {
+                    map = f.getMapping(idx, map);
+                    for (int j=cfs.size()-1; j>=0; j--) {
+                        final CostFunction cf = cfs.get(j);
+                        cf.setValue(cf.getIndex(map), 0);
+
+                        // Check if we can remove this cf
+                        boolean remove = true;
+                        for (Iterator<Integer> i2 = cf.iterator(); i2.hasNext();) {
+                            if (cf.getValue(i2.next()) != 0) {
+                                remove = false;
+                                break;
+                            }
+                        }
+                        if (remove) cfs.remove(j);
+                    }
+                    if (cfs.isEmpty()) break;
+                }
+            }
+
+            if (!cfs.isEmpty()) {
+                final CostFunction cf = cfs.remove(cfs.size()-1);
+                CostFunction pr = f.summarize(cf.getVariableSet().toArray(new Variable[0]));
+                res.add(pr);
+                CostFunction neg = pr.getFactory().buildCostFunction(pr);
+                neg.negate();
+                f = f.combine(neg);
+            }
+        }
+
+        return res.toArray(new CostFunction[0]);
+    }
+
+    public static CostFunction[] getApproximation2(CostFunction f, int r) {
+        ArrayList<CostFunction> res = new ArrayList<CostFunction>();
+
+        CombinationGenerator c = new CombinationGenerator(f.getVariableSet().toArray(new Variable[0]), r);
+        ArrayList<CostFunction> cfs = new ArrayList<CostFunction>(c.size());
+        TreeMap<Integer, ArrayList<CostFunction>> tfs = new TreeMap<Integer, ArrayList<CostFunction>>();
+        Metric add = new Norm0();
+        while(c.hasNext()) {
+            final CostFunction cf = f.getFactory().buildCostFunction(c.next().toArray(new Variable[0]), 1);
+            cfs.add(cf);
+            Integer nv = -(int)add.getValue(cf);
+            ArrayList<CostFunction> tcf = tfs.get(nv);
+            if (tcf == null) {
+                tcf = new ArrayList<CostFunction>();
+            }
+            tcf.add(cf);
+            tfs.put(nv, tcf);
+        }
+
+        while(!cfs.isEmpty()) {
+            VariableAssignment map = null;
+            for(Iterator<Integer> i = f.iterator(); i.hasNext();) {
+                final int idx = i.next();
+                final double v = f.getValue(idx);
+                if (Math.abs(v) < 1e-3) {
+                    map = f.getMapping(idx, map);
+                    for (int j=cfs.size()-1; j>=0; j--) {
+                        final CostFunction cf = cfs.get(j);
+                        final int idx2 = cf.getIndex(map);
+                        final double v2 = cf.getValue(idx2);
+
+                        // Do nothing if it's already 0
+                        if (Math.abs(v2) < 1e-4)
+                            continue;
+
+                        // Set it to zero
+                        cf.setValue(idx2, 0);
+                        int newne = -(int)add.getValue(cf);
+                        tfs.get(newne-1).remove(cf);
+                        if (newne == 0) {
+                            // Remove it
+                            cfs.remove(cf);
+                        } else {
+                            ArrayList<CostFunction> tcf = tfs.get(newne);
+                            if (tcf == null) {
+                                tcf = new ArrayList<CostFunction>();
+                            }
+                            tcf.add(cf);
+                            tfs.put(newne, tcf);
+                        }
+                    }
+                    if (cfs.isEmpty()) break;
+                }
+            }
+
+            if (!cfs.isEmpty()) {
+                Integer key = tfs.firstKey();
+                ArrayList<CostFunction> tcf = tfs.get(key);
+                while(tcf.isEmpty()) {
+                    tfs.remove(key);
+                    key = tfs.firstKey();
+                    tcf = tfs.get(key);
+                }
+                final CostFunction cf = tcf.remove(tcf.size()-1);
+                cfs.remove(cf);
+                CostFunction pr = f.summarize(cf.getVariableSet().toArray(new Variable[0]));
+                res.add(pr);
+                CostFunction neg = pr.getFactory().buildCostFunction(pr);
+                neg.negate();
+                f = f.combine(neg);
+            }
+        }
+
+        return res.toArray(new CostFunction[0]);
     }
 
 }

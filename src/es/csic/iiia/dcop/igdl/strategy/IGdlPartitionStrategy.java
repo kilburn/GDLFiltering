@@ -42,6 +42,7 @@ import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
 import es.csic.iiia.dcop.igdl.IGdlNode;
+import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import java.util.ArrayList;
@@ -58,14 +59,14 @@ public abstract class IGdlPartitionStrategy {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
 
-    protected IGdlNode node;
+    protected IUPNode node;
 
-    public void initialize(IGdlNode node) {
+    public void initialize(IUPNode node) {
         this.node = node;
     }
 
     public abstract IGdlMessage getPartition(ArrayList<CostFunction> fs,
-            UPEdge<IGdlNode, IGdlMessage> e);
+            UPEdge<? extends IUPNode, IGdlMessage> e);
 
     protected void computeFreeAndBoundFactors(ArrayList<CostFunction> fs,
             ArrayList<CostFunction> ffs, ArrayList<CostFunction> bfs,

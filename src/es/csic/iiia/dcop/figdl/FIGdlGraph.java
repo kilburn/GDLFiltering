@@ -36,12 +36,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.igdl;
+package es.csic.iiia.dcop.figdl;
 
-import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPResults;
-import es.csic.iiia.dcop.CostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
+import es.csic.iiia.dcop.igdl.IGdlMessage;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import java.util.HashSet;
@@ -52,7 +51,7 @@ import java.util.HashSet;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class IGdlGraph extends UPGraph<IGdlNode,UPEdge<IGdlNode, IGdlMessage>,UPResults> {
+public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMessage>,UPResults> {
 
     /**
      * Set of variables involved in this graph.
@@ -63,13 +62,13 @@ public class IGdlGraph extends UPGraph<IGdlNode,UPEdge<IGdlNode, IGdlMessage>,UP
      * Constructs a clique graph that uses the specified {@code EdgeFactory} to
      * create it's edges.
      */
-    public IGdlGraph() {
+    public FIGdlGraph() {
         super();
         variableSet = new HashSet<Variable>();
     }
 
     @Override
-    public void addNode(IGdlNode clique) {
+    public void addNode(FIGdlNode clique) {
         super.addNode(clique);
         variableSet.addAll(clique.getVariables());
     }
@@ -89,7 +88,7 @@ public class IGdlGraph extends UPGraph<IGdlNode,UPEdge<IGdlNode, IGdlMessage>,UP
     }
 
     public void setR(int r) {
-        for(IUPNode n : getNodes()) {
+        for(FIGdlNode n : getNodes()) {
             n.setR(r);
         }
     }

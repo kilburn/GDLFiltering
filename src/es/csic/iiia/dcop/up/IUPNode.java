@@ -36,62 +36,42 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.igdl;
+package es.csic.iiia.dcop.up;
 
-import es.csic.iiia.dcop.up.IUPNode;
-import es.csic.iiia.dcop.up.UPResults;
-import es.csic.iiia.dcop.CostFunctionFactory;
+import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.up.UPEdge;
-import es.csic.iiia.dcop.up.UPGraph;
-import java.util.HashSet;
 
 /**
- * Utility Propagation message passing algorithm implementation using the GDL
- * algorithm as described in the Action-GDL paper.
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class IGdlGraph extends UPGraph<IGdlNode,UPEdge<IGdlNode, IGdlMessage>,UPResults> {
+public abstract class IUPNode <E extends UPEdge, R extends UPResult> extends
+        UPNode<E, R>
+{
 
-    /**
-     * Set of variables involved in this graph.
-     */
-    private HashSet<Variable> variableSet;
+    public IUPNode(Variable variable) {
+        super(variable);
+    }
 
-    /**
-     * Constructs a clique graph that uses the specified {@code EdgeFactory} to
-     * create it's edges.
-     */
-    public IGdlGraph() {
+    public IUPNode(CostFunction potential) {
+        super(potential);
+    }
+
+    public IUPNode() {
         super();
-        variableSet = new HashSet<Variable>();
     }
 
-    @Override
-    public void addNode(IGdlNode clique) {
-        super.addNode(clique);
-        variableSet.addAll(clique.getVariables());
-    }
-
-    public HashSet<Variable> getVariables() {
-        return this.variableSet;
-    }
-
-    @Override
-    protected UPResults buildResults() {
-        return new UPResults();
-    }
-
-    @Override
-    protected void end() {
-        super.end();
-    }
+    /**
+     * Maximum cost function arity
+     */
+    private int r;
 
     public void setR(int r) {
-        for(IUPNode n : getNodes()) {
-            n.setR(r);
-        }
+        this.r = r;
+    }
+
+    public int getR() {
+        return r;
     }
 
 }

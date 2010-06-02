@@ -124,6 +124,7 @@ public class CliApp {
     public static final int PS_ENTROPY  = 4;
     public static final int PS_SHARED   = 5;
     public static final int PS_REXP     = 6;
+    public static final int PS_FEXP     = 7;
 
     private int algorithm = ALGO_GDL;
     private int heuristic = JT_HEURISTIC_MCS;
@@ -443,6 +444,9 @@ public class CliApp {
                             break;
                         case PS_REXP:
                             strategy = new es.csic.iiia.dcop.igdl.strategy.RefinedExpStrategy();
+                            break;
+                        case PS_FEXP:
+                            strategy = new es.csic.iiia.dcop.igdl.strategy.FastExpStrategy();
                             break;
                     }
                     factory = new IGdlFactory(this.getIGdlR(), strategy);

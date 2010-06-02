@@ -42,6 +42,7 @@ import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
 import es.csic.iiia.dcop.igdl.IGdlNode;
+import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.util.CostFunctionStats;
@@ -61,12 +62,12 @@ public abstract class CombinedRankStrategy extends IGdlPartitionStrategy {
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
 
     @Override
-    public void initialize(IGdlNode node) {
+    public void initialize(IUPNode node) {
         super.initialize(node);
     }
 
     public IGdlMessage getPartition(ArrayList<CostFunction> fs,
-            UPEdge<IGdlNode, IGdlMessage> e) {
+            UPEdge<? extends IUPNode, IGdlMessage> e) {
 
         // Informational, just for debugging
         if (log.isTraceEnabled()) {

@@ -36,62 +36,77 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.igdl;
+package es.csic.iiia.dcop.figdl;
 
-import es.csic.iiia.dcop.up.IUPNode;
+import es.csic.iiia.dcop.igdl.IGdlMessage;
+import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
+import es.csic.iiia.dcop.mp.AbstractNode.Modes;
+import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.up.UPResults;
-import es.csic.iiia.dcop.CostFunctionFactory;
-import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.up.UPEdge;
-import es.csic.iiia.dcop.up.UPGraph;
-import java.util.HashSet;
+import es.csic.iiia.dcop.up.UPFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * Utility Propagation message passing algorithm implementation using the GDL
- * algorithm as described in the Action-GDL paper.
+ * Factory for the Utility Propagation GDL implementation.
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class IGdlGraph extends UPGraph<IGdlNode,UPEdge<IGdlNode, IGdlMessage>,UPResults> {
+public class FIGdlFactory implements UPFactory<FIGdlGraph, FIGdlNode, UPEdge<FIGdlNode, IGdlMessage>,
+    UPResult, UPResults> {
 
-    /**
-     * Set of variables involved in this graph.
-     */
-    private HashSet<Variable> variableSet;
+    private Modes mode = Modes.TREE_UP;
+    private int r = Integer.MAX_VALUE;
+    private IGdlPartitionStrategy partitionStrategy;
 
-    /**
-     * Constructs a clique graph that uses the specified {@code EdgeFactory} to
-     * create it's edges.
-     */
-    public IGdlGraph() {
-        super();
-        variableSet = new HashSet<Variable>();
+    public FIGdlFactory(int r, IGdlPartitionStrategy partitionStrategy) {
+        this.r = r;
+        this.partitionStrategy = partitionStrategy;
     }
 
-    @Override
-    public void addNode(IGdlNode clique) {
-        super.addNode(clique);
-        variableSet.addAll(clique.getVariables());
+    public FIGdlGraph buildGraph() {
+        return new FIGdlGraph();
     }
 
-    public HashSet<Variable> getVariables() {
-        return this.variableSet;
+    public FIGdlNode buildNode() {
+        FIGdlNode n = new FIGdlNode();
+        n.setMode(mode);
+        n.setR(r);
+        try {
+            n.setPartitionStrategy(partitionStrategy.getClass().newInstance());
+        } catch (InstantiationException ex) {
+            Logger.getLogger(FIGdlFactory.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            Logger.getLogger(FIGdlFactory.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return n;
     }
 
-    @Override
-    protected UPResults buildResults() {
+    public UPEdge<FIGdlNode, IGdlMessage> buildEdge(FIGdlNode node1, FIGdlNode node2) {
+        return new UPEdge<FIGdlNode, IGdlMessage>(node1, node2);
+    }
+
+    public UPResult buildResult(FIGdlNode node) {
+        return new UPResult(node);
+    }
+
+    public UPResults buildResults() {
         return new UPResults();
     }
 
-    @Override
-    protected void end() {
-        super.end();
+    /**
+     * @return the mode
+     */
+    public Modes getMode() {
+        return mode;
     }
 
-    public void setR(int r) {
-        for(IUPNode n : getNodes()) {
-            n.setR(r);
-        }
+    /**
+     * @param mode the mode to set
+     */
+    public void setMode(Modes mode) {
+        this.mode = mode;
     }
 
 }

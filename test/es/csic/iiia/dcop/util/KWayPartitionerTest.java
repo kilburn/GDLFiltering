@@ -45,10 +45,10 @@ import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
 import es.csic.iiia.dcop.igdl.IGdlNode;
 import es.csic.iiia.dcop.igdl.strategy.ExpStrategy;
+import es.csic.iiia.dcop.igdl.strategy.FastExpStrategy;
 import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
-import es.csic.iiia.dcop.igdl.strategy.LazyStrategy;
+import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
-import es.csic.iiia.dcop.up.UPNode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -58,7 +58,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
@@ -96,41 +95,45 @@ public class KWayPartitionerTest {
     @Test
     public void testGetPartitions() {
         Variable x, y, z, t;
-        x = new Variable("x", 2);
-        y = new Variable("y", 2);
-        z = new Variable("z", 2);
-        t = new Variable("t", 2);
-        CostFunction f1 = factory.buildCostFunction(new Variable[]{x, z});
-        f1.setValues(new double[]{0.2, 0.2, 0.3, 0.1});
-        CostFunction f2 = factory.buildCostFunction(new Variable[]{y, z});
-        f2.setValues(new double[]{0.6, Math.random(), 0.2, 0.3});
-        CostFunction f3 = factory.buildCostFunction(new Variable[]{t, y});
-        f3.setValues(new double[]{0.4, 0.3, 0.6, 0.6});
-        CostFunction f4 = factory.buildCostFunction(new Variable[]{t, z});
-        f4.setValues(new double[]{0.2, Math.random(), 0.8, 0.3});
-        CostFunction f5 = factory.buildCostFunction(new Variable[]{x, t});
-        f5.setValues(new double[]{0.1, 0.3, 0.4, Math.random()});
+        x = new Variable("8", 2);
+        y = new Variable("1", 2);
+        z = new Variable("5", 2);
+        t = new Variable("9", 2);
+        CostFunction f1 = factory.buildCostFunction(new Variable[]{x});
+        f1.setValues(new double[]{0.96, 1.04});
+        CostFunction f2 = factory.buildCostFunction(new Variable[]{y, x});
+        f2.setValues(new double[]{1.41,-0.41,-0.41,1.41});
+        CostFunction f3 = factory.buildCostFunction(new Variable[]{z, x});
+        f3.setValues(new double[]{0.77,1.23,1.23,0.77});
+        CostFunction f4 = factory.buildCostFunction(new Variable[]{x, t});
+        f4.setValues(new double[]{0.4,1.6,1.6,0.4});
 
-        List<CostFunction> fs = Arrays.asList(new CostFunction[]{f1, f2, f3, f4, f5});
-        List<Variable> evs = Arrays.asList(new Variable[]{x, y, z, t});
+        List<CostFunction> fs = Arrays.asList(new CostFunction[]{f1, f2, f3, f4});
+        List<Variable> evs = Arrays.asList(new Variable[]{y, z, t});
         KWayPartitioner instance = new KWayPartitioner(fs, new HashSet<Variable>(evs), 2);
         IGdlMessage result = instance.getPartitions();
         
 
         IGdlPartitionStrategy s = new ExpStrategy();
-        IGdlNode n1 = new IGdlNode();
+        IUPNode n1 = new IGdlNode();
         n1.setR(2);
-        IGdlNode n2 = new IGdlNode();
+        IUPNode n2 = new IGdlNode();
         n2.setR(2);
         UPEdge e = new UPEdge(n1,n2);
         e.setVariables(evs.toArray(new Variable[0]));
         s.initialize(n1);
         IGdlMessage result2 = s.getPartition(new ArrayList<CostFunction>(fs),e);
 
-        result.setBelief(f1.combine(f2).combine(f3).combine(f4).combine(f5).summarize(evs.toArray(new Variable[0])));
+        IGdlPartitionStrategy s3 = new FastExpStrategy();
+        s3.initialize(n1);
+        IGdlMessage result3 = s3.getPartition(new ArrayList<CostFunction>(fs),e);
+
+        result.setBelief(f1.combine(f2).combine(f3).combine(f4).summarize(evs.toArray(new Variable[0])));
         System.out.println(result);
-        result2.setBelief(f1.combine(f2).combine(f3).combine(f4).combine(f5).summarize(evs.toArray(new Variable[0])));
+        result2.setBelief(f1.combine(f2).combine(f3).combine(f4).summarize(evs.toArray(new Variable[0])));
         System.out.println(result2);
+        result3.setBelief(f1.combine(f2).combine(f3).combine(f4).summarize(evs.toArray(new Variable[0])));
+        System.out.println(result3);
     }
 
 }

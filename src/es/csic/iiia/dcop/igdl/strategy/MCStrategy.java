@@ -42,6 +42,7 @@ import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
 import es.csic.iiia.dcop.igdl.IGdlNode;
+import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import java.util.ArrayList;
@@ -69,7 +70,7 @@ public class MCStrategy extends IGdlPartitionStrategy {
     private EdgeTuples edgeTuples;
 
     @Override
-    public void initialize(IGdlNode node) {
+    public void initialize(IUPNode node) {
         super.initialize(node);
 
         edgeTuples = new EdgeTuples();
@@ -97,7 +98,7 @@ public class MCStrategy extends IGdlPartitionStrategy {
     }
 
     public IGdlMessage getPartition(ArrayList<CostFunction> fs,
-            UPEdge<IGdlNode, IGdlMessage> e) {
+            UPEdge<? extends IUPNode, IGdlMessage> e) {
 
         
         // Free factors, that do *not* contain any separator variable.

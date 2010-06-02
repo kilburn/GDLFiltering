@@ -42,6 +42,7 @@ import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
 import es.csic.iiia.dcop.igdl.IGdlNode;
+import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.util.CombinationGenerator;
@@ -63,14 +64,14 @@ public class AllCombStrategy extends IGdlPartitionStrategy {
     private IGdlPartitionStrategy subStrategy;
 
     @Override
-    public void initialize(IGdlNode node) {
+    public void initialize(IUPNode node) {
         super.initialize(node);
         subStrategy = new RankDownStrategy();
         subStrategy.initialize(node);
     }
 
     public IGdlMessage getPartition(ArrayList<CostFunction> fs,
-            UPEdge<IGdlNode, IGdlMessage> e) {
+            UPEdge<? extends IUPNode, IGdlMessage> e) {
 
         
         // Free factors, that do *not* contain any separator variable.
