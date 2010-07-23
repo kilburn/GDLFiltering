@@ -90,7 +90,7 @@ public class MCStrategy extends IGdlPartitionStrategy {
             for (int i=0; i<nv && evs.size()>0; i++) {
                 ArrayList<Variable> vs = new ArrayList<Variable>(r);
                 for (int j=0; j<r && evs.size()>0; j++) {
-                    vs.add(evs.pop());
+                    vs.add(evs.remove(j));
                 }
                 edgeTuples.add(e, vs);
             }
