@@ -36,45 +36,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.up;
+package es.csic.iiia.dcop.figdl;
 
-import es.csic.iiia.dcop.CostFunction;
-import es.csic.iiia.dcop.gdl.GdlNode;
-import es.csic.iiia.dcop.mp.Result;
+import es.csic.iiia.dcop.up.UPResults;
 
 /**
- * Utility Propagation result object for a single node.
- * 
+ *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class UPResult implements Result {
-    private CostFunction factor;
-    private int cliqueVariables;
-    private int cliqueSize;
-    private long sentBytes;
-
-    public UPResult(UPNode node) {
-        this.factor = node.getBelief();
-        cliqueVariables = node.getVariables().size();
-        cliqueSize = factor.getSize();
-        //sentBytes =
-    }
-
-    public CostFunction getFactor() {
-        return factor;
-    }
-
-    @Override
-    public String toString() {
-        return factor.toString();
-    }
-
-    public int getNumberOfVariables() {
-        return cliqueVariables;
-    }
-
-    public int getSize() {
-        return cliqueSize;
-    }
-
+public class FIGdlResults extends UPResults<FIGdlResult> {
 }

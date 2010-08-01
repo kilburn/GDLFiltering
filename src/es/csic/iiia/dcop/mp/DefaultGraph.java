@@ -98,6 +98,11 @@ public abstract class DefaultGraph<N extends Node, E extends Edge, R extends Res
 
         }
 
+        // Just in case...
+        if (iter == maxIterations) {
+            System.err.println("WARNING: Maximum number of iterations reached (i=" + iter + ")");
+        }
+
         // Result collection
         end();
 

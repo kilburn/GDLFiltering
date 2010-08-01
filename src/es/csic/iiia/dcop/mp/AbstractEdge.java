@@ -69,17 +69,17 @@ public abstract class AbstractEdge<N extends Node,M extends Message> implements 
     }
 
     
-    public boolean sendMessage(N sender, M message) {
+    public int sendMessage(N sender, M message) {
         if (sender == c1) {
             if (message.equals(m2))
-                return false;
+                return 0;
             nm2 = message;
         } else {
             if (message.equals(m1))
-                return false;
+                return 0;
             nm1 = message;
         }
-        return true;
+        return message.getBytes();
     }
 
     public M getMessage(N recipient) {

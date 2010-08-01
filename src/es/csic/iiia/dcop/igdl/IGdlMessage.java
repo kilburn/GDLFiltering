@@ -40,7 +40,8 @@ package es.csic.iiia.dcop.igdl;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.mp.Message;
+import es.csic.iiia.dcop.mp.AbstractMessage;
+import es.csic.iiia.dcop.mp.Message.Encoding;
 import es.csic.iiia.dcop.util.CostFunctionStats;
 import java.util.ArrayList;
 
@@ -49,7 +50,8 @@ import java.util.ArrayList;
  * 
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class IGdlMessage implements Message {
+public class IGdlMessage extends AbstractMessage {
+
     private ArrayList<CostFunction> factors;
     private CostFunction belief = null;
 
@@ -71,6 +73,21 @@ public class IGdlMessage implements Message {
 
     public void setBelief(CostFunction belief) {
         this.belief = belief;
+    }
+
+    public int getBytes(Encoding encoding) {
+        int size = 0;
+        switch(encoding) {
+            case NORMAL:
+                for (CostFunction f : factors) {
+                    size += f.getVariableSet().size()+1;
+                    size += f.getSize()*4;
+                }
+                break;
+            default:
+                break;
+        }
+        return size;
     }
 
     @Override

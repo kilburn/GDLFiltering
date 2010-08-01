@@ -78,7 +78,9 @@ import java.io.PrintStream;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,7 +133,7 @@ public class CliApp {
     private CostFunction.Summarize summarizeOperation = CostFunction.Summarize.MIN;
     private CostFunction.Combine combineOperation = CostFunction.Combine.SUM;
     private CostFunction.Normalize normalization = CostFunction.Normalize.NONE;
-    private int maxCliqueVariables = Integer.MAX_VALUE;
+    private int maxCliqueVariables = 14;
     private int maxJunctionTreeTries = 1;
     private double randomVariance = 0;
     private boolean createCliqueGraph = false;
@@ -339,7 +341,7 @@ public class CliApp {
 
         // Extract a solution
         VPGraph st = new VPGraph(cg);
-        VPResults res = st.run(100);
+        VPResults res = st.run(10000);
         VariableAssignment map = res.getMapping();
 
         // Compute UB for IGdl
@@ -349,11 +351,9 @@ public class CliApp {
             System.out.println("BOUND " + ubres.getBound());
         }
 
+        SortedMap<Variable, Integer> foo = new TreeMap<Variable, Integer>(map);
         System.out.print("SOLUTION");
-        SortedSet foo = new TreeSet(map.keySet());
-        Iterator<Variable> i = foo.iterator();
-        while(i.hasNext()) {
-            Variable v = i.next();
+        for(Variable v : foo.keySet()) {
             System.out.print(" " + (map.get(v)));
         }
         System.out.println();
@@ -464,7 +464,7 @@ public class CliApp {
                     variables = results.getMaxVariables();
                 } else {
                     int minVariables = Integer.MAX_VALUE;
-                    for(int i=0; i < maxJunctionTreeTries || variables != minVariables; i++) {
+                    for(int i=0; i < maxJunctionTreeTries; i++) {
                         DFS dfs = null;
                         switch(heuristic) {
                             case JT_HEURISTIC_MCS:
@@ -481,7 +481,7 @@ public class CliApp {
                         candidateCg = JunctionTreeAlgo.buildGraph(factory, dfs.getFactorDistribution(), dfs.getAdjacency());
                         candidateCg.setRoot(dfs.getRoot());
                         JunctionTree jt = new JunctionTree(candidateCg);
-                        results = jt.run(100);
+                        results = jt.run(10000);
                         variables = results.getMaxVariables();
 
                         if (variables < minVariables) {

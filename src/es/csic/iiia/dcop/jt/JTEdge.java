@@ -74,9 +74,9 @@ public class JTEdge extends AbstractEdge<JTNode,JTMessage> {
         edge.setVariables(variables.toArray(new Variable[]{}));
     }
 
-    @Override public boolean sendMessage(JTNode sender, JTMessage message) {
-        boolean res = super.sendMessage(sender, message);
-        if (res && log.isTraceEnabled())
+    @Override public int sendMessage(JTNode sender, JTMessage message) {
+        int res = super.sendMessage(sender, message);
+        if (res>0 && log.isTraceEnabled())
             log.trace(sender.getName() + " -> " + getDestination(sender).getName() + " : " + message);
         return res;
     }

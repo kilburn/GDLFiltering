@@ -108,9 +108,9 @@ public class UPEdge<N extends UPNode, M extends Message> extends AbstractEdge<N,
     @Override public N getNode2() {return super.getNode2();}
     @Override public N getDestination(N node) {return super.getDestination(node);}
 
-    @Override public boolean sendMessage(N sender, M message) {
-        boolean res = super.sendMessage(sender, message);
-        if (res && log.isTraceEnabled())
+    @Override public int sendMessage(N sender, M message) {
+        int res = super.sendMessage(sender, message);
+        if (res>0 && log.isTraceEnabled())
             log.trace(sender.getName() + " -> " + getDestination(sender).getName() + " : " + message);
         return res;
     }

@@ -38,9 +38,8 @@
 
 package es.csic.iiia.dcop.vp;
 
-import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.VariableAssignment;
-import es.csic.iiia.dcop.mp.Message;
+import es.csic.iiia.dcop.mp.AbstractMessage;
 
 /**
  * Value propagation message, carrying the variable/value pairs assigned by
@@ -48,7 +47,7 @@ import es.csic.iiia.dcop.mp.Message;
  * 
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class VPMessage implements Message {
+public class VPMessage extends AbstractMessage {
 
     private VariableAssignment mapping;
 
@@ -63,6 +62,10 @@ public class VPMessage implements Message {
     @Override
     public String toString() {
         return "VP" + mapping.toString();
+    }
+
+    public int getBytes(Encoding encoding) {
+        return mapping.size()*5;
     }
 
 }

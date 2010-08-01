@@ -38,13 +38,13 @@
 
 package es.csic.iiia.dcop.bb;
 
-import es.csic.iiia.dcop.mp.Message;
+import es.csic.iiia.dcop.mp.AbstractMessage;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class UBMessage implements Message {
+public class UBMessage extends AbstractMessage {
 
     private double ub;
     private double lb;
@@ -80,6 +80,10 @@ public class UBMessage implements Message {
     @Override
     public String toString() {
         return "[" + this.lb + " - " + this.ub + "]";
+    }
+
+    public int getBytes(Encoding encoding) {
+        return 8;
     }
 
 

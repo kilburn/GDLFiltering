@@ -39,7 +39,7 @@
 package es.csic.iiia.dcop.jt;
 
 import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.mp.Message;
+import es.csic.iiia.dcop.mp.AbstractMessage;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -48,7 +48,7 @@ import java.util.Set;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class JTMessage implements Message {
+public class JTMessage extends AbstractMessage {
 
     private Set<Variable> variables;
 
@@ -92,5 +92,9 @@ public class JTMessage implements Message {
         int hash = 7;
         hash = 71 * hash + (this.variables != null ? this.variables.hashCode() : 0);
         return hash;
+    }
+
+    public int getBytes(Encoding encoding) {
+        return variables.size();
     }
 }

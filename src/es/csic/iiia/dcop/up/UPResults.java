@@ -45,7 +45,7 @@ import es.csic.iiia.dcop.mp.DefaultResults;
  * 
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class UPResults extends DefaultResults<UPResult> {
+public class UPResults<T extends UPResult> extends DefaultResults<T> {
 
     public int getMaxSize() {
         int max = Integer.MIN_VALUE;

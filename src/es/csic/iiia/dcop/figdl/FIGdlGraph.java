@@ -38,59 +38,53 @@
 
 package es.csic.iiia.dcop.figdl;
 
-import es.csic.iiia.dcop.up.UPResults;
-import es.csic.iiia.dcop.Variable;
+import es.csic.iiia.dcop.bb.UBGraph;
+import es.csic.iiia.dcop.bb.UBResults;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
-import java.util.HashSet;
+import es.csic.iiia.dcop.up.UPResults;
+import es.csic.iiia.dcop.vp.VPGraph;
+import es.csic.iiia.dcop.vp.VPResults;
 
 /**
- * Utility Propagation message passing algorithm implementation using the GDL
- * algorithm as described in the Action-GDL paper.
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMessage>,UPResults> {
+public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMessage>,FIGdlResults> {
 
-    /**
-     * Set of variables involved in this graph.
-     */
-    private HashSet<Variable> variableSet;
-
-    /**
-     * Constructs a clique graph that uses the specified {@code EdgeFactory} to
-     * create it's edges.
-     */
-    public FIGdlGraph() {
-        super();
-        variableSet = new HashSet<Variable>();
-    }
+    private FIGdlIteration iteration;
+    private int maxR;
 
     @Override
-    public void addNode(FIGdlNode clique) {
-        super.addNode(clique);
-        variableSet.addAll(clique.getVariables());
-    }
+    public FIGdlResults run(int maxIterations) {
 
-    public HashSet<Variable> getVariables() {
-        return this.variableSet;
-    }
+        for (int i=0; i<maxR; i++) {
+            // Value propagation
+            UPResults r = iteration.run(maxIterations);
+            
+            // Solution extraction
+            VPGraph st = new VPGraph(iteration);
+            VPResults res = st.run(100);
+            
+            // Bound calculation
+            UBGraph ub = new UBGraph(st);
+            UBResults ubres = ub.run(maxIterations);
 
-    @Override
-    protected UPResults buildResults() {
-        return new UPResults();
-    }
+            // Store one result ¿?
 
-    @Override
-    protected void end() {
-        super.end();
-    }
-
-    public void setR(int r) {
-        for(FIGdlNode n : getNodes()) {
-            n.setR(r);
+            // Build the new iteration
+            iteration = new FIGdlIteration(iteration);
         }
+
+        return null;
+    }
+
+
+
+    @Override
+    protected FIGdlResults buildResults() {
+        return new FIGdlResults();
     }
 
 }

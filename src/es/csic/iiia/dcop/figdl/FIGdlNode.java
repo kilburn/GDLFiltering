@@ -44,6 +44,7 @@ import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.VariableAssignment;
+import es.csic.iiia.dcop.bb.UBResult;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
@@ -71,6 +72,16 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
      * Partitioning strategy to use
      */
     private IGdlPartitionStrategy strategy = new AllCombStrategy();
+
+    /**
+     * FIGdlNode from previous iteration
+     */
+    private FIGdlNode prevIteration;
+
+    /**
+     * Bounds from previous iteration
+     */
+    private UBResult bounds;
 
     /**
      * Constructs a new clique with the specified member variable and null

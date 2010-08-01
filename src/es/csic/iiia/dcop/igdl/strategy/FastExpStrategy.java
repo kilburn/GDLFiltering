@@ -40,15 +40,11 @@ package es.csic.iiia.dcop.igdl.strategy;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.igdl.IGdlDedupMessage;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
-import es.csic.iiia.dcop.igdl.IGdlNode;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.util.CostFunctionStats;
-import es.csic.iiia.dcop.util.metrics.Metric;
-import es.csic.iiia.dcop.util.metrics.Norm0;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -127,7 +123,6 @@ public class FastExpStrategy extends IGdlPartitionStrategy {
             CostFunction ncst = cst.getFactory().buildCostFunction(cst);
             ncst.negate();
             remaining = remaining.combine(ncst);
-            System.out.println(remaining);
 
             /*
 

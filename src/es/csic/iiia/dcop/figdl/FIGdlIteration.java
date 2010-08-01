@@ -36,30 +36,87 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.up;
+package es.csic.iiia.dcop.figdl;
 
-import es.csic.iiia.dcop.CostFunctionFactory;
+import es.csic.iiia.dcop.up.UPResults;
 import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.mp.DefaultGraph;
-import es.csic.iiia.dcop.mp.Edge;
-import java.util.ArrayList;
+import es.csic.iiia.dcop.igdl.IGdlMessage;
+import es.csic.iiia.dcop.up.UPEdge;
+import es.csic.iiia.dcop.up.UPGraph;
+import java.util.HashMap;
 import java.util.HashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Utility propagation graph.
+ * Utility Propagation message passing algorithm implementation using the GDL
+ * algorithm as described in the Action-GDL paper.
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public abstract class UPGraph<N extends UPNode, E extends Edge, R extends UPResults>
-        extends DefaultGraph<N,E,R> {
-    
+public class FIGdlIteration extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMessage>,UPResults> {
+
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
 
-    public void setFactory(CostFunctionFactory factory) {
-        for (N clique : getNodes()) {
-            clique.setFactory(factory);
+    /**
+     * Set of variables involved in this graph.
+     */
+    private HashSet<Variable> variableSet;
+
+    /**
+     * Constructs a clique graph that uses the specified {@code EdgeFactory} to
+     * create it's edges.
+     */
+    public FIGdlIteration() {
+        super();
+        variableSet = new HashSet<Variable>();
+    }
+
+    public FIGdlIteration(FIGdlIteration prev) {
+        this();
+
+        HashMap<FIGdlNode, FIGdlNode> map = new HashMap<FIGdlNode, FIGdlNode>(
+            prev.getNodes().size()
+        );
+
+        for(FIGdlNode nold : prev.getNodes()) {
+            FIGdlNode nnew = new FIGdlNode(nold);
+            map.put(nold, nnew);
+            this.addNode(nnew);
+        }
+
+        for(UPEdge<FIGdlNode, IGdlMessage> eold : prev.getEdges()) {
+            FIGdlNode n1 = map.get(eold.getNode1());
+            FIGdlNode n2 = map.get(eold.getNode2());
+            UPEdge<FIGdlNode, IGdlMessage> enew = new UPEdge<FIGdlNode, IGdlMessage>(n1, n2);
+            enew.setVariables(eold.getVariables());
+            this.addEdge(enew);
+            n1.addEdge(enew);
+            n2.addEdge(enew);
+        }
+    }
+
+    @Override
+    public void addNode(FIGdlNode clique) {
+        super.addNode(clique);
+        variableSet.addAll(clique.getVariables());
+    }
+
+    
+
+    @Override
+    protected UPResults buildResults() {
+        return new UPResults();
+    }
+
+    @Override
+    protected void end() {
+        super.end();
+    }
+
+    public void setR(int r) {
+        for(FIGdlNode n : getNodes()) {
+            n.setR(r);
         }
     }
 
@@ -74,13 +131,8 @@ public abstract class UPGraph<N extends UPNode, E extends Edge, R extends UPResu
     }
 
     @Override
-    public void reportResults(R results) {
+    public void reportResults(UPResults results) {
         log.trace("------- " + results);
     }
 
-    /*
-     * More boilerplate code to make the compiler realize the types.
-     */
-    @Override public ArrayList<N> getNodes() {return super.getNodes();}
-    @Override public R run(int maxIterations) {return super.run(maxIterations);}
 }

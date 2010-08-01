@@ -89,8 +89,10 @@ public class Cli {
         System.err.println("    Displays this help message.");
         System.err.println("  -l file, --load-tree=file");
         System.err.println("    Use the tree definition found in <file>.");
+        System.err.println("  -m variables, --max-clique-size=variables (14)");
+        System.err.println("    Don not try to solve problems with cliques of more than <variables> variables.");
         System.err.println("  -j tries, --jt-tries tries (1)");
-        System.err.println("    Maximum number of junction trees built trying to minimize the maximum clique size.");
+        System.err.println("    Number of junction trees to build trying to minimize the maximum clique size.");
         System.err.println("  -n mode, --normalize=mode (none)");
         System.err.println("    Uses the specified normalization mode, where it is one of: ");
         System.err.println("      - none : do not perform any normalization (default for junction tree algorithm).");
@@ -106,13 +108,13 @@ public class Cli {
         System.err.println("      - exp      : merges functions using the lastest experimental strategy (dev only).");
         System.err.println("      - rexp     : merges functions using the lastest experimental strategy (refined).");
         System.err.println("      - fexp     : merges functions using the lastest experimental strategy (fast).");
-        System.err.println("  -r [variance], --random-noise=[variance]");
+        System.err.println("  -r [variance], --random-noise[=variance]");
         System.err.println("    Adds random noise with <variance> variance, or 0.001 if unspecified.");
         System.err.println("  -s operation, --summarize=operation (min)");
         System.err.println("    Uses the specified summarizing operator, where operator is one of: ");
         System.err.println("      - min : summarizes using the minimum value (for costs).");
         System.err.println("      - max : summarizes using the maximum value (for utilites).");
-        System.err.println("  -t [file], --trace=file");
+        System.err.println("  -t [file], --trace[=file]");
         System.err.println("    Save algorithms' traces in [file], or \"trace.txt\" if unspecified.");
         System.err.println();
         System.exit(0);
@@ -127,10 +129,11 @@ public class Cli {
             new LongOpt("heuristic", LongOpt.REQUIRED_ARGUMENT, null, 'e'),
             new LongOpt("factor-graph", LongOpt.OPTIONAL_ARGUMENT, null, 'f'),
             new LongOpt("clique-graph", LongOpt.OPTIONAL_ARGUMENT, null, 'g'),
+            new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
             new LongOpt("igdl-r", LongOpt.REQUIRED_ARGUMENT, null, 'i'),
             new LongOpt("jt-tries", LongOpt.REQUIRED_ARGUMENT, null, 'j'),
             new LongOpt("load-tree", LongOpt.REQUIRED_ARGUMENT, null, 'l'),
-            new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
+            new LongOpt("max-clique-size", LongOpt.REQUIRED_ARGUMENT, null, 'l'),
             new LongOpt("normalize", LongOpt.REQUIRED_ARGUMENT, null, 'n'),
             new LongOpt("partition-strategy", LongOpt.REQUIRED_ARGUMENT, null, 'p'),
             new LongOpt("random-noise", LongOpt.OPTIONAL_ARGUMENT, null, 'r'),

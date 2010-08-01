@@ -40,7 +40,6 @@ package es.csic.iiia.dcop.igdl;
 
 import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
 import es.csic.iiia.dcop.mp.AbstractNode.Modes;
-import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.up.UPResults;
 import es.csic.iiia.dcop.up.UPEdge;
