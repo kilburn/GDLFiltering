@@ -39,7 +39,6 @@
 package es.csic.iiia.dcop;
 
 import java.util.Collection;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -192,12 +191,15 @@ public interface CostFunction {
     }
 
     /**
-     * Sets the initial cost/utility of all the factor configurations to the
-     * given initial value.
+     * Summarize this factor over the specified variables, using the given
+     * operation.
      *
-     * @param initialValue
+     * @param vars variables to summarize.
+     * @param operation operation to use.
+     * @return a new CostFunction which is the result of summarizing this one over
+     * the specified variables.
      */
-    public void initialize(Double initialValue);
+    CostFunction summarize(Variable[] vars);
 
     /**
      * Combine this factor with the given one, using the specified operation.
@@ -209,9 +211,39 @@ public interface CostFunction {
     CostFunction combine(CostFunction factor);
 
     /**
+     * Negates this factor, applying the inverse of the given operation to
+     * all it's values.
+     *
+     * @see #combine(es.csic.iiia.iea.ddm.CostFunction, int)
+     */
+    CostFunction negate();
+
+    /**
+     * Normalizes this factor in the specified mode.
+     */
+    CostFunction normalize();
+
+    /**
+     * Reduces the factor, fixing the variable-value pairs of the mapping
+     * table.
+     *
+     * @param mapping variable-value pairs to fix.
+     * @return new reduced factor.
+     */
+    CostFunction reduce(VariableAssignment mapping);
+
+    /**
      * {@inheritDoc}
      */
     @Override boolean equals(Object obj);
+
+    /**
+     * Sets the initial cost/utility of all the factor configurations to the
+     * given initial value.
+     *
+     * @param initialValue
+     */
+    public void initialize(Double initialValue);
 
     /**
      * Returns the optimal assignment for this factor.
@@ -342,28 +374,6 @@ public interface CostFunction {
     Set<Variable> getSharedVariables(Variable[] variables);
 
     /**
-     * Negates this factor, applying the inverse of the given operation to
-     * all it's values.
-     *
-     * @see #combine(es.csic.iiia.iea.ddm.CostFunction, int)
-     */
-    void negate();
-
-    /**
-     * Normalizes this factor in the specified mode.
-     */
-    void normalize();
-
-    /**
-     * Reduces the factor, fixing the variable-value pairs of the mapping
-     * table.
-     *
-     * @param mapping variable-value pairs to fix.
-     * @return new reduced factor.
-     */
-    CostFunction reduce(VariableAssignment mapping);
-
-    /**
      * Sets the value of this factor for the given variable states.
      *
      * @param index list of variable states.
@@ -385,17 +395,6 @@ public interface CostFunction {
      * @param values list of values for all possible variable states.
      */
     void setValues(double[] values);
-
-    /**
-     * Summarize this factor over the specified variables, using the given
-     * operation.
-     *
-     * @param vars variables to summarize.
-     * @param operation operation to use.
-     * @return a new CostFunction which is the result of summarizing this one over
-     * the specified variables.
-     */
-    CostFunction summarize(Variable[] vars);
 
     /**
      * Obtains an iterator over the linearized indices of non-infinity elements of this

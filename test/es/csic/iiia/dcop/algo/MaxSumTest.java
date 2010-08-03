@@ -158,7 +158,7 @@ public class MaxSumTest {
         for (int i=0; i<variables.length; i++) {
             Variable[] vars = beliefs.get(i).getFactor().getVariableSet().toArray(new Variable[]{c});
             CostFunction partialSolution = solution.summarize(vars);
-            partialSolution.normalize();
+            partialSolution = partialSolution.normalize();
             assertEquals(beliefs.get(i).getFactor(), partialSolution);
         }
     }
@@ -205,7 +205,7 @@ public class MaxSumTest {
         for (int i=0; i<variables.length; i++) {
             Variable[] vars = beliefs.get(i).getFactor().getVariableSet().toArray(new Variable[]{c});
             CostFunction partialSolution = solution.summarize(vars);
-            partialSolution.normalize();
+            partialSolution = partialSolution.normalize();
             assertEquals(beliefs.get(i).getFactor(), partialSolution);
         }
         System.out.println(results);

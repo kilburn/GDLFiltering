@@ -431,13 +431,15 @@ public abstract class AbstractCostFunction implements CostFunction {
     }
 
     /** {@inheritDoc} */
-    public void negate() {
+    public CostFunction negate() {
         Combine operation = factory.getCombineOperation();
+        CostFunction result = factory.buildCostFunction(this);
         Iterator<Integer> it = iterator();
         while(it.hasNext()) {
             final int i = it.next();
-            setValue(i, operation.invert(getValue(i)));
+            result.setValue(i, operation.invert(getValue(i)));
         }
+        return result;
     }
 
     /** {@inheritDoc} */
@@ -481,11 +483,12 @@ public abstract class AbstractCostFunction implements CostFunction {
     }
 
     /** {@inheritDoc} */
-    public void normalize() {
+    public CostFunction normalize() {
         Normalize mode = factory.getNormalizationType();
+        CostFunction result = factory.buildCostFunction(this);
         
         if (mode == Normalize.NONE) {
-            return;
+            return result;
         }
 
         // Calculate aggregation
@@ -502,7 +505,7 @@ public abstract class AbstractCostFunction implements CostFunction {
             case SUM0:
                 while(it.hasNext()) {
                     final int i = it.next();
-                    setValue(i, getValue(i) - avg);
+                    result.setValue(i, getValue(i) - avg);
                 }
                 break;
             case SUM1:
@@ -511,10 +514,12 @@ public abstract class AbstractCostFunction implements CostFunction {
                     final int i = it.next();
                     final double value = getValue(i);
                     final double v = sum != 0 ? value/sum : 1/dlen;
-                    setValue(i, v);
+                    result.setValue(i, v);
                 }
                 break;
         }
+
+        return result;
     }
 
     /** {@inheritDoc} */

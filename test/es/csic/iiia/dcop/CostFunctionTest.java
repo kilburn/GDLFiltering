@@ -660,7 +660,7 @@ public abstract class CostFunctionTest {
     @Test
     public void testNormalize1() {
         factory.setNormalizationType(CostFunction.Normalize.SUM1);
-        fa.normalize();
+        fa = fa.normalize();
         CostFunction res = factory.buildCostFunction(new Variable[]{a});
         res.setValues(new double[]{
             0.3, 0.7
@@ -675,7 +675,7 @@ public abstract class CostFunctionTest {
     @Test
     public void testNormalize2() {
         factory.setNormalizationType(CostFunction.Normalize.SUM0);
-        fa.normalize();
+        fa = fa.normalize();
         CostFunction res = factory.buildCostFunction(new Variable[]{a});
         res.setValues(new double[]{
             -0.2, 0.2
@@ -694,7 +694,7 @@ public abstract class CostFunctionTest {
         fac.setValues(new double[]{
             0.2, 0.4, 0.1, 0.4, 0.1, 0.06, 0, 0, 0.06, 0.4, 0.2, 0.08
         });
-        fac.normalize();
+        fac = fac.normalize();
         CostFunction res = factory.buildCostFunction(new Variable[]{a,b,c});
         res.setValues(new double[]{
             0.1, 0.2, 0.05, 0.2, 0.05, 0.03, 0, 0, 0.03, 0.2, 0.1, 0.04
@@ -709,7 +709,7 @@ public abstract class CostFunctionTest {
     @Test
     public void testNormalize4() {
         factory.setNormalizationType(CostFunction.Normalize.SUM0);
-        f1.normalize();
+        f1 = f1.normalize();
         CostFunction res = factory.buildCostFunction(new Variable[]{a,b,c});
         final double r = 1d/12d;
         res.setValues(new double[]{
@@ -730,7 +730,7 @@ public abstract class CostFunctionTest {
         fac.setValues(new double[]{
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
         });
-        fac.normalize();
+        fac = fac.normalize();
         CostFunction res = factory.buildCostFunction(new Variable[]{a,b,c});
         final double r = 1d/12d;
         res.setValues(new double[]{
@@ -746,7 +746,7 @@ public abstract class CostFunctionTest {
     @Test
     public void testNegate1() {
         factory.setCombineOperation(CostFunction.Combine.PRODUCT);
-        fa.negate();
+        fa = fa.negate();
         CostFunction res = factory.buildCostFunction(new Variable[]{a});
         res.setValues(new double[]{
             1/0.3, 1/0.7
@@ -761,7 +761,7 @@ public abstract class CostFunctionTest {
     @Test
     public void testNegate2() {
         factory.setCombineOperation(CostFunction.Combine.SUM);
-        fa.negate();
+        fa = fa.negate();
         CostFunction res = factory.buildCostFunction(new Variable[]{a});
         res.setValues(new double[]{
             -0.3, -0.7

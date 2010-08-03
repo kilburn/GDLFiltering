@@ -76,7 +76,7 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
     /**
      * FIGdlNode from previous iteration
      */
-    private FIGdlNode prevIteration;
+    private FIGdlNode previousEdges;
 
     /**
      * Bounds from previous iteration

@@ -113,9 +113,8 @@ public class IGdlMessage extends AbstractMessage {
             buf.append(combi);
             buf.append("\n   Opt: ");
             buf.append(belief);
-            combi.negate();
             buf.append("\n   Err: ");
-            CostFunction err = belief.combine(combi);
+            CostFunction err = belief.combine(combi.negate());
             buf.append(err);
             buf.append("\n  Stat: ");
             buf.append(new CostFunctionStats(err));

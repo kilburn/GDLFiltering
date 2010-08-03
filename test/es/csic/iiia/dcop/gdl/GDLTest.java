@@ -101,7 +101,6 @@ public class GDLTest {
     }
 
     @Test
-    @Ignore
     public void testGdlGraphMode() {
         // Set operating mode
         CostFunction.Summarize summarize = CostFunction.Summarize.MAX;
@@ -186,7 +185,6 @@ public class GDLTest {
     }
 
     @Test
-    @Ignore
     public void testIGdlExample() {
         System.out.println("RUNNING IGDL");
         // Set operating mode
@@ -266,7 +264,6 @@ public class GDLTest {
     }
 
     @Test
-    @Ignore
     public void testGdlExample() {
         System.out.println("RUNNING GDL");
         // Set operating mode
@@ -337,6 +334,7 @@ public class GDLTest {
     }
 
     @Test
+    @Ignore
     public void testTesting() {
         // Set operating mode
         CostFunction.Summarize summarize = CostFunction.Summarize.MIN;

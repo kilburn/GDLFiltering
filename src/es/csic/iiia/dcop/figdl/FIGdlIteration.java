@@ -80,9 +80,9 @@ public class FIGdlIteration extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMess
         );
 
         for(FIGdlNode nold : prev.getNodes()) {
-            FIGdlNode nnew = new FIGdlNode(nold);
-            map.put(nold, nnew);
-            this.addNode(nnew);
+            //FIGdlNode nnew = new FIGdlNode(nold);
+            //map.put(nold, nnew);
+            //this.addNode(nnew);
         }
 
         for(UPEdge<FIGdlNode, IGdlMessage> eold : prev.getEdges()) {

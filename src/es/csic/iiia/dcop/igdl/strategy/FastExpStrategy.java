@@ -120,9 +120,7 @@ public class FastExpStrategy extends IGdlPartitionStrategy {
 
             CostFunction cst = remaining.summarize(new Variable[0]);
             msg.addFactor(cst);
-            CostFunction ncst = cst.getFactory().buildCostFunction(cst);
-            ncst.negate();
-            remaining = remaining.combine(ncst);
+            remaining = remaining.combine(cst.negate());
 
             /*
 

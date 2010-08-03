@@ -157,7 +157,7 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
         previousBelief = belief;
         this.belief = combi.combine(this.potential);
         cc += belief.getSize();
-        this.belief.normalize();
+        this.belief = this.belief.normalize();
         cc += belief.getSize();
 
         // Send updated messages
@@ -218,9 +218,7 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
             CostFunction msg;
             GdlMessage im = e.getMessage(this);
             if (im != null) {
-                CostFunction inMsg = getFactory().buildCostFunction(im.getFactor());
-                inMsg.negate();
-                msg = belief.combine(inMsg);
+                msg = belief.combine(im.getFactor().negate());
                 cc += msg.getSize();
             } else {
                 msg = belief;

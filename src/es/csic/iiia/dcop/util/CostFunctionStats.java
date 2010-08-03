@@ -133,7 +133,7 @@ public class CostFunctionStats {
         CostFunction f2 = factory.buildCostFunction(f);
         CostFunction.Normalize n = factory.getNormalizationType();
         factory.setNormalizationType(CostFunction.Normalize.SUM1);
-        f2.normalize();
+        f2 = f2.normalize();
         System.out.println(f2);
         factory.setNormalizationType(n);
 
@@ -192,9 +192,9 @@ public class CostFunctionStats {
     public static double getGain(CostFunction f, Variable[] vars) {
         Metric m = new Norm1();
         CostFunction res = f.summarize(vars);
+        /** TODO: check if the following line is useless */
         res = res.summarize(f.getVariableSet().toArray(new Variable[0]));
-        res.negate();
-        res = f.combine(res);
+        res = f.combine(res.negate());
         return m.getValue(res);
     }
 
@@ -228,9 +228,7 @@ public class CostFunctionStats {
                 cfl[j] = f.summarize(vs);
 
                 // Compute the metric of the difference and store it (sorted)
-                CostFunction neg = f.getFactory().buildCostFunction(cfl[j]);
-                neg.negate();
-                neg = neg.summarize(vars);
+                CostFunction neg = cfl[j].negate().summarize(vars);
                 double v = m.getValue(f.combine(neg));
                 cfm.put(v, j);
                 //System.out.println("V: " + formatValue(v) + "\tC: " + cfl[j]);
@@ -249,13 +247,10 @@ public class CostFunctionStats {
             }
 
             // Recalculate the original function
+            //System.out.println("Chosen projection: " + chosen);
             res.add(chosen);
-            //System.out.println("Chose: " + chosen);
-            CostFunction neg = chosen.summarize(vars);
-            neg.negate();
-            //System.out.println("Chose: " + neg);
-            f = f.combine(neg);
-            //System.out.println("New f: " + f);
+            f = f.combine(chosen.negate());
+            //System.out.println("Remainder: " + f);
             
             if (score < 1e-5) {
                 // Got an exact value! :)
@@ -358,9 +353,7 @@ public class CostFunctionStats {
                 final CostFunction cf = cfs.remove(cfs.size()-1);
                 CostFunction pr = f.summarize(cf.getVariableSet().toArray(new Variable[0]));
                 res.add(pr);
-                CostFunction neg = pr.getFactory().buildCostFunction(pr);
-                neg.negate();
-                f = f.combine(neg);
+                f = f.combine(pr.negate());
             }
         }
 
@@ -434,9 +427,7 @@ public class CostFunctionStats {
                 cfs.remove(cf);
                 CostFunction pr = f.summarize(cf.getVariableSet().toArray(new Variable[0]));
                 res.add(pr);
-                CostFunction neg = pr.getFactory().buildCostFunction(pr);
-                neg.negate();
-                f = f.combine(neg);
+                f = f.combine(pr.negate());
             }
         }
 
