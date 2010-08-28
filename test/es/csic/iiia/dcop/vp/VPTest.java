@@ -79,7 +79,7 @@ public class VPTest {
 
     @Before
     public void setUp() {
-        factory = new HypercubeCostFunctionFactory();
+        factory = new CostFunctionFactory();
 
         v = new Variable[10];
         for (int i=0; i<10; i++) {

@@ -45,8 +45,12 @@ package es.csic.iiia.dcop;
 public class MapCostFunctionTest extends AbstractCostFunctionTest {
 
     @Override
-    public MapCostFunctionFactory buildFactory() {
-        return new MapCostFunctionFactory();
+    public CostFunctionFactory buildFactory() {
+        CostFunctionFactory f = new CostFunctionFactory();
+        CostFunctionTypeFactory cff = new MapCostFunctionFactory(f);
+        f.setDenseFactory(cff);
+        f.setSparseFactory(cff);
+        return f;
     }
 
 }

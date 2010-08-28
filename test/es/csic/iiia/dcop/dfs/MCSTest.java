@@ -38,10 +38,9 @@
 
 package es.csic.iiia.dcop.dfs;
 
-import es.csic.iiia.dcop.dfs.MCS;
+import java.util.HashMap;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunctionFactory;
-import es.csic.iiia.dcop.HypercubeCostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
 import java.util.Hashtable;
 import java.util.Map.Entry;
@@ -75,7 +74,7 @@ public class MCSTest {
 
     @Before
     public void setUp() {
-        factory = new HypercubeCostFunctionFactory();
+        factory = new CostFunctionFactory();
         // Set up variables
         v = new Variable[10];
         for (int i=0; i<10; i++) {
@@ -103,7 +102,7 @@ public class MCSTest {
 
     @Test
     public void testGetDFS() {
-        Hashtable<Variable, char[]> expectedResult = new Hashtable<Variable, char[]>();
+        HashMap<Variable, char[]> expectedResult = new HashMap<Variable, char[]>();
         expectedResult.put(v[0], new char[]{0, 0, 0, 0, 0});
         expectedResult.put(v[1], new char[]{1, 0, 0, 0, 0});
         expectedResult.put(v[2], new char[]{0, 1, 0, 0, 0});
@@ -111,7 +110,7 @@ public class MCSTest {
         expectedResult.put(v[4], new char[]{0, 0, 0, 1, 0});
 
         MCS mcs = new MCS(f);
-        Hashtable<Variable, char[]> result = mcs.getDFS();
+        HashMap<Variable, char[]> result = mcs.getDFS();
         //mcs.printDFS();
         for (Entry<Variable,char[]> e : result.entrySet()) {
             assertArrayEquals(e.getValue(), expectedResult.get(e.getKey()));
@@ -121,7 +120,7 @@ public class MCSTest {
 
     @Test
     public void testAssignFactors() {
-        Hashtable<Variable, CostFunction[]> expectedResult = new Hashtable<Variable, CostFunction[]>();
+        HashMap<Variable, CostFunction[]> expectedResult = new HashMap<Variable, CostFunction[]>();
         expectedResult.put(v[0], new CostFunction[]{});
         expectedResult.put(v[1], new CostFunction[]{f[0], f[1], f[2]});
         expectedResult.put(v[2], new CostFunction[]{f[3], f[4], f[7]});
@@ -129,7 +128,7 @@ public class MCSTest {
         expectedResult.put(v[4], new CostFunction[]{f[6], f[9]});
 
         MCS mcs = new MCS(f);
-        Hashtable<Variable, CostFunction[]> result = mcs.getFactorAssignments();
+        HashMap<Variable, CostFunction[]> result = mcs.getFactorAssignments();
         for (Entry<Variable,CostFunction[]> e : result.entrySet()) {
 
             System.out.print(e.getKey().getName() + ":[");

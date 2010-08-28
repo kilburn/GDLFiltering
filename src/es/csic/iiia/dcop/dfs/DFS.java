@@ -40,9 +40,8 @@ package es.csic.iiia.dcop.dfs;
 
 import es.csic.iiia.dcop.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
@@ -59,7 +58,7 @@ public abstract class DFS {
     private Variable[] variables;
     private HashSet<Variable> remainingVariables;
     private int[] nPlacedNeighs;
-    private Hashtable<Variable, HashSet<Variable>> neighboors;
+    private HashMap<Variable, HashSet<Variable>> neighboors;
     private VariableAssignment variableIndices;
     private VariableAssignment nConnections;
     private Random random;
@@ -84,7 +83,7 @@ public abstract class DFS {
     }
 
     private void initialize() {
-        neighboors = new Hashtable<Variable, HashSet<Variable>>();
+        neighboors = new HashMap<Variable, HashSet<Variable>>();
         nConnections = new VariableAssignment();
         remainingVariables = new HashSet<Variable>();
         for (CostFunction f : factors) {
@@ -116,12 +115,12 @@ public abstract class DFS {
         nPlacedNeighs = new int[variables.length];
     }
 
-    protected Hashtable<Variable, char[]> getDFS() {
+    protected HashMap<Variable, char[]> getDFS() {
         computeDFS();
 
         // And finally, the results
-        Hashtable<Variable, char[]> result =
-                new Hashtable<Variable, char[]>(variables.length);
+        HashMap<Variable, char[]> result =
+                new HashMap<Variable, char[]>(variables.length);
         for (int i=0; i<adjacency.length; i++) {
             result.put(variables[i], adjacency[i]);
         }
@@ -182,7 +181,7 @@ public abstract class DFS {
         variableDepths.put(currentNode, depth);
 
         // Ending condition
-        if (remainingVariables.size() == 0) {
+        if (remainingVariables.isEmpty()) {
             return;
         }
 
@@ -206,14 +205,14 @@ public abstract class DFS {
         }
     }
 
-    public Hashtable<Variable, CostFunction[]> getFactorAssignments() {
+    public HashMap<Variable, CostFunction[]> getFactorAssignments() {
         if (adjacency == null) {
             computeDFS();
         }
 
         CostFunction[][] flist = assignFactors();
-        Hashtable<Variable, CostFunction[]> results =
-                new Hashtable<Variable, CostFunction[]>();
+        HashMap<Variable, CostFunction[]> results =
+                new HashMap<Variable, CostFunction[]>();
 
         for(int i=0; i<variables.length; i++) {
             results.put(variables[i], flist[i]);
@@ -223,8 +222,8 @@ public abstract class DFS {
     }
 
     private CostFunction[][] assignFactors() {
-        Hashtable<Variable, ArrayList<CostFunction>> factorList =
-                new Hashtable<Variable, ArrayList<CostFunction>>(variables.length);
+        HashMap<Variable, ArrayList<CostFunction>> factorList =
+                new HashMap<Variable, ArrayList<CostFunction>>(variables.length);
 
         // Instantiate lists, so there are no "null" values
         for (Variable v : variables) {
@@ -266,7 +265,7 @@ public abstract class DFS {
 
     private Variable pickRandomly(HashSet<Variable> alternatives) {
 
-        if (alternatives.size() == 0) {
+        if (alternatives.isEmpty()) {
             return null;
         }
 

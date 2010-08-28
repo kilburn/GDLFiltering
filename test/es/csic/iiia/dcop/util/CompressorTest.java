@@ -42,7 +42,6 @@ import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunctionFactory;
 import es.csic.iiia.dcop.HypercubeCostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import org.junit.After;
@@ -50,7 +49,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
@@ -76,7 +74,7 @@ public class CompressorTest {
 
     @Before
     public void setUp() {
-        factory = new HypercubeCostFunctionFactory();
+        factory = new CostFunctionFactory();
         factory.setMode(CostFunction.Summarize.MIN, CostFunction.Combine.SUM,
                 CostFunction.Normalize.NONE);
 

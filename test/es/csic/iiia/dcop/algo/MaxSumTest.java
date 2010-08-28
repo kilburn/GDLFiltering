@@ -63,15 +63,15 @@ import static org.junit.Assert.*;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-@RunWith(Theories.class)
+//@RunWith(Theories.class)
 public class MaxSumTest {
 
     private Variable a,b,c,d;
     private CostFunctionFactory factory;
-    @DataPoint public static CostFunctionFactory HYPERCUBE_FACTORY =
+    /*@DataPoint public static CostFunctionFactory HYPERCUBE_FACTORY =
         new HypercubeCostFunctionFactory();
     @DataPoint public static CostFunctionFactory SPARSE_FACTORY =
-        new SparseCostFunctionFactory();
+        new SparseCostFunctionFactory();*/
 
     public MaxSumTest() {
     }
@@ -86,7 +86,7 @@ public class MaxSumTest {
 
     @Before
     public void setUp() {
-        factory = new HypercubeCostFunctionFactory();
+        factory = new CostFunctionFactory();
         a = new Variable("a", 3);
         b = new Variable("b", 2);
         c = new Variable("c", 2);

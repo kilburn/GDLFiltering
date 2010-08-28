@@ -80,7 +80,7 @@ public class KWayPartitionerTest {
 
     @Before
     public void setUp() {
-        factory = new HypercubeCostFunctionFactory();
+        factory = new CostFunctionFactory();
         factory.setMode(CostFunction.Summarize.MIN, CostFunction.Combine.SUM,
                 CostFunction.Normalize.NONE);
     }

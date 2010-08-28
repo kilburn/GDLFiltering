@@ -40,7 +40,6 @@ package es.csic.iiia.dcop.gdl;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunctionFactory;
-import es.csic.iiia.dcop.HypercubeCostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.algo.JunctionTreeAlgo;
@@ -53,7 +52,6 @@ import es.csic.iiia.dcop.dfs.MCS;
 import es.csic.iiia.dcop.igdl.IGdlFactory;
 import es.csic.iiia.dcop.igdl.IGdlGraph;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
-import es.csic.iiia.dcop.igdl.strategy.RankStrategy;
 import es.csic.iiia.dcop.igdl.strategy.RankUpStrategy;
 import es.csic.iiia.dcop.jt.JunctionTree;
 import es.csic.iiia.dcop.mp.AbstractNode.Modes;
@@ -93,7 +91,7 @@ public class GDLTest {
 
     @Before
     public void setUp() {
-        factory = new HypercubeCostFunctionFactory();
+        factory = new CostFunctionFactory();
     }
 
     @After

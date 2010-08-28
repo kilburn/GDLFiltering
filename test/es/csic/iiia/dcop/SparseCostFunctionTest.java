@@ -45,8 +45,12 @@ package es.csic.iiia.dcop;
 public class SparseCostFunctionTest extends AbstractCostFunctionTest {
 
     @Override
-    public SparseCostFunctionFactory buildFactory() {
-        return new SparseCostFunctionFactory();
+    public CostFunctionFactory buildFactory() {
+        CostFunctionFactory f = new CostFunctionFactory();
+        CostFunctionTypeFactory cff = new SparseCostFunctionFactory(f);
+        f.setDenseFactory(cff);
+        f.setSparseFactory(cff);
+        return f;
     }
 
 }

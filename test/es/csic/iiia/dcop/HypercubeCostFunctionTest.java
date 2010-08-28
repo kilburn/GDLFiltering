@@ -45,8 +45,12 @@ package es.csic.iiia.dcop;
 public class HypercubeCostFunctionTest extends AbstractCostFunctionTest {
 
     @Override
-    public HypercubeCostFunctionFactory buildFactory() {
-        return new HypercubeCostFunctionFactory();
+    public CostFunctionFactory buildFactory() {
+        CostFunctionFactory f = new CostFunctionFactory();
+        CostFunctionTypeFactory cff = new HypercubeCostFunctionFactory(f);
+        f.setDenseFactory(cff);
+        f.setSparseFactory(cff);
+        return f;
     }
 
 }

@@ -64,6 +64,24 @@ public class CostFunctionFactory {
     private CostFunction.Normalize normalizationType = CostFunction.Normalize.NONE;
 
     private CostFunctionTypeFactory denseFactory = new HypercubeCostFunctionFactory(this);
+
+    public CostFunctionTypeFactory getDenseFactory() {
+        return denseFactory;
+    }
+
+    public void setDenseFactory(CostFunctionTypeFactory denseFactory) {
+        this.denseFactory = denseFactory;
+        setMode(summarizeOperation, combineOperation, normalizationType);
+    }
+
+    public CostFunctionTypeFactory getSparseFactory() {
+        return sparseFactory;
+    }
+
+    public void setSparseFactory(CostFunctionTypeFactory sparseFactory) {
+        this.sparseFactory = sparseFactory;
+        setMode(summarizeOperation, combineOperation, normalizationType);
+    }
     private CostFunctionTypeFactory sparseFactory = new MapCostFunctionFactory(this);
 
     public CostFunction buildCostFunction(Variable[] variables) {
