@@ -88,10 +88,10 @@ public class IGdlMessage implements UPMessage {
 
     @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         CostFunction combi = null;
         for (CostFunction f : getFactors()) {
-            buf.append("\n\t" + f);
+            buf.append("\n\t").append(f);
             if (belief != null) {
                 combi = f.combine(combi);
             }

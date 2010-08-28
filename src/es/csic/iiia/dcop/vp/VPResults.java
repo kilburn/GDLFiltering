@@ -38,7 +38,6 @@
 
 package es.csic.iiia.dcop.vp;
 
-import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.mp.DefaultResults;
 
@@ -65,7 +64,7 @@ public class VPResults extends DefaultResults<VPResult> {
 
     @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer(super.toString().split("\\n", 2)[0]);
+        StringBuilder buf = new StringBuilder(super.toString().split("\\n", 2)[0]);
         buf.append("\nGlobal : ").append(getMapping().toString());
         for (VPResult r : getResults()) {
             buf.append("\n").append(r.toString());

@@ -151,7 +151,7 @@ public abstract class AbstractEdge<N extends Node, M extends Message> implements
 
     @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
 
         buf.append(c1.getName());
         buf.append(" -- ");
@@ -160,7 +160,7 @@ public abstract class AbstractEdge<N extends Node, M extends Message> implements
         return buf.toString();
     }
 
-    public void copyFrom(AbstractEdge<N,M> e) {
+    private void copyFrom(AbstractEdge<N,M> e) {
         c1 = e.c1;
         c2 = e.c2;
         m1 = e.m1;

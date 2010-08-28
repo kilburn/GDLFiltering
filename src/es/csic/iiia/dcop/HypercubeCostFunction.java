@@ -50,7 +50,7 @@ import java.util.Iterator;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class HypercubeCostFunction extends AbstractCostFunction implements Serializable {
+public final class HypercubeCostFunction extends AbstractCostFunction implements Serializable {
 
     /**
      * Hypercube values storage array.

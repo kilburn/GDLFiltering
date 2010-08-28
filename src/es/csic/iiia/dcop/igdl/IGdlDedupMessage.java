@@ -49,13 +49,13 @@ import java.util.Set;
  * 
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class IGdlDedupMessage extends IGdlMessage {
+public final class IGdlDedupMessage extends IGdlMessage {
     private HashMap<Set<Variable>, CostFunction> factors;
 
     public IGdlDedupMessage(ArrayList<CostFunction> factors) {
         this();
         for (CostFunction f : factors) {
-            addFactor(f);
+            boolean addFactor = addFactor(f);
         }
     }
 

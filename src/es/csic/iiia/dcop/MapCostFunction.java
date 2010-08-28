@@ -40,7 +40,6 @@ package es.csic.iiia.dcop;
 
 import es.csic.iiia.dcop.util.CostFunctionStats;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -53,7 +52,7 @@ import java.util.Iterator;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class MapCostFunction extends AbstractCostFunction implements Serializable {
+public final class MapCostFunction extends AbstractCostFunction implements Serializable {
 
     /**
      * Configuration -> value mapping.
@@ -167,7 +166,7 @@ public class MapCostFunction extends AbstractCostFunction implements Serializabl
     /** {@inheritDoc} */
     @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append(getName());
         buf.append(" {");
         for(int i : map.keySet()) {

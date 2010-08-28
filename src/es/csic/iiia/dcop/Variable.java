@@ -130,7 +130,7 @@ public final class Variable implements Serializable, Comparable<Variable> {
 
     @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer("V(");
+        StringBuilder buf = new StringBuilder("V(");
         buf.append(id);
         buf.append(",");
         buf.append(name);

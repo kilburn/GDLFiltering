@@ -111,7 +111,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge,R extends Resu
 
     @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer("graph G {\n");
+        StringBuilder buf = new StringBuilder("graph G {\n");
         if (root >= 0) {
             buf.append("// Root: ");
             buf.append(nodes.get(root));

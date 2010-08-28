@@ -74,7 +74,7 @@ public class FastExpStrategy extends IGdlPartitionStrategy {
 
         // Informational, just for debugging
         if (log.isTraceEnabled()) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             int i = e.getVariables().length;
             for (Variable v : e.getVariables()) {
                 buf.append(v.getName());

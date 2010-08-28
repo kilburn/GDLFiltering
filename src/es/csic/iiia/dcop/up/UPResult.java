@@ -39,7 +39,6 @@
 package es.csic.iiia.dcop.up;
 
 import es.csic.iiia.dcop.CostFunction;
-import es.csic.iiia.dcop.gdl.GdlNode;
 import es.csic.iiia.dcop.mp.Result;
 
 /**

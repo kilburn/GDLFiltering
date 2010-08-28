@@ -43,7 +43,7 @@ import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.up.UPNode;
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +62,7 @@ public class JunctionTree extends DefaultGraph<JTNode, JTEdge, JTResults> {
      * @param cg
      */
     public JunctionTree(UPGraph cg) {
-        Hashtable<UPNode, JTNode> nodes = new Hashtable<UPNode, JTNode>();
+        HashMap<UPNode, JTNode> nodes = new HashMap<UPNode, JTNode>();
 
         // Java generics bug:
         // UPGraph.getNodes() returns an ArrayList<N extends UPNode>, but the

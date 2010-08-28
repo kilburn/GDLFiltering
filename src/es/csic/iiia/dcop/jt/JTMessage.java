@@ -66,7 +66,7 @@ public class JTMessage implements Message {
 
     @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer("JT{");
+        StringBuilder buf = new StringBuilder("JT{");
         int i = variables.size();
         for (Variable v : variables) {
             buf.append(v.getName());

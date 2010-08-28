@@ -223,8 +223,8 @@ public abstract class AbstractCostFunction implements CostFunction {
     /**
      * Get the linearized index corresponding to the given variable mapping.
      * 
-     * @TODO: what happens when there's more than one index matching the given
-     * mapping?
+     * Warning: if there's more than one item matching the specified mapping,
+     * only the first one is returned by this function!
      *
      * @param mapping of the desired configuration.
      * @return corresponding linearized index.
@@ -251,9 +251,6 @@ public abstract class AbstractCostFunction implements CostFunction {
 
     /**
      * Get the linearized index corresponding to the given variable mapping.
-     *
-     * @TODO: what happens when there's more than one index matching the given
-     * mapping?
      *
      * @param mapping of the desired configuration.
      * @return corresponding linearized index.
@@ -330,7 +327,7 @@ public abstract class AbstractCostFunction implements CostFunction {
 
     /** {@inheritDoc} */
     public String getName() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("F(");
         if (variables.length > 0) {
             buf.append(variables[0].getName());
@@ -345,7 +342,7 @@ public abstract class AbstractCostFunction implements CostFunction {
 
     @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append(getName());
         buf.append(" {");
         if (size>0 && getValues() != null) {
@@ -362,7 +359,7 @@ public abstract class AbstractCostFunction implements CostFunction {
 
     @Override
     public String toLongString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append(getName());
         buf.append(" {\n");
         if (size>0 && getValues() != null) {
@@ -524,7 +521,7 @@ public abstract class AbstractCostFunction implements CostFunction {
     /** {@inheritDoc} */
     public CostFunction combine(Collection<CostFunction> fs) {
         // If it's a single (or none) function, just fallback to normal combine.
-        if (fs.size() == 0) {
+        if (fs.isEmpty()) {
             return combine((CostFunction)null);
         } else if (fs.size() == 1) {
             return combine(fs.iterator().next());

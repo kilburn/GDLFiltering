@@ -70,6 +70,7 @@ public class JTNode extends AbstractNode<JTEdge, Result> {
         return this.node;
     }
 
+    @Override
     public void initialize() {
         setMode(Modes.GRAPH);
 
