@@ -55,27 +55,16 @@ import java.util.HashSet;
 public class IGdlGraph extends UPGraph<IGdlNode,UPEdge<IGdlNode, IGdlMessage>,UPResults> {
 
     /**
-     * Set of variables involved in this graph.
-     */
-    private HashSet<Variable> variableSet;
-
-    /**
      * Constructs a clique graph that uses the specified {@code EdgeFactory} to
      * create it's edges.
      */
     public IGdlGraph() {
         super();
-        variableSet = new HashSet<Variable>();
     }
 
     @Override
     public void addNode(IGdlNode clique) {
         super.addNode(clique);
-        variableSet.addAll(clique.getVariables());
-    }
-
-    public HashSet<Variable> getVariables() {
-        return this.variableSet;
     }
 
     @Override

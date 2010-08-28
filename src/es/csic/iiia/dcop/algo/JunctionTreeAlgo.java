@@ -39,6 +39,7 @@
 package es.csic.iiia.dcop.algo;
 
 import es.csic.iiia.dcop.CostFunction;
+import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.jt.JunctionTree;
 import es.csic.iiia.dcop.up.UPFactory;
 import es.csic.iiia.dcop.up.UPGraph;
@@ -55,18 +56,30 @@ public abstract class JunctionTreeAlgo {
         UPGraph cg = factory.buildGraph();
         UPNode[] nodes = new UPNode[factors.length];
 
+        // Fetch a single relation to get the factor
+        CostFunction sample = null;
+        for (int i=0; i<factors.length; i++) {
+            if (factors[i].length > 0) {
+                sample = factors[i][0];
+                break;
+            }
+        }
+
         // Add the nodes
         for (int i=0; i<factors.length; i++) {
 
             // If the node's potentital is empty and it only has one link, then
-            // it can be safely removed.
+            // we have to add a constant neutral relation as its potential
+            // @TODO: see if this causes problems.
             if (factors[i].length == 0) {
                 int nlinks = 0;
                 for (int j=0; j<factors.length; j++) {
                     if (adjacency[i][j] > 0 || adjacency[j][i] > 0) nlinks++;
                 }
+
+
                 if (nlinks < 2) {
-                    continue;
+                    factors[i] = new CostFunction[]{sample.getFactory().buildNeutralCostFunction(new Variable[0])};
                 }
             }
 

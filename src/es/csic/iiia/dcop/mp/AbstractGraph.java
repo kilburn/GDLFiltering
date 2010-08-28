@@ -89,6 +89,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge,R extends Resu
 
     protected void initialize() {
         // Algorithm initialization
+        results = buildResults();
         for(Node n : nodes) {
             n.initialize();
         }

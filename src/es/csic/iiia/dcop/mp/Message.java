@@ -43,10 +43,4 @@ package es.csic.iiia.dcop.mp;
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
 public interface Message {
-    public enum Encoding {
-        NORMAL,
-    }
-    
-    public int getBytes();
-    public int getBytes(Encoding encoding);
 }

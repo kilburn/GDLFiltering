@@ -40,7 +40,6 @@ package es.csic.iiia.dcop.up;
 
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.mp.AbstractEdge;
-import es.csic.iiia.dcop.mp.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +48,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class UPEdge<N extends UPNode, M extends Message> extends AbstractEdge<N, M> {
+public class UPEdge<N extends UPNode, M extends UPMessage> extends AbstractEdge<N, M> {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
     
@@ -77,6 +76,11 @@ public class UPEdge<N extends UPNode, M extends Message> extends AbstractEdge<N,
     public UPEdge(N c1, N c2) {
         super(c1,c2);
         this.variables = new Variable[]{};
+    }
+
+    public UPEdge(UPEdge<N, M> e) {
+        super(e);
+        this.variables = e.variables;
     }
 
     public Variable[] getVariables() {
@@ -108,10 +112,16 @@ public class UPEdge<N extends UPNode, M extends Message> extends AbstractEdge<N,
     @Override public N getNode2() {return super.getNode2();}
     @Override public N getDestination(N node) {return super.getDestination(node);}
 
-    @Override public int sendMessage(N sender, M message) {
-        int res = super.sendMessage(sender, message);
-        if (res>0 && log.isTraceEnabled())
+    @Override public boolean sendMessage(N sender, M message) {
+        boolean res = super.sendMessage(sender, message);
+        if (res) {
+            sender.addSentBytes(message.getBytes());
+        }
+
+        if (res && log.isTraceEnabled()) {
             log.trace(sender.getName() + " -> " + getDestination(sender).getName() + " : " + message);
+        }
+
         return res;
     }
 

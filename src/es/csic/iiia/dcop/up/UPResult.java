@@ -53,11 +53,15 @@ public class UPResult implements Result {
     private int cliqueSize;
     private long sentBytes;
 
+    public long getSentBytes() {
+        return sentBytes;
+    }
+
     public UPResult(UPNode node) {
         this.factor = node.getBelief();
         cliqueVariables = node.getVariables().size();
         cliqueSize = factor.getSize();
-        //sentBytes =
+        sentBytes = node.getSentBytes();
     }
 
     public CostFunction getFactor() {

@@ -112,6 +112,7 @@ public class DatasetReader {
             try {
                 m.invoke(this, line);
             } catch (Exception ex) {
+                System.err.println("Conflict line: " + line);
                 ex.printStackTrace();
             }
         } else {

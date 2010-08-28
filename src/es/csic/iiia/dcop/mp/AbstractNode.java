@@ -231,4 +231,6 @@ public abstract class AbstractNode<E extends Edge, R extends Result> implements 
 
         return true;
     }
+
+    public void initialize() {}
 }

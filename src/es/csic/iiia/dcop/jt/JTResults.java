@@ -64,4 +64,13 @@ public class JTResults extends DefaultResults<JTResult> {
         return max;
     }
 
+    public int getMaxEdgeVariables() {
+        int max = Integer.MIN_VALUE;
+        for (JTResult r : getResults()) {
+            final int s = r.getMaxEdgeVariables();
+            if (max < s) max = s;
+        }
+        return max;
+    }
+
 }

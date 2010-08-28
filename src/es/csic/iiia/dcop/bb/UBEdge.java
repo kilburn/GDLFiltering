@@ -54,9 +54,9 @@ public class UBEdge extends AbstractEdge<UBNode, UBMessage> {
         super(c1,c2);
     }
 
-    @Override public int sendMessage(UBNode sender, UBMessage message) {
-        int res = super.sendMessage(sender, message);
-        if (res>0 && log.isTraceEnabled())
+    @Override public boolean sendMessage(UBNode sender, UBMessage message) {
+        boolean res = super.sendMessage(sender, message);
+        if (res && log.isTraceEnabled())
             log.trace(sender.getName() + " -> " + getDestination(sender).getName() + " : " + message);
         return res;
     }

@@ -53,7 +53,7 @@ import java.util.logging.Logger;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class FIGdlFactory implements UPFactory<FIGdlIteration, FIGdlNode, UPEdge<FIGdlNode, IGdlMessage>,
+public class FIGdlFactory implements UPFactory<FIGdlGraph, FIGdlNode, UPEdge<FIGdlNode, IGdlMessage>,
     UPResult, UPResults> {
 
     private Modes mode = Modes.TREE_UP;
@@ -65,14 +65,16 @@ public class FIGdlFactory implements UPFactory<FIGdlIteration, FIGdlNode, UPEdge
         this.partitionStrategy = partitionStrategy;
     }
 
-    public FIGdlIteration buildGraph() {
-        return new FIGdlIteration();
+    public FIGdlGraph buildGraph() {
+        FIGdlGraph g = new FIGdlGraph();
+        g.setMaxR(r);
+        return g;
     }
 
     public FIGdlNode buildNode() {
         FIGdlNode n = new FIGdlNode();
         n.setMode(mode);
-        n.setR(r);
+        n.setR(2);
         try {
             n.setPartitionStrategy(partitionStrategy.getClass().newInstance());
         } catch (InstantiationException ex) {

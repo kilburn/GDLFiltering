@@ -63,8 +63,8 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
 
     public UBNode(VPNode node) {
         this.node = node;
-         summarize = node.getFactory().getSummarizeOperation();
-         combine = node.getFactory().getCombineOperation();
+        summarize = node.getFactory().getSummarizeOperation();
+        combine = node.getFactory().getCombineOperation();
     }
 
     public String getName() {
@@ -76,14 +76,19 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
         return true;
     }
 
+    @Override
     public void initialize() {
         // Operational mode
         setMode(Modes.TREE_UP);
 
         // Calculate the local optimum acording to the agreed solution
         localUB = node.getGlobalValue();
-        localLB = node.getOptimalValue();
-        //log.trace(this.getName() + " llb: " + localLB + ", lub: " + localUB);
+        if (getEdges().size() == 1) {
+            localLB = node.getOptimalValue();
+        } else {
+            localLB = -summarize.getNoGood();
+        }
+        log.trace(this.getName() + " llb: " + localLB + ", lub: " + localUB);
 
         // Send initial messages (if applicable)
         ub = localUB;
@@ -101,7 +106,7 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
             UBMessage msg = e.getMessage(this);
             if (msg != null) {
                 ub = combine.eval(ub, msg.getUB());
-                if (summarize.isBetter(msg.getLB(), lb)) {
+                if (!summarize.isBetter(msg.getLB(), lb)) {
                     lb = msg.getLB();
                 }
             }

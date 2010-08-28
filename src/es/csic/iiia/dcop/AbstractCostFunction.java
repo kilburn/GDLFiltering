@@ -86,7 +86,7 @@ public abstract class AbstractCostFunction implements CostFunction {
     private CostFunctionFactory factory;
 
     /**
-     * Creates a new CostFunction, initialized to zeros.
+     * Creates a new CostFunction, with unknown values.
      *
      * @param variables involved in this factor.
      */
@@ -213,6 +213,10 @@ public abstract class AbstractCostFunction implements CostFunction {
             }
         }
 
+        if (idx.isEmpty()) {
+            return 0;
+        }
+
         return idx.get(new Random().nextInt(idx.size()));
     }
 
@@ -237,6 +241,9 @@ public abstract class AbstractCostFunction implements CostFunction {
             Integer v = mapping.get(variables[i]);
             if (v != null) {
                 idx += sizes[len - i - 1] * v;
+            } else {
+                System.err.println("Missing variable!");
+                System.exit(0);
             }
         }
         return idx;
@@ -445,6 +452,8 @@ public abstract class AbstractCostFunction implements CostFunction {
     /** {@inheritDoc} */
     public CostFunction combine(CostFunction factor) {
         Combine operation = factory.getCombineOperation();
+        Summarize sum = factory.getSummarizeOperation();
+        final double nogood = sum.getNoGood();
 
         // Combination with null factors gives a null / the other factor
         if (factor == null || factor.getSize()==0) {
@@ -458,25 +467,118 @@ public abstract class AbstractCostFunction implements CostFunction {
         LinkedHashSet<Variable> vars = new LinkedHashSet<Variable>(variableSet);
         vars.addAll(factor.getVariableSet());
 
-        // Perform the combination using the given mode
+        // Choose between sparse and dense functions
+        CostFunction result;
+        final double ratio1 = getNumberOfNoGoods() / (float)getSize();
+        final double ratio2 = factor.getNumberOfNoGoods() / (float)factor.getSize();
+        if (ratio1 > 0.5 || ratio2 > 0.5) {
+            result = factory.buildSparseCostFunction(vars.toArray(new Variable[0]),
+                nogood);
+        } else {
+            result = factory.buildCostFunction(vars.toArray(new Variable[0]),
+                nogood);
+        }
+
+        VariableAssignment map = null;
+        CostFunction left  = 
+                size - getNumberOfNoGoods() > factor.getSize() - factor.getNumberOfNoGoods()
+                ? this : factor;
+        CostFunction right = left == this ? factor : this;
+
+        Iterator<Integer> it = left.iterator();
+        VariableAssignment map2 = null;
+        while(it.hasNext()) {
+            final int i = it.next();
+            final double lv = left.getValue(i);
+            if (lv == nogood) continue;
+
+            map = left.getMapping(i, map);
+
+            for (int fidx : right.getIndexes(map)) {
+                map2 = right.getMapping(fidx, map2);
+                map2.putAll(map);
+
+                final double v = operation.eval(lv, right.getValue(fidx));
+                if (Double.isNaN(v)) {
+                    throw new RuntimeException("Combination generated a NaN value (" + getValue(map) + "," + factor.getValue(map) + "). Halting.");
+                }
+                result.setValue(result.getIndex(map2), v);
+            }
+        }
+
+        /** Unoptimized implementation!
+        for (int i=0; i<result.getSize(); i++) {
+            map = result.getMapping(i, map);
+
+            final double v = operation.eval(getValue(map), factor.getValue(map));
+            if (Double.isNaN(v)) {
+                throw new RuntimeException("Combination generated a NaN value (" + getValue(map) + "," + factor.getValue(map) + "). Halting.");
+            }
+            result.setValue(i, v);
+        }*/
+
+        return result;
+    }
+
+
+    /** {@inheritDoc} */
+    public CostFunction combine(Collection<CostFunction> fs) {
+        // If it's a single (or none) function, just fallback to normal combine.
+        if (fs.size() == 0) {
+            return combine((CostFunction)null);
+        } else if (fs.size() == 1) {
+            return combine(fs.iterator().next());
+        }
+
+        Combine operation = factory.getCombineOperation();
+        Summarize sum = factory.getSummarizeOperation();
+        final double nogood = sum.getNoGood();
+
+        // Compute the variable set intersection (sets doesn't allow duplicates)
+        LinkedHashSet<Variable> vars = new LinkedHashSet<Variable>(variableSet);
+        for (CostFunction f : fs) {
+            vars.addAll(f.getVariableSet());
+        }
+
+        // Optimized implementation plan:
+        //   1. Look at the nogood ratio of each function
+        //   2. If any ratio > 0.5 : Result is sparse, and
+        //      -> loop :
+        //         - Find the combination with min number of operations
+        //         - Remove items from the list, add result
+        //   3. Otherwise : Result is dense, and
+        //      -> use unoptimized base implementation.
+
+        boolean sparse = false;
+        fs.add(this);
+        for (CostFunction f : fs) {
+            final double ratio = getNumberOfNoGoods() / size;
+            if (ratio > 0.5) {
+                sparse = true;
+                break;
+            }
+        }
+
+
+        // Unoptimized base implementation:
+        // Iterate over the result positions, fetching the values from ourselves
+        // and all the other factors.
         CostFunction result = factory.buildCostFunction(vars.toArray(new Variable[0]),
-                operation.getNeutralValue());
+                nogood);
 
         VariableAssignment map = null;
         for (int i=0; i<result.getSize(); i++) {
             map = result.getMapping(i, map);
 
-            switch(operation) {
-                case PRODUCT:
-                    result.setValue(i, getValue(map) * factor.getValue(map));
-                    break;
-
-                case SUM:
-                    result.setValue(i, getValue(map) + factor.getValue(map));
-                    break;
-
+            double v = getValue(map);
+            for (CostFunction f : fs) {
+                v = operation.eval(v, f.getValue(map));
             }
 
+            if (Double.isNaN(v)) {
+                throw new RuntimeException("Combination generated a NaN value. Halting.");
+            }
+            result.setValue(i, v);
         }
 
         return result;
@@ -485,11 +587,11 @@ public abstract class AbstractCostFunction implements CostFunction {
     /** {@inheritDoc} */
     public CostFunction normalize() {
         Normalize mode = factory.getNormalizationType();
-        CostFunction result = factory.buildCostFunction(this);
-        
         if (mode == Normalize.NONE) {
-            return result;
+            return this;
         }
+
+        CostFunction result = factory.buildCostFunction(this);
 
         // Calculate aggregation
         Iterator<Integer> it = iterator();
@@ -527,8 +629,12 @@ public abstract class AbstractCostFunction implements CostFunction {
         // Calculate the new factor's variables
         LinkedHashSet<Variable> newVariables = new LinkedHashSet<Variable>(variableSet);
         newVariables.removeAll(mapping.keySet());
+
+        // Does this factor reduce to a constant?
         if (newVariables.size() == 0) {
-            return null;
+            CostFunction result = factory.buildCostFunction(new Variable[0]);
+            result.setValue(0, getValue(mapping));
+            return result;
         }
 
         // Instantiate it
@@ -541,6 +647,35 @@ public abstract class AbstractCostFunction implements CostFunction {
             final int idx = getIndex(map);
             result.setValue(i, getValue(idx));
         }
+        
+        return result;
+    }
+
+    /** {@inheritDoc} */
+    public CostFunction filter(CostFunction f, double bound) {
+        CostFunction result = factory.buildCostFunction(this);
+        Summarize operation = factory.getSummarizeOperation();
+
+        // Compute the total tuple values after combining
+        CostFunction combi = this.combine(f);
+        combi = combi.summarize(this.variables);
+
+        // Perform the actual filtering
+        //Iterator<Integer> it = result.iterator();
+        boolean allNogoods = true;
+        for (int i = 0, len = result.getSize(); i < len; i++) {
+            if (combi.getValue(i) != operation.getNoGood()) {
+                allNogoods = false;
+            }
+            if (operation.isBetter(bound, combi.getValue(i))) {
+                result.setValue(i, operation.getNoGood());
+            }
+        }
+
+        if (allNogoods) {
+            return null;
+        }
+
         return result;
     }
 
@@ -576,10 +711,18 @@ public abstract class AbstractCostFunction implements CostFunction {
     /** {@inheritDoc} */
     public CostFunction summarize(Variable[] vars) {
         Summarize operation = factory.getSummarizeOperation();
-        /*HashSet<Variable> varSet = new HashSet<Variable>(Arrays.asList(vars));
-        varSet.retainAll(variableSet);*/
-        AbstractCostFunction result = (AbstractCostFunction)factory.buildCostFunction(vars,
+
+        // Choose between sparse and dense functions
+        CostFunction result;
+        final double ratio1 = getNumberOfNoGoods() / (float)getSize();
+        if (ratio1 > 0.5) {
+            result = factory.buildSparseCostFunction(vars,
                 operation.getNoGood());
+        } else {
+            result = factory.buildCostFunction(vars,
+                operation.getNoGood());
+        }
+
         VariableAssignment map = null;
         Iterator<Integer> it = iterator();
         while (it.hasNext()) {

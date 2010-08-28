@@ -67,6 +67,7 @@ public class Cli {
         System.err.println("    Uses the specified algorithm, where algorithm is one of: ");
         System.err.println("      - gdl : GDL over junction tree optimal solver.");
         System.err.println("      - igdl : Iterative GDL over junction tree solver.");
+        System.err.println("      - figdl : Filtered IGDL over junction tree solver.");
         System.err.println("      - maxsum : max-sum approximation.");
         System.err.println("  -c operation, --combine=operation (sum)");
         System.err.println("    Uses the specified combining operator, where operator is one of: ");
@@ -154,6 +155,8 @@ public class Cli {
                         cli.setAlgorithm(CliApp.ALGO_GDL);
                     else if (arg.equals("maxsum"))
                         cli.setAlgorithm(CliApp.ALGO_MAX_SUM);
+                    else if (arg.equals("figdl"))
+                        cli.setAlgorithm(CliApp.ALGO_FIGDL);
                     else if (arg.equals("igdl")) {
                         cli.setAlgorithm(CliApp.ALGO_IGDL);
                     } else {
@@ -266,6 +269,8 @@ public class Cli {
                     arg = g.getOptarg();
                     if (arg.equals("lazy"))
                         cli.setPartitionStrategy(CliApp.PS_LAZY);
+                    else if (arg.equals("lazier"))
+                        cli.setPartitionStrategy(CliApp.PS_LAZIER);
                     else if (arg.equals("rankup"))
                         cli.setPartitionStrategy(CliApp.PS_RANKUP);
                     else if (arg.equals("rankdown"))

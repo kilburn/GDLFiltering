@@ -41,10 +41,10 @@ package es.csic.iiia.dcop.igdl.strategy;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
-import es.csic.iiia.dcop.igdl.IGdlNode;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
+import es.csic.iiia.dcop.util.CombinationGenerator;
 import es.csic.iiia.dcop.util.CostFunctionStats;
 import java.util.ArrayList;
 import org.slf4j.Logger;
@@ -91,13 +91,16 @@ public class ExpStrategy extends IGdlPartitionStrategy {
         for (CostFunction f : fs) {
             belief = f.combine(belief);
         }
+        msg.cc += belief.getSize();
         belief = belief.summarize(e.getVariables());
+        msg.cc += belief.getSize();
         msg.setBelief(belief);
 
         // Obtain the best approximation
         CostFunction res[] = CostFunctionStats.getVotedBestApproximation(belief, node.getR(), 1000);
         for (int i=0; i<res.length-1; i++) {
             msg.addFactor(res[i]);
+            msg.cc += belief.getSize() * CombinationGenerator.binom(belief.getVariableSet().size(), node.getR());
         }
 
         return msg;

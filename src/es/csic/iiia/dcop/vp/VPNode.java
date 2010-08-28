@@ -56,15 +56,14 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
 
     private static Logger log = LoggerFactory.getLogger(VPGraph.class);
     
-    private CostFunction belief;
     private VariableAssignment mapping;
     private UPNode node;
 
     public VPNode(UPNode n) {
         node = n;
-        belief = n.getBelief();
     }
 
+    @Override
     public void initialize() {
         setMode(Modes.TREE_DOWN);
     }
@@ -82,14 +81,8 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
             }
         }
 
-        // Reduce our belief with the given mapping
-        belief = belief.reduce(mapping);
-
-        // Instantiate remaining variables
-        if (belief != null) {
-            cc += belief.getSize();
-            mapping = belief.getOptimalConfiguration(mapping);
-        }
+        // Take our decision
+        mapping = node.getOptimalConfiguration(mapping);
 
         // Send messages
         for(VPEdge e : getEdges()) {
@@ -112,6 +105,9 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
     }
 
     public VPResult end() {
+        if (log.isTraceEnabled()) {
+            log.trace("B:" + node.getBelief());
+        }
         return new VPResult(mapping);
     }
 
@@ -138,7 +134,9 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
         final CostFunction.Combine op = node.getFactory().getCombineOperation();
         Collection<CostFunction> fs = node.getRelations();
         for (CostFunction f : fs) {
-            value = op.eval(value, f.getValue(mapping));
+            final double v = f.getValue(mapping);
+            value = op.eval(value, v);
+            log.trace("F: " + v + " | " + f);
         }
         return value;
     }

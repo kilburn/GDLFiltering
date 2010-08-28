@@ -38,53 +38,129 @@
 
 package es.csic.iiia.dcop.figdl;
 
+import es.csic.iiia.dcop.CostFunction.Summarize;
+import es.csic.iiia.dcop.MapCostFunction;
+import es.csic.iiia.dcop.MapCostFunctionFactory;
 import es.csic.iiia.dcop.bb.UBGraph;
 import es.csic.iiia.dcop.bb.UBResults;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
+import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.up.UPResults;
 import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.VPResults;
+import java.util.Date;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMessage>,FIGdlResults> {
+public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMessage>,UPResults> {
 
-    private FIGdlIteration iteration;
+    private static Logger log = LoggerFactory.getLogger(UPGraph.class);
+
+    private FIGdlIteration iteration = new FIGdlIteration();
     private int maxR;
 
     @Override
-    public FIGdlResults run(int maxIterations) {
+    public void addNode(FIGdlNode clique) {
+        super.addNode(clique);
+        iteration.addNode(clique);
+    }
 
-        for (int i=0; i<maxR; i++) {
+    @Override
+    public void addEdge(UPEdge<FIGdlNode, IGdlMessage> edge) {
+        super.addEdge(edge);
+        iteration.addEdge(edge);
+    }
+
+    @Override
+    protected void initialize() {
+        super.initialize();
+    }
+
+
+    @Override
+    public UPResults run(int maxIterations) {
+        reportStart();
+
+        UPResults globalResults = (UPResults)getResults();
+        double bestCost = Double.NaN, bestBound = Double.NaN;
+
+        for (int i=2; i<=maxR; i++) {
+
             // Value propagation
-            UPResults r = iteration.run(maxIterations);
+            iteration.setR(i);
+            
+            UPResults iterResults = iteration.run(maxIterations);
+            if (iterResults == null) {
+                // Early termination, use results from the previous iteration
+
+            }
+            globalResults.addCycle(iterResults.getMaximalCcc(), iterResults.getTotalCcc());
+            for (Object result : iterResults.getResults()) {
+                globalResults.add((UPResult)result);
+            }
+            System.out.println("ITERBYTES " + iterResults.getSentBytes());
+
+            Summarize summarize = null;
+            for(FIGdlNode n : getNodes()) {
+                if (n.getRelations().size() > 0) {
+                    summarize = n.getRelations().get(0).getFactory().getSummarizeOperation();
+                    break;
+                }
+            }
+
             
             // Solution extraction
-            VPGraph st = new VPGraph(iteration);
+            VPGraph st = new VPGraph(this);
             VPResults res = st.run(100);
             
             // Bound calculation
             UBGraph ub = new UBGraph(st);
             UBResults ubres = ub.run(maxIterations);
+            System.out.println("THIS_ITER_LB " + ubres.getBound());
+            System.out.println("THIS_ITER_UB " + ubres.getCost());
 
-            // Store one result ¿?
+/*            if (Double.isInfinite(ubres.getCost()) || Double.isInfinite(ubres.getBound())) {
+                fallbackLastIteration();
+                break;
+            }
+ *
+ */
+
+            final double newCost = ubres.getCost();
+            if (Double.isNaN(bestCost) || summarize.isBetter(newCost, bestCost)) {
+                bestCost = newCost;
+            }
+            final double newBound = ubres.getBound();
+            if (Double.isNaN(bestBound) || !summarize.isBetter(newBound, bestBound)) {
+                bestBound = newBound;
+            }
+            System.out.println("ITER_LB " + bestBound);
+            System.out.println("ITER_UB " + bestCost);
+
+            if (Math.abs(newCost - bestBound) < 0.0005) {
+                break;
+            }
 
             // Build the new iteration
-            iteration = new FIGdlIteration(iteration);
+            iteration.prepareNextIteration(bestCost);
         }
 
-        return null;
+        return globalResults;
     }
 
-
+    public void setMaxR(int maxR) {
+        this.maxR = maxR;
+    }
 
     @Override
-    protected FIGdlResults buildResults() {
-        return new FIGdlResults();
+    protected UPResults buildResults() {
+        return new UPResults();
     }
 
 }

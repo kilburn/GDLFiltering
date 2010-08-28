@@ -62,6 +62,8 @@ public abstract class DefaultGraph<N extends Node, E extends Edge, R extends Res
         reportIteration(iter++);
         initialize();
         R results = getResults();
+
+
         if (getMode() == Modes.TREE_DOWN) {
             getNodes().get(getRoot()).run();
         }

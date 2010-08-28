@@ -42,13 +42,21 @@ import es.csic.iiia.dcop.igdl.strategy.AllCombStrategy;
 import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
 import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.CostFunction;
+import es.csic.iiia.dcop.MapCostFunctionFactory;
+import es.csic.iiia.dcop.SparseCostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.VariableAssignment;
-import es.csic.iiia.dcop.bb.UBResult;
+import es.csic.iiia.dcop.algo.JunctionTreeAlgo;
+import es.csic.iiia.dcop.dfs.DFS;
+import es.csic.iiia.dcop.dfs.MCN;
+import es.csic.iiia.dcop.gdl.GdlFactory;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
+import es.csic.iiia.dcop.jt.JunctionTree;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
+import es.csic.iiia.dcop.vp.VPGraph;
+import es.csic.iiia.dcop.vp.VPResults;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.slf4j.Logger;
@@ -76,12 +84,13 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
     /**
      * FIGdlNode from previous iteration
      */
-    private FIGdlNode previousEdges;
+    private ArrayList<UPEdge<FIGdlNode, IGdlMessage>> previousEdges;
+    private ArrayList<UPEdge<FIGdlNode, IGdlMessage>> bestEdges;
 
     /**
      * Bounds from previous iteration
      */
-    private UBResult bounds;
+    private double bound = Double.NaN;
 
     /**
      * Constructs a new clique with the specified member variable and null
@@ -113,18 +122,40 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
     }
 
     /**
+     * Prepares this FIGdlNode for a new (different "r") iteration.
+     * @param bound 
+     */
+    public void prepareNextIteration(double bound) {
+
+        previousEdges = new ArrayList<UPEdge<FIGdlNode, IGdlMessage>>();
+        for(UPEdge<FIGdlNode, IGdlMessage> e : getEdges()) {
+            if (e.getMessage(this) == null) {
+                e.tick();
+            }
+
+            UPEdge<FIGdlNode, IGdlMessage> newe = new UPEdge<FIGdlNode, IGdlMessage>(e);
+            previousEdges.add(newe);
+        }
+
+        if (Double.isNaN(this.bound) || factory.getSummarizeOperation().isBetter(bound, this.bound)) {
+            this.bound = bound;
+            bestEdges = previousEdges;
+        }
+
+        strategy.setFilteringOptions(bound, previousEdges);
+    }
+
+    /**
      * "Initializes" this clique, setting the summarize, combine and
      * normalization operations to use as well as sending it's initial messages.
      */
+    @Override
     public void initialize() {
+        super.initialize();
+
         // Tree-based operation
         setMode(Modes.TREE_UP);
-        costFunctions = new ArrayList<CostFunction>();
-
-        // Populate with our assigned relations
-        for (CostFunction f : relations) {
-            costFunctions.add(factory.buildCostFunction(f));
-        }       
+        costFunctions = new ArrayList<CostFunction>(relations);
         getPartitionStrategy().initialize(this);
 
         // Send initial messages
@@ -139,11 +170,7 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
      */
     public long run() {
 
-        // CC count
-        long cc = 0;
-
         // Rebuild cost function list
-        ArrayList<CostFunction> previousCostFunctions = costFunctions;
         costFunctions = new ArrayList<CostFunction>();
         // Populate with our assigned relations
         for (CostFunction f : relations) {
@@ -157,11 +184,8 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
                 costFunctions.addAll(msg.getFactors());
         }
 
-        // Compute our belief
-        // ?
-
         // Send updated messages
-        sendMessages();
+        long cc = sendMessages();
         setUpdated(false);
         return cc;
     }
@@ -172,10 +196,20 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
 
     @Override
     public CostFunction getBelief() {
+
+        /* Re-compute cost functions */
+        costFunctions = new ArrayList<CostFunction>(relations);
+        for (UPEdge<FIGdlNode, IGdlMessage> e : getEdges()) {
+            IGdlMessage msg = e.getMessage(this);
+            if (msg != null)
+                costFunctions.addAll(msg.getFactors());
+        }
+
         CostFunction belief = null;
         for (CostFunction c : costFunctions) {
             belief = c.combine(belief);
         }
+
         return belief;
     }
 
@@ -183,7 +217,16 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
         return costFunctions;
     }
 
-    private void sendMessages() {
+    private long sendMessages() {
+        long cc = 0;
+
+        CostFunction belief = null;
+        if (log.isTraceEnabled()) {
+            for (CostFunction f : costFunctions) {
+                belief = f.combine(belief);
+            }
+        }
+
         for (UPEdge<FIGdlNode, IGdlMessage> e : getEdges()) {
             if (!readyToSend(e)) {
                 continue;
@@ -197,23 +240,17 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
                 fs.removeAll(e.getMessage(this).getFactors());
             }
 
-            // For research purposes, calculate the optimal belief
-            CostFunction belief = null;
-            if (log.isTraceEnabled()) {
-                belief = getFactory().buildCostFunction(e.getVariables());
-                for (CostFunction f : fs) {
-                    belief = f.combine(belief);
-                }
-            }
-
             // Obtain the partition
             IGdlMessage msg = getPartitionStrategy().getPartition(fs, e);
             if (log.isTraceEnabled()) {
                 msg.setBelief(belief.summarize(e.getVariables()));
             }
+            cc += msg.cc;
 
             e.sendMessage(this, msg);
         }
+
+        return cc;
     }
 
     /* Never called because we never operate in graph mode */
@@ -224,10 +261,16 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
 
     @Override
     public double getOptimalValue() {
-        VariableAssignment map;
-        CostFunction belief = getBelief();
-        map = belief.getOptimalConfiguration(null);
-        return belief.getValue(map);
+        /*VariableAssignment map = getOptimalConfigurationByGDL(costFunctions);
+        // Evaluate solution
+        double cost = 0;
+        for (CostFunction f : costFunctions) {
+            cost += f.getValue(map);
+        }
+        return cost;*/
+
+        final CostFunction belief = getBelief();
+        return belief.getValue(belief.getOptimalConfiguration(null));
     }
 
     /**
@@ -242,6 +285,105 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
      */
     public void setPartitionStrategy(IGdlPartitionStrategy strategy) {
         this.strategy = strategy;
+    }
+
+    
+
+    void fallbackLastIteration() {
+        // Recover messages from best iteration
+        int i = 0;
+        costFunctions.clear();
+        costFunctions.addAll(getRelations());
+        for (UPEdge<FIGdlNode, IGdlMessage> e : getEdges()) {
+            UPEdge<FIGdlNode, IGdlMessage> olde = bestEdges.get(i++);
+            costFunctions.addAll(olde.getMessage(this).getFactors());
+        }
+    }
+
+    @Override
+    public VariableAssignment getOptimalConfiguration(VariableAssignment map) {
+
+        CostFunction reducedBelief = null;
+        for (CostFunction f : relations) {
+            reducedBelief = f.reduce(map).combine(reducedBelief);
+        }
+
+        for (UPEdge<FIGdlNode, IGdlMessage> e : getEdges()) {
+            IGdlMessage msg = e.getMessage(this);
+            if (msg != null) {
+                for (CostFunction f : msg.getFactors()) {
+                    // Constants do not change the optimal configuration
+                    if (f.getSize() == 1) {
+                        continue;
+                    }
+                    reducedBelief = f.reduce(map).combine(reducedBelief);
+                }
+            }
+        }
+
+        if (reducedBelief == null) {
+            System.err.println("Warning: found empty belief");
+            return map;
+        }
+
+        return reducedBelief.getOptimalConfiguration(map);
+
+        /*
+        // This shoudn't happen...
+        if (costFunctions.isEmpty()) {
+            System.err.println("Warning: empty cost function list.");
+            return map;
+        }
+
+        ArrayList<CostFunction> cfs = new ArrayList<CostFunction>(costFunctions.size());
+        //log.debug("MAP: " + map);
+        for (CostFunction f : costFunctions) {
+            //log.debug("F: " + f);
+            final CostFunction fr = f.reduce(map);
+            //log.debug("R: " + fr);
+            // Constants do not alter the optimal configuration
+            if (fr.getSize() > 1) {
+                cfs.add(fr);
+            }
+        }
+
+        // Single function -> just fill the map and forget about it
+        if (cfs.size() == 1) {
+            return cfs.get(0).getOptimalConfiguration(map);
+        }
+
+        map.putAll(getOptimalConfigurationByGDL(cfs));
+        return map;*/
+    }
+
+    private VariableAssignment getOptimalConfigurationByGDL(ArrayList<CostFunction> cfs) {
+        /*log.debug("Solving by GDL:");
+        for(CostFunction f : cfs) {
+            log.debug(f.toString());
+        }*/
+
+        GdlFactory gfactory = new GdlFactory();
+        gfactory.setMode(Modes.TREE_UP);
+        DFS dfs = dfs = new MCN(cfs.toArray(new CostFunction[0]));
+        UPGraph cg = JunctionTreeAlgo.buildGraph(gfactory, dfs.getFactorDistribution(), dfs.getAdjacency());
+
+        // Our GDL doesn't work with a single node, so we tackle this shortcomming
+        if (cg.getNodes().size() < 2) {
+            CostFunction belief = null;
+            for(CostFunction f : cfs) {
+                belief = f.combine(belief);
+            }
+            return belief.getOptimalConfiguration(null);
+        }
+
+
+        cg.setRoot(dfs.getRoot());
+        JunctionTree jt = new JunctionTree(cg);
+        cg.setFactory(getFactory());
+        cg.run(1000);
+        VPGraph st = new VPGraph(cg);
+        VPResults res = st.run(10000);
+        return res.getMapping();
     }
 
 }

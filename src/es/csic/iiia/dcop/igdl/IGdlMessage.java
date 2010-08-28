@@ -40,8 +40,8 @@ package es.csic.iiia.dcop.igdl;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.mp.AbstractMessage;
-import es.csic.iiia.dcop.mp.Message.Encoding;
+import es.csic.iiia.dcop.up.UPMessage;
+import es.csic.iiia.dcop.util.Compressor;
 import es.csic.iiia.dcop.util.CostFunctionStats;
 import java.util.ArrayList;
 
@@ -50,10 +50,11 @@ import java.util.ArrayList;
  * 
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class IGdlMessage extends AbstractMessage {
+public class IGdlMessage implements UPMessage {
 
     private ArrayList<CostFunction> factors;
     private CostFunction belief = null;
+    public long cc = 0;
 
     public IGdlMessage(ArrayList<CostFunction> factors) {
         this.factors = factors;
@@ -75,20 +76,15 @@ public class IGdlMessage extends AbstractMessage {
         this.belief = belief;
     }
 
-    public int getBytes(Encoding encoding) {
-        int size = 0;
-        switch(encoding) {
-            case NORMAL:
-                for (CostFunction f : factors) {
-                    size += f.getVariableSet().size()+1;
-                    size += f.getSize()*4;
-                }
-                break;
-            default:
-                break;
-        }
-        return size;
+    public long getBytes() {
+        return Compressor.getCompressedSizeFs(factors);
     }
+
+//    public long getCompressedSize() {
+//        for(CostFunction f : getFactors()) {
+//            f.getValues()
+//        }
+//    }
 
     @Override
     public String toString() {
@@ -103,7 +99,7 @@ public class IGdlMessage extends AbstractMessage {
         if (belief != null) {
             Variable[] vars = belief.getVariableSet().toArray(new Variable[0]);
             if (combi == null) {
-                combi = belief.getFactory().buildCostFunction(vars);
+                combi = belief.getFactory().buildNeutralCostFunction(vars);
             } else {
                 combi = combi.summarize(vars);
             }

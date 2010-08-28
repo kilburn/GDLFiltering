@@ -59,7 +59,7 @@ public interface CostFunction {
         PRODUCT {
             public double getNeutralValue() {return 1;}
             public double eval(double x, double y) {return x*y;}
-            public double invert(double x) {return 1/x;}
+            public double invert(double x) {return Double.isInfinite(x) ? 0 : 1/x;}
         },
         /**
          * Perform the combine operator using addition.
@@ -67,7 +67,7 @@ public interface CostFunction {
         SUM {
             public double getNeutralValue() {return 0;}
             public double eval(double x, double y) {return x+y;}
-            public double invert(double x) {return -x;}
+            public double invert(double x) {return Double.isInfinite(x) ? x : -x;}
         };
 
         /**
@@ -133,7 +133,7 @@ public interface CostFunction {
          */
         MAX {
             public double eval(double x, double y) {return Math.max(x, y);}
-            public boolean isBetter(double x, double y) {return x > y;}
+            public boolean isBetter(double x, double y) {return x - y > 0.00001;}
             public double getNoGood() {
                 return Double.NEGATIVE_INFINITY;
             }
@@ -143,7 +143,7 @@ public interface CostFunction {
          */
         MIN {
             public double eval(double x, double y) {return Math.min(x, y);}
-            public boolean isBetter(double x, double y) {return x < y;}
+            public boolean isBetter(double x, double y) {return y - x > 0.00001;}
             public double getNoGood() {
                 return Double.POSITIVE_INFINITY;
             }
@@ -202,13 +202,22 @@ public interface CostFunction {
     CostFunction summarize(Variable[] vars);
 
     /**
-     * Combine this factor with the given one, using the specified operation.
+     * Combine this factor with the given one.
      *
      * @param factor factor to combine with.
      * @return a new CostFunction which is the result of the combination between this
      * and the given one.
      */
     CostFunction combine(CostFunction factor);
+
+    /**
+     * Combine this factor with the given ones.
+     *
+     * @param fs collection of functions to combine with.
+     * @return a new CostFunction which is the result of the combination between this
+     * and the given ones.
+     */
+    CostFunction combine(Collection<CostFunction> fs);
 
     /**
      * Negates this factor, applying the inverse of the given operation to
@@ -231,6 +240,19 @@ public interface CostFunction {
      * @return new reduced factor.
      */
     CostFunction reduce(VariableAssignment mapping);
+
+    /**
+     * Filters this cost function with the given one.
+     *
+     * The filter operation removes (sets to the worst possible value) any
+     * tuples that, when combined with the given cost function, surpasses
+     * the specified bound.
+     *
+     * @param f cost function to filter with.
+     * @param bound
+     * @return new filtered factor.
+     */
+    CostFunction filter(CostFunction f, double bound);
 
     /**
      * {@inheritDoc}
@@ -315,6 +337,12 @@ public interface CostFunction {
      * @return number of function's possible configurations.
      */
     int getSize();
+
+    /**
+     * Get the number of nogoods inside this cost function.
+     * @return number of nogoods.
+     */
+    int getNumberOfNoGoods();
 
     /**
      * Gets the value of this factor for the given variable states.

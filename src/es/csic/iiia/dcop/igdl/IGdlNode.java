@@ -44,9 +44,16 @@ import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.VariableAssignment;
+import es.csic.iiia.dcop.algo.JunctionTreeAlgo;
+import es.csic.iiia.dcop.dfs.DFS;
+import es.csic.iiia.dcop.dfs.MCN;
+import es.csic.iiia.dcop.gdl.GdlFactory;
+import es.csic.iiia.dcop.jt.JunctionTree;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
+import es.csic.iiia.dcop.vp.VPGraph;
+import es.csic.iiia.dcop.vp.VPResults;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.slf4j.Logger;
@@ -104,7 +111,10 @@ public class IGdlNode extends IUPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
      * "Initializes" this clique, setting the summarize, combine and
      * normalization operations to use as well as sending it's initial messages.
      */
+    @Override
     public void initialize() {
+        super.initialize();
+
         // Tree-based operation
         setMode(Modes.TREE_UP);
         costFunctions = new ArrayList<CostFunction>();
@@ -212,10 +222,28 @@ public class IGdlNode extends IUPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
 
     @Override
     public double getOptimalValue() {
+        GdlFactory factory = new GdlFactory();
+        factory.setMode(Modes.TREE_UP);
+        DFS dfs = dfs = new MCN(costFunctions.toArray(new CostFunction[0]));
+        UPGraph cg = JunctionTreeAlgo.buildGraph(factory, dfs.getFactorDistribution(), dfs.getAdjacency());
+        cg.setRoot(dfs.getRoot());
+        JunctionTree jt = new JunctionTree(cg);
+        cg.setFactory(getFactory());
+        cg.run(1000);
+        VPGraph st = new VPGraph(cg);
+        VPResults res = st.run(10000);
+        VariableAssignment map = res.getMapping();
+        // Evaluate solution
+        double cost = 0;
+        for (CostFunction f : costFunctions) {
+            cost += f.getValue(map);
+        }
+        return cost;
+        /*
         VariableAssignment map;
         CostFunction belief = getBelief();
         map = belief.getOptimalConfiguration(null);
-        return belief.getValue(map);
+        return belief.getValue(map);*/
     }
 
     /**
@@ -230,6 +258,13 @@ public class IGdlNode extends IUPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
      */
     public void setPartitionStrategy(IGdlPartitionStrategy strategy) {
         this.strategy = strategy;
+    }
+
+    @Override
+    public VariableAssignment getOptimalConfiguration(VariableAssignment map) {
+        CostFunction foo = getBelief().reduce(map);
+        System.out.println(foo);
+        return foo.getOptimalConfiguration(map);
     }
 
 }

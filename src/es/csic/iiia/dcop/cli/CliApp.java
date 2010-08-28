@@ -44,7 +44,6 @@ import ch.qos.logback.core.joran.spi.JoranException;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunctionFactory;
 import es.csic.iiia.dcop.FactorGraph;
-import es.csic.iiia.dcop.HypercubeCostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.algo.JunctionTreeAlgo;
@@ -56,6 +55,7 @@ import es.csic.iiia.dcop.up.UPResults;
 import es.csic.iiia.dcop.dfs.DFS;
 import es.csic.iiia.dcop.dfs.MCN;
 import es.csic.iiia.dcop.dfs.MCS;
+import es.csic.iiia.dcop.figdl.FIGdlFactory;
 import es.csic.iiia.dcop.gdl.GdlFactory;
 import es.csic.iiia.dcop.igdl.IGdlFactory;
 import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
@@ -77,11 +77,8 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URL;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,6 +104,10 @@ public class CliApp {
      * Use IGDL as solving algorithm.
      */
     public static final int ALGO_IGDL = 2;
+    /**
+     * Use Filtered-IGDL as solving algorithm.
+     */
+    public static final int ALGO_FIGDL = 3;
 
     /**
      * MCS junction tree building heuristic.
@@ -116,17 +117,19 @@ public class CliApp {
      * MCN junction tree building heuristic.
      */
     public static final int JT_HEURISTIC_MCN = 1;
+
     /**
-     * Lazy partitioning strategy
+     * Partitioning strategies
      */
     public static final int PS_LAZY     = 0;
-    public static final int PS_RANKUP   = 1;
-    public static final int PS_RANKDOWN = 2;
-    public static final int PS_EXP      = 3;
-    public static final int PS_ENTROPY  = 4;
-    public static final int PS_SHARED   = 5;
-    public static final int PS_REXP     = 6;
-    public static final int PS_FEXP     = 7;
+    public static final int PS_LAZIER   = 1;
+    public static final int PS_RANKUP   = 2;
+    public static final int PS_RANKDOWN = 3;
+    public static final int PS_EXP      = 4;
+    public static final int PS_ENTROPY  = 5;
+    public static final int PS_SHARED   = 6;
+    public static final int PS_REXP     = 7;
+    public static final int PS_FEXP     = 8;
 
     private int algorithm = ALGO_GDL;
     private int heuristic = JT_HEURISTIC_MCS;
@@ -310,7 +313,7 @@ public class CliApp {
 
         // Read the input file into factors
         DatasetReader r = new DatasetReader();
-        CostFunctionFactory factory = new HypercubeCostFunctionFactory();
+        CostFunctionFactory factory = new CostFunctionFactory();
         factory.setCombineOperation(combineOperation);
         factory.setNormalizationType(normalization);
         factory.setSummarizeOperation(summarizeOperation);
@@ -337,6 +340,7 @@ public class CliApp {
             
         System.out.println("ITERATIONS " + results.getIterations());
         System.out.println("CBR " + results.getCBR(communicationCost));
+        System.out.println("BYTES " + results.getSentBytes());
         System.out.println("LOAD_FACTOR " + results.getLoadFactor());
 
         // Extract a solution
@@ -345,7 +349,7 @@ public class CliApp {
         VariableAssignment map = res.getMapping();
 
         // Compute UB for IGdl
-        if (algorithm == ALGO_IGDL) {
+        if (algorithm == ALGO_IGDL || algorithm == ALGO_FIGDL) {
             UBGraph ub = new UBGraph(st);
             UBResults ubres = ub.run(100);
             System.out.println("BOUND " + ubres.getBound());
@@ -415,8 +419,9 @@ public class CliApp {
         UPGraph cg = null;
         switch(algorithm) {
 
-            case ALGO_IGDL:
             case ALGO_GDL:
+            case ALGO_IGDL:
+            case ALGO_FIGDL:
                 UPFactory factory = null;
                 if (algorithm == ALGO_GDL) {
                     factory = new GdlFactory();
@@ -426,6 +431,9 @@ public class CliApp {
                     switch (partitionStrategy) {
                         case PS_LAZY:
                             strategy = new es.csic.iiia.dcop.igdl.strategy.LazyStrategy();
+                            break;
+                        case PS_LAZIER:
+                            strategy = new es.csic.iiia.dcop.igdl.strategy.LaziestStrategy();
                             break;
                         case PS_RANKUP:
                             strategy = new es.csic.iiia.dcop.igdl.strategy.RankUpStrategy();
@@ -449,7 +457,9 @@ public class CliApp {
                             strategy = new es.csic.iiia.dcop.igdl.strategy.FastExpStrategy();
                             break;
                     }
-                    factory = new IGdlFactory(this.getIGdlR(), strategy);
+                    factory = algorithm == ALGO_IGDL
+                        ? new IGdlFactory(this.getIGdlR(), strategy)
+                        : new FIGdlFactory(this.getIGdlR(), strategy);
                 }
                 int variables = 0;
                 JTResults results = null;
@@ -481,20 +491,22 @@ public class CliApp {
                         candidateCg = JunctionTreeAlgo.buildGraph(factory, dfs.getFactorDistribution(), dfs.getAdjacency());
                         candidateCg.setRoot(dfs.getRoot());
                         JunctionTree jt = new JunctionTree(candidateCg);
-                        results = jt.run(10000);
-                        variables = results.getMaxVariables();
+                        JTResults candidateResults = jt.run(10000);
+                        variables = candidateResults.getMaxVariables();
 
                         if (variables < minVariables) {
                             minVariables = variables;
                             cg = candidateCg;
+                            results = candidateResults;
                         }
                     }
                 }
                 
                 System.out.println("MAX_CLIQUE_VARIABLES " + results.getMaxVariables());
                 System.out.println("MAX_CLIQUE_SIZE " + results.getMaxSize());
+                System.out.println("MAX_EDGE_VARIABLES " + results.getMaxEdgeVariables());
                 createCliqueGraphFile(cg);
-                if (variables >= maxCliqueVariables) {
+                if (results.getMaxVariables() >= maxCliqueVariables) {
                     System.err.println("Error: minimum clique variables found is greater than the specified max.");
                     System.exit(1);
                 }

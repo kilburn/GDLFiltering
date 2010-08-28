@@ -50,4 +50,8 @@ public class UBResults extends DefaultResults<UBResult> {
         return getResults().get(1).getLB();
     }
 
+    public double getCost() {
+        return getResults().get(1).getUB();
+    }
+
 }

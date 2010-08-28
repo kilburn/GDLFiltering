@@ -205,7 +205,7 @@ public class CostFunctionStats {
 
         if (vars.length <= r) {
             res.add(f);
-            res.add(f.getFactory().buildCostFunction(vars));
+            res.add(f.getFactory().buildCostFunction(vars, 0));
             return res.toArray(new CostFunction[0]);
         }
 
@@ -379,7 +379,8 @@ public class CostFunctionStats {
             tfs.put(nv, tcf);
         }
 
-        while(!cfs.isEmpty()) {
+        int ncfs = 0;
+        while(!cfs.isEmpty() && ncfs < 10) {
             VariableAssignment map = null;
             for(Iterator<Integer> i = f.iterator(); i.hasNext();) {
                 final int idx = i.next();
@@ -423,11 +424,18 @@ public class CostFunctionStats {
                     key = tfs.firstKey();
                     tcf = tfs.get(key);
                 }
+                //if (key == 1) break;
+                
                 final CostFunction cf = tcf.remove(tcf.size()-1);
                 cfs.remove(cf);
+
+                //System.out.println("FTS: " + f);
                 CostFunction pr = f.summarize(cf.getVariableSet().toArray(new Variable[0]));
+                //System.out.println("PRO: " + pr);
                 res.add(pr);
                 f = f.combine(pr.negate());
+                //System.out.println("RES: " + f);
+                ncfs++;
             }
         }
 

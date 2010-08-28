@@ -42,28 +42,40 @@ package es.csic.iiia.dcop;
  *
  * @author marc
  */
-public class ListCostFunctionFactory extends AbstractCostFunctionFactory {
+public class MapCostFunctionFactory implements CostFunctionTypeFactory {
+
+    CostFunctionFactory factory;
+
+    public MapCostFunctionFactory(CostFunctionFactory f) {
+        factory = f;
+    }
 
     public CostFunction buildCostFunction(Variable[] variables) {
-        ListCostFunction c = new ListCostFunction(variables, getCombineOperation().getNeutralValue());
-        initialize(c);
+        MapCostFunction c = new MapCostFunction(variables,
+                factory.getSummarizeOperation().getNoGood());
+        c.setFactory(factory);
+        return c;
+    }
+
+    public CostFunction buildNeutralCostFunction(Variable[] variables) {
+        MapCostFunction c = new MapCostFunction(variables,
+                factory.getSummarizeOperation().getNoGood());
+        c.setFactory(factory);
+        c.initialize(factory.getCombineOperation().getNeutralValue());
         return c;
     }
 
     public CostFunction buildCostFunction(Variable[] variables, double initialValue) {
-        ListCostFunction c = new ListCostFunction(variables, initialValue);
-        initialize(c);
+        MapCostFunction c = new MapCostFunction(variables,
+                factory.getSummarizeOperation().getNoGood());
+        c.setFactory(factory);
+        c.initialize(initialValue);
         return c;
     }
 
     public CostFunction buildCostFunction(CostFunction function) {
-        ListCostFunction c = new ListCostFunction(function);
-        initialize(c);
+        MapCostFunction c = new MapCostFunction(function);
         return c;
-    }
-
-    private void initialize(ListCostFunction cf) {
-        cf.setFactory(this);
     }
 
 }

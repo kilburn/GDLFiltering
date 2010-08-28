@@ -46,9 +46,6 @@ import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.util.CostFunctionStats;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,6 +70,8 @@ public class FastExpStrategy extends IGdlPartitionStrategy {
     public IGdlMessage getPartition(ArrayList<CostFunction> fs,
             UPEdge<? extends IUPNode, IGdlMessage> e) {
 
+        long cc = 0;
+
         // Informational, just for debugging
         if (log.isTraceEnabled()) {
             StringBuffer buf = new StringBuffer();
@@ -90,65 +89,44 @@ public class FastExpStrategy extends IGdlPartitionStrategy {
         // Message to be sent
         IGdlMessage msg = new IGdlMessage();
 
-        // Separate functions containing only separator variables, and calculate
-        // the belief
+        // Calculate the "big" function that should be sent
         CostFunction remaining = null;
-        Set<Variable> vs = new HashSet<Variable>(Arrays.asList(e.getVariables()));
-        for (int i=fs.size()-1; i>=0; i--) {
-            final CostFunction f = fs.get(i);
-/*            if (vs.containsAll(f.getVariableSet())) {
-                log.trace("\t Contained: " + f);
-                msg.addFactor(f);
-                fs.remove(i);
-            } else {*/
-                remaining = f.combine(remaining);
-            //}
+        for (CostFunction f : fs) {
+            remaining = f.combine(remaining);
+        }
+        // null belief yields an empty message
+        if (remaining == null) {
+            return msg;
         }
 
-        // Obtain the graph-cut mergings
-        if (remaining != null) {
-            //remaining = remaining.summarize(e.getVariables());
-            remaining = remaining.summarize(
-                remaining.getSharedVariables(e.getVariables()).toArray(new Variable[0])
-            );
+        msg.cc += remaining.getSize();
+        
+        // Filter the belief
+        remaining = this.filterFactor(e, remaining);
 
-            // Don't try to break a fitting message into smaller pieces
-            if (remaining.getVariableSet().size() <= node.getR()) {
-                msg.addFactor(remaining);
-                return msg;
-            }
+        // Summarize the belief to the shared variables
+        remaining = remaining.summarize(
+            remaining.getSharedVariables(e.getVariables()).toArray(new Variable[0])
+        );
 
-            CostFunction cst = remaining.summarize(new Variable[0]);
-            msg.addFactor(cst);
-            remaining = remaining.combine(cst.negate());
+        msg.cc += remaining.getSize();
 
-            /*
+        // Don't try to break a fitting message into smaller pieces
+        if (remaining.getVariableSet().size() <= node.getR()) {
+            msg.addFactor(remaining);
+            return msg;
+        }
 
-            Metric m = new Norm0();
-            //System.out.println(remaining);
-            for (CostFunction f : strategy.getPartition(fs, e).getFactors()) {
-                // Summarize to the given variables and compute the new rest
-                Variable[] vars = f.getVariableSet().toArray(new Variable[0]);
-                CostFunction fac = remaining.summarize(vars);
-                if (m.getValue(fac) > 0.1) {
-                    CostFunction neg = fac.summarize(e.getVariables());
-                    neg.negate();
-                    remaining = remaining.combine(neg);
-                    msg.addFactor(fac);
-                }
-            }*/
+        // Remove the constant value (summarization to no variables)
+        CostFunction cst = remaining.summarize(new Variable[0]);
+        msg.addFactor(cst);
+        remaining = remaining.combine(cst.negate());
+        msg.cc += remaining.getSize();
 
-            // After the first pass, everything is >= 0
-            /*
-            ArrayList<CostFunction> ffs = new ArrayList<CostFunction>(1);
-            ffs.add(remaining);
-            ffs = strategy2.getPartition(ffs, e).getFactors();
-            for (int i=0; i<ffs.size(); i++) {
-                msg.addFactor(ffs.get(i));
-            }*/
-            for (CostFunction f : CostFunctionStats.getApproximation2(remaining, node.getR())) {
-                msg.addFactor(f);
-            }
+        // Obtain the projection approximation
+        for (CostFunction f : CostFunctionStats.getApproximation2(remaining, node.getR())) {
+            msg.addFactor(f);
+            msg.cc += remaining.getSize();
         }
 
         return msg;

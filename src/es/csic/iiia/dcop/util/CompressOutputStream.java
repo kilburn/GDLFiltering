@@ -36,16 +36,68 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.mp;
+package es.csic.iiia.dcop.util;
+
+import com.colloquial.arithcode.ArithCodeOutputStream;
+import com.colloquial.arithcode.PPMModel;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public abstract class AbstractMessage implements Message {
+public class CompressOutputStream extends OutputStream {
 
-    public int getBytes() {
-        return getBytes(Encoding.NORMAL);
+    private ArithCodeOutputStream compressor;
+    private CountOutputStream byteCounter;
+
+    public CompressOutputStream() {
+        byteCounter = new CountOutputStream();
+        compressor = new ArithCodeOutputStream(byteCounter, new PPMModel(8));
     }
 
+    public int getBytes() throws IOException {
+        compressor.close();
+        return byteCounter.getBytes();
+    }
+
+    @Override
+    public void close() throws IOException {
+        compressor.close();
+    }
+
+    @Override
+    public void flush() throws IOException {
+        compressor.flush();
+    }
+
+    @Override
+    public void write(int b) throws IOException {
+        compressor.write(b);
+    }
+
+    @Override
+    public void write(byte[] b) throws IOException {
+        compressor.write(b);
+    }
+
+    @Override
+    public void write(byte[] b, int off, int len) throws IOException {
+        compressor.write(b, off, len);
+    }
+
+    private class CountOutputStream extends OutputStream {
+        private int bytes = 0;
+
+        @Override
+        public void write(int b) throws IOException {
+            bytes++;
+        }
+
+        public int getBytes() {
+            return bytes;
+        }
+
+    }
 }

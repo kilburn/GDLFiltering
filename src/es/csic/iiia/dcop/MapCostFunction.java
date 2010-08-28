@@ -38,7 +38,10 @@
 
 package es.csic.iiia.dcop;
 
+import es.csic.iiia.dcop.util.CostFunctionStats;
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 
 /**
@@ -50,27 +53,28 @@ import java.util.Iterator;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class HypercubeCostFunction extends AbstractCostFunction implements Serializable {
+public class MapCostFunction extends AbstractCostFunction implements Serializable {
 
     /**
-     * Hypercube values storage array.
+     * Configuration -> value mapping.
      */
-    private double[] values;
+    private HashMap<Integer, Double> map;
 
     /**
-     * Counter of nogoods.
+     * "Zero" value (value of the missing elements)
      */
-    private int nNoGoods;
+    private double zero;
 
     /**
-     * Creates a new CostFunction, initialized to zeros.
+     * Creates a new CostFunction, initialized to the zero value.
      *
      * @param variables involved in this factor.
      */
-    protected HypercubeCostFunction(Variable[] variables) {
+    protected MapCostFunction(Variable[] variables, double zeroValue) {
         super(variables);
-        values = new double[size];
-        nNoGoods = 0;
+        
+        map = new HashMap<Integer,Double>();
+        zero = zeroValue;
     }
 
     /**
@@ -78,100 +82,105 @@ public class HypercubeCostFunction extends AbstractCostFunction implements Seria
      *
      * @param factor factor to copy.
      */
-    protected HypercubeCostFunction(CostFunction factor) {
+    protected MapCostFunction(CostFunction factor) {
         super(factor);
-        values = factor.getValues().clone();
-        nNoGoods = factor.getNumberOfNoGoods();
+        
+        if (factor instanceof MapCostFunction) {
+            final MapCostFunction f = (MapCostFunction)factor;
+            map = new HashMap<Integer,Double>(f.map);
+            zero = f.zero;
+        } else {
+            map = new HashMap<Integer,Double>(factor.getSize() - factor.getNumberOfNoGoods());
+            zero = getFactory().getSummarizeOperation().getNoGood();
+            setValues(factor.getValues());
+        }
+    }
+
+    /**
+     * Resets the costFunction to zero values
+     */
+    private void reset() {
+        map = new HashMap<Integer, Double>();
     }
 
     /** {@inheritDoc} */
     public double[] getValues() {
-        return values;
+        double[] v = new double[size];
+        for (int i=0; i<size; i++) {
+            v[i] = getValue(i);
+        }
+        return v;
     }
 
     /** {@inheritDoc} */
     public void setValues(double[] values) {
-        
-        if (values.length != this.values.length) {
+        reset();
+
+        if (values.length != size) {
             throw new IllegalArgumentException("Invalid index specification");
         }
 
-        System.err.println("Warning: setValues is a dangerous function!");
-        this.values = values;
+        for (int i=0; i<size; i++) {
+            setValue(i, values[i]);
+        }
     }
 
     /** {@inheritDoc} */
     public Iterator<Integer> iterator() {
-        return new HypercubeIterator();
+        return map.keySet().iterator();
     }
 
     /** {@inheritDoc} */
     public double getValue(int index) {
-        return values[index];
+        if (index < 0 || index >= size) 
+            throw new IndexOutOfBoundsException(Integer.toString(index));
+
+        final Double v = map.get(index);
+        return v == null ? zero : v;
     }
 
     /** {@inheritDoc} */
     public void setValue(int index, double value) {
-        final double ng = getFactory().getSummarizeOperation().getNoGood();
-        final double prev = values[index];
-        if (value != ng && prev == ng) {
-            nNoGoods--;
+        if (index < 0 || index >= size)
+            throw new IndexOutOfBoundsException(Integer.toString(index));
+
+        if (value == zero) {
+            if (map.containsKey(index)) {
+                map.remove(index);
+            }
+            return;
         }
-        if (value == ng && prev != ng) {
-            nNoGoods++;
-        }
-        values[index] = value;
+
+        map.put(index, value);
     }
 
     /** {@inheritDoc} */
     public int getNumberOfNoGoods() {
-        return nNoGoods;
+        return size - map.size();
     }
 
     /** {@inheritDoc} */
     @Override public String getName() {
-        return "H" + super.getName();
+        return "S" + super.getName();
     }
 
     /** {@inheritDoc} */
-    /*public String toString() {
+    @Override
+    public String toString() {
         StringBuffer buf = new StringBuffer();
         buf.append(getName());
         buf.append(" {");
-        if (values != null && values.length>0) {
-            buf.append(formatValue(values[0]));
-            for(int i=1; i<values.length; i++) {
-                buf.append(",");
-                buf.append(formatValue(values[i]));
-            }
+        for(int i : map.keySet()) {
+            buf.append(i);
+            buf.append(":");
+            buf.append(CostFunctionStats.formatValue(map.get(i)));
+            buf.append(", ");
         }
+        if (map.size()>0)
+            buf.delete(buf.length()-2, buf.length());
         buf.append("}");
 
         return buf.toString();
-    }*/
-
-    /**
-     * Implements the Iterator interface for an hypercube, allowing to iterate
-     * over its elements using the common java conventions.
-     */
-    protected class HypercubeIterator implements Iterator<Integer> {
-        private int idx = 0;
-
-        @Override
-        public boolean hasNext() {
-            return idx < size;
-        }
-
-        @Override
-        public Integer next() {
-            return idx++;
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException("You can not remove elements from an hypercube.");
-        }
-
     }
 
 }

@@ -46,7 +46,7 @@ package es.csic.iiia.dcop.mp;
  * @param <M> Message type.
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public abstract class AbstractEdge<N extends Node,M extends Message> implements Edge<N,M> {
+public abstract class AbstractEdge<N extends Node, M extends Message> implements Edge<N,M> {
 
     private N c1;
     private N c2;
@@ -68,21 +68,43 @@ public abstract class AbstractEdge<N extends Node,M extends Message> implements 
         c2.addEdge(this);
     }
 
-    
-    public int sendMessage(N sender, M message) {
+    /**
+     * Builds a new edge copying the given one.
+     *
+     * @param c1 node on one side of the edge.
+     */
+    public AbstractEdge(AbstractEdge<N,M> e) {
+        copyFrom(e);
+    }
+
+    public void clear() {
+        m1 = null;
+        m2 = null;
+        nm1 = null;
+        nm2 = null;
+    }
+
+    public boolean sendMessage(N sender, M message) {
         if (sender == c1) {
             if (message.equals(m2))
-                return 0;
+                return false;
             nm2 = message;
         } else {
             if (message.equals(m1))
-                return 0;
+                return false;
             nm1 = message;
         }
-        return message.getBytes();
+        return true;
     }
 
     public M getMessage(N recipient) {
+        if (recipient == c1) {
+            return m1;
+        }
+        return m2;
+    }
+
+    public M getMessage(Object recipient) {
         if (recipient == c1) {
             return m1;
         }
@@ -136,6 +158,15 @@ public abstract class AbstractEdge<N extends Node,M extends Message> implements 
         buf.append(c2.getName());
 
         return buf.toString();
+    }
+
+    public void copyFrom(AbstractEdge<N,M> e) {
+        c1 = e.c1;
+        c2 = e.c2;
+        m1 = e.m1;
+        nm1 = e.nm1;
+        m2 = e.m2;
+        nm2 = e.nm2;
     }
 
 }

@@ -38,6 +38,7 @@
 
 package es.csic.iiia.dcop;
 
+import java.util.ArrayList;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -390,7 +391,7 @@ public abstract class CostFunctionTest {
         CostFunction sum = f1.summarize(vars);
         CostFunction res = factory.buildCostFunction(vars);
         res.setValues(new double[]{0.63, 0.37});
-        assertEquals(sum, res);
+        assertEquals(res, sum);
         assertSame(sum.getFactory(), res.getFactory());
     }
 
@@ -568,6 +569,7 @@ public abstract class CostFunctionTest {
      * Test of combine method, of class CostFunction.
      */
     @Test
+    @Ignore
     public void testCombine2() {
         factory.setMode(CostFunction.Summarize.SUM, CostFunction.Combine.SUM, CostFunction.Normalize.NONE);
         CostFunction sum = f1.summarize(new Variable[]{a,c});
@@ -600,13 +602,99 @@ public abstract class CostFunctionTest {
         assertSame(com.getFactory(), res.getFactory());
     }
 
+    @Test
+    public void testCombineNogoods() {
+        factory.setSummarizeOperation(CostFunction.Summarize.MIN);
+        final double v = factory.getSummarizeOperation().getNoGood();
+
+        Variable x = new Variable("x", 2);
+        Variable y = new Variable("y", 2);
+        Variable z = new Variable("z", 2);
+
+        CostFunction cf1 = factory.buildCostFunction(new Variable[]{x,y});
+        cf1.setValues(new double[]{v, v, v, v});
+        CostFunction cf2 = factory.buildCostFunction(new Variable[]{y,z});
+        cf2.setValues(new double[]{0.3, -0.3, -0.88, -0.12});
+
+        CostFunction comb = cf1.combine(cf2);
+        CostFunction res = factory.buildCostFunction(new Variable[]{x,y,z});
+        res.setValues(new double[]{v, v, v, v, v, v, v, v});
+        assertEquals(res, comb);
+
+        comb = cf2.combine(cf1);
+        assertEquals(res, comb);
+    }
+
+    @Test
+    public void testSummarizeNogoods() {
+        factory.setSummarizeOperation(CostFunction.Summarize.MAX);
+        final double v = CostFunction.Summarize.MAX.getNoGood();
+        Variable x = new Variable("x", 2);
+        Variable y = new Variable("y", 2);
+        Variable z = new Variable("z", 2);
+        Variable t = new Variable("t", 2);
+        Variable u = new Variable("u", 2);
+        CostFunction cf = factory.buildCostFunction(new Variable[]{x,y,z,t,u});
+        cf.setValues(new double[] {
+            v, v, v, v, v, v, v, v, v, v, v, v, v, v, v, v, 4.61, 4.61, 4.61,
+            4.61, 4.61, 4.61, 4.61, 4.61, 4.61, 4.61, 4.61, 4.61, 4.61, 4.61,
+            4.61, 4.61
+        });
+
+        assertTrue(cf.getValue(0) == v);
+        CostFunction sum = cf.summarize(new Variable[0]);
+        CostFunction res = factory.buildCostFunction(new Variable[0], 4.61);
+        assertEquals(res, sum);
+
+        CostFunction dif = cf.combine(res.negate());
+        res = factory.buildCostFunction(new Variable[]{x,y,z,t,u});
+        res.setValues(new double[] {
+            v, v, v, v, v, v, v, v, v, v, v, v, v, v, v, v, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        });
+        assertEquals(res, dif);
+    }
+
+    @Test
+    public void testFilter1() {
+        factory.setSummarizeOperation(CostFunction.Summarize.MIN);
+        factory.setCombineOperation(CostFunction.Combine.SUM);
+        factory.setNormalizationType(CostFunction.Normalize.NONE);
+
+        final double v = CostFunction.Summarize.MIN.getNoGood();
+        Variable x = new Variable("x", 2);
+        Variable y = new Variable("y", 2);
+        CostFunction cf = factory.buildCostFunction(new Variable[]{x,y});
+        cf.setValues(new double[]{v, v, 10, v});
+
+        ArrayList<CostFunction> fl = new ArrayList<CostFunction>();
+        CostFunction fi1 = factory.buildCostFunction(new Variable[]{x});
+        fi1.setValues(new double[]{10, 10});
+
+
+        CostFunction filtered = cf.filter(fi1, 12);
+
+        CostFunction res = factory.buildCostFunction(new Variable[]{x,y});
+        res.setValues(new double[]{v,v,v,v});
+
+        assertEquals(res, filtered);
+
+        // Optimal value?
+        VariableAssignment map = filtered.getOptimalConfiguration(null);
+        System.out.println(filtered.getValue(map));
+        assertTrue(v == filtered.getValue(map));
+    }
+
+
     /**
      * Test of combine method, of class CostFunction.
      */
     @Test
     public void testCombineEmptyFunction1() {
         factory.setCombineOperation(CostFunction.Combine.PRODUCT);
-        CostFunction sf  = factory.buildCostFunction(new Variable[]{});
+        CostFunction sf  = factory.buildNeutralCostFunction(new Variable[]{});
+        assertEquals(1, sf.getSize());
+        assertEquals(sf.getValue(0), CostFunction.Combine.PRODUCT.getNeutralValue(), 0.0001);
         CostFunction com = sf.combine(fda);
         assertEquals(fda, com);
         assertSame(fda.getFactory(), com.getFactory());
@@ -618,7 +706,7 @@ public abstract class CostFunctionTest {
     @Test
     public void testCombineEmptyFunction2() {
         factory.setCombineOperation(CostFunction.Combine.PRODUCT);
-        CostFunction sf  = factory.buildCostFunction(new Variable[]{});
+        CostFunction sf  = factory.buildNeutralCostFunction(new Variable[]{});
         CostFunction com = fda.combine(sf);
         assertEquals(fda, com);
         assertSame(fda.getFactory(), com.getFactory());
@@ -831,7 +919,8 @@ public abstract class CostFunctionTest {
         map.put(b, 0);
         map.put(c, 0);
         CostFunction red = f1.reduce(map);
-        CostFunction res = null;
+        CostFunction res = factory.buildCostFunction(new Variable[0]);
+        res.setValue(0, 0.1);
         assertEquals(red, res);
     }
 

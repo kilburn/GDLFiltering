@@ -39,15 +39,15 @@
 package es.csic.iiia.dcop.gdl;
 
 import es.csic.iiia.dcop.CostFunction;
-import es.csic.iiia.dcop.mp.AbstractMessage;
-import es.csic.iiia.dcop.mp.Message;
+import es.csic.iiia.dcop.up.UPMessage;
+import es.csic.iiia.dcop.util.Compressor;
 
 /**
  * GDL Utility message.
  * 
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class GdlMessage extends AbstractMessage {
+public class GdlMessage implements UPMessage {
     private CostFunction factor;
 
     public GdlMessage(CostFunction factor) {
@@ -58,17 +58,8 @@ public class GdlMessage extends AbstractMessage {
         return this.factor;
     }
 
-    public int getBytes(Message.Encoding encoding) {
-        int size = 0;
-        switch(encoding) {
-            case NORMAL:
-                size += factor.getVariableSet().size()+1;
-                size += factor.getSize()*4;
-                break;
-            default:
-                break;
-        }
-        return size;
+    public long getBytes() {
+        return Compressor.getCompressedSizeF(factor);
     }
 
     @Override

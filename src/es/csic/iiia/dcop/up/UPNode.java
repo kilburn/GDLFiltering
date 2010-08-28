@@ -41,6 +41,7 @@ package es.csic.iiia.dcop.up;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
+import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.mp.AbstractNode;
 import es.csic.iiia.dcop.mp.Edge;
 import java.util.ArrayList;
@@ -57,6 +58,7 @@ public abstract class UPNode<E extends Edge, R extends UPResult> extends
         AbstractNode<E, R> {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
+    private long sentBytes = 0;
 
     /**
      * Clique's member variables.
@@ -108,6 +110,13 @@ public abstract class UPNode<E extends Edge, R extends UPResult> extends
         super();
         this.relations = new ArrayList<CostFunction>();
         this.variables = new HashSet<Variable>();
+    }
+
+    @Override
+    public void initialize() {
+        super.initialize();
+
+        sentBytes = 0;
     }
 
     /**
@@ -165,6 +174,14 @@ public abstract class UPNode<E extends Edge, R extends UPResult> extends
             size *= v.getDomain();
         }
         return size;
+    }
+
+    public long getSentBytes() {
+        return sentBytes;
+    }
+
+    protected void addSentBytes(long bytes) {
+        sentBytes += bytes;
     }
 
     /**
@@ -228,5 +245,9 @@ public abstract class UPNode<E extends Edge, R extends UPResult> extends
     }
 
     public abstract double getOptimalValue();
-    
+
+    /**
+     * Returns the optimal configuration.
+     */
+    public abstract VariableAssignment getOptimalConfiguration(VariableAssignment map);
 }

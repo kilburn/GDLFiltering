@@ -169,12 +169,15 @@ public class VPGraph extends DefaultGraph<VPNode,VPEdge,VPResults> {
 
     @Override
     public void reportStart() {
-        log.trace("\n======= ACCORDING A GLOBAL SOLUTION");
+        log.debug("\n======= ACCORDING A GLOBAL SOLUTION");
     }
 
     @Override
     public void reportResults(VPResults results) {
-        log.trace("------- " + results);
+        if (log.isTraceEnabled()) {
+            log.trace("------- " + results);
+        }
+        log.debug(results.getMapping().toString());
     }
 
 }

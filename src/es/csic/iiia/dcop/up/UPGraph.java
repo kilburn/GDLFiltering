@@ -39,11 +39,9 @@
 package es.csic.iiia.dcop.up;
 
 import es.csic.iiia.dcop.CostFunctionFactory;
-import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.mp.DefaultGraph;
 import es.csic.iiia.dcop.mp.Edge;
 import java.util.ArrayList;
-import java.util.HashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,11 +54,17 @@ public abstract class UPGraph<N extends UPNode, E extends Edge, R extends UPResu
         extends DefaultGraph<N,E,R> {
     
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
+    private CostFunctionFactory factory;
 
     public void setFactory(CostFunctionFactory factory) {
+        this.factory = factory;
         for (N clique : getNodes()) {
             clique.setFactory(factory);
         }
+    }
+
+    public CostFunctionFactory getFactory() {
+        return factory;
     }
 
     @Override
@@ -70,12 +74,14 @@ public abstract class UPGraph<N extends UPNode, E extends Edge, R extends UPResu
 
     @Override
     public void reportStart() {
-        log.trace("\n======= PROPAGATING UTILITIES");
+        log.debug("\n======= PROPAGATING UTILITIES");
     }
 
     @Override
     public void reportResults(R results) {
-        log.trace("------- " + results);
+        if (log.isTraceEnabled()) {
+            log.trace("------- " + results);
+        }
     }
 
     /*

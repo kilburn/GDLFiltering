@@ -90,12 +90,15 @@ public class UBGraph extends DefaultGraph<UBNode, UBEdge, UBResults> {
 
     @Override
     public void reportStart() {
-        log.trace("\n======= CALCULATING UPPER BOUNDS");
+        log.debug("\n======= CALCULATING BOUNDS");
     }
 
     @Override
     public void reportResults(UBResults results) {
-        log.trace("------- " + results);
+        if (log.isTraceEnabled()) {
+            log.trace("------- " + results);
+        }
+        log.debug("Cost: " + results.getCost());
     }
 
 }

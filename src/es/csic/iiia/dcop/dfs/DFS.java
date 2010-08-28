@@ -46,6 +46,8 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -60,7 +62,7 @@ public abstract class DFS {
     private Hashtable<Variable, HashSet<Variable>> neighboors;
     private VariableAssignment variableIndices;
     private VariableAssignment nConnections;
-    private Random random = new Random();
+    private Random random;
     private Variable root;
     private char[][] adjacency = null;
     private VariableAssignment variableDepths;
@@ -69,6 +71,12 @@ public abstract class DFS {
     public DFS(CostFunction[] factors) {
         this.factors = factors;
         this.initialize();
+        random = new Random(System.nanoTime());
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DFS.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public int getRoot() {

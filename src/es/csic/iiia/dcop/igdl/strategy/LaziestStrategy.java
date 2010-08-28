@@ -45,6 +45,7 @@ import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import org.slf4j.Logger;
@@ -54,7 +55,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class LazyStrategy extends IGdlPartitionStrategy {
+public class LaziestStrategy extends IGdlPartitionStrategy {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
 
@@ -96,8 +97,8 @@ public class LazyStrategy extends IGdlPartitionStrategy {
         final int r = node.getR();
         log.trace("-- Calculating partitions (r=" + r + ")");
         for (CostFunction inFunction : fs) {
-            // Obtain a set of edge variables in inFunction
-            Collection<Variable> sev = inFunction.getSharedVariables(e.getVariables());
+            // Obtain a set of variables in inFunction
+            Collection<Variable> sev = new HashSet<Variable>(inFunction.getVariableSet());
 
             // Check if the source function is already bigger than what we
             // can manage.
@@ -105,13 +106,11 @@ public class LazyStrategy extends IGdlPartitionStrategy {
                 // Remove one variable
                 Variable v = sev.iterator().next();
                 sev.remove(v);
-                Collection<Variable> nfv = new HashSet<Variable>(inFunction.getVariableSet());
-                nfv.remove(v);
 
                 if (log.isTraceEnabled()) {
                     log.trace("\tRemoving " + v.getName() + " from " + inFunction);
                 }
-                inFunction = inFunction.summarize(nfv.toArray(new Variable[0]));
+                inFunction = inFunction.summarize(sev.toArray(new Variable[0]));
                 if (log.isTraceEnabled()) {
                     log.trace("\t-> " + inFunction);
                 }
@@ -161,11 +160,14 @@ public class LazyStrategy extends IGdlPartitionStrategy {
             if (log.isTraceEnabled()) {
                 log.trace("\t" + parts.get(i));
             }
+            partsev.get(i).retainAll(Arrays.asList(e.getVariables()));
             final Variable[] vars = partsev.get(i).toArray(new Variable[0]);
             final CostFunction f = parts.get(i).summarize(vars);
             msg.addFactor(f);
             msg.cc += f.getSize();
-            log.trace("\tSummarizes to : " + parts.get(i).summarize(vars));
+            if (log.isTraceEnabled()) {
+                log.trace("\tSummarizes to : " + parts.get(i).summarize(vars));
+            }
         }
 
         msg = this.filterMessage(e, msg);

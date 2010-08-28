@@ -42,22 +42,37 @@ package es.csic.iiia.dcop;
  *
  * @author marc
  */
-public class HypercubeCostFunctionFactory extends AbstractCostFunctionFactory {
+public class HypercubeCostFunctionFactory implements CostFunctionTypeFactory {
+
+    CostFunctionFactory factory;
+
+    public HypercubeCostFunctionFactory(CostFunctionFactory f) {
+        factory = f;
+    }
 
     public CostFunction buildCostFunction(Variable[] variables) {
         HypercubeCostFunction c = new HypercubeCostFunction(variables);
-        initialize(c);
+        c.setFactory(factory);
+        return c;
+    }
+
+    public CostFunction buildNeutralCostFunction(Variable[] variables) {
+        HypercubeCostFunction c = new HypercubeCostFunction(variables);
+        c.setFactory(factory);
+        c.initialize(factory.getCombineOperation().getNeutralValue());
         return c;
     }
 
     public CostFunction buildCostFunction(Variable[] variables, double initialValue) {
         HypercubeCostFunction c = new HypercubeCostFunction(variables);
-        initialize(c, initialValue);
+        c.setFactory(factory);
+        c.initialize(initialValue);
         return c;
     }
 
     public CostFunction buildCostFunction(CostFunction function) {
         HypercubeCostFunction c = new HypercubeCostFunction(function);
+        c.setFactory(factory);
         return c;
     }
 

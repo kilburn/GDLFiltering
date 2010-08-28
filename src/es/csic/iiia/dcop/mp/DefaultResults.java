@@ -79,6 +79,14 @@ public class DefaultResults<R extends Result> implements Results<R> {
      */
     private long maximalCcc;
 
+    public long getMaximalCcc() {
+        return maximalCcc;
+    }
+
+    public long getTotalCcc() {
+        return totalCcc;
+    }
+
     /**
      * Cumulative total cycle checks.
      */

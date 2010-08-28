@@ -39,6 +39,7 @@
 package es.csic.iiia.dcop.jt;
 
 import es.csic.iiia.dcop.mp.Result;
+import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPNode;
 
 /**
@@ -59,6 +60,17 @@ public class JTResult implements Result {
 
     public int getNumberOfVariables() {
         return clique.getVariables().size();
+    }
+
+    public int getMaxEdgeVariables() {
+        int max = 0;
+        for (Object o : clique.getEdges()) {
+            UPEdge e = (UPEdge)o;
+            final int len = e.getVariables().length;
+            if (len > max) max = len;
+        }
+
+        return max;
     }
 
     @Override

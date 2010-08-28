@@ -36,29 +36,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.vp;
+package es.csic.iiia.dcop.up;
 
-import es.csic.iiia.dcop.mp.AbstractEdge;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import es.csic.iiia.dcop.mp.Message;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class VPEdge extends AbstractEdge<VPNode, VPMessage> {
-
-    private static Logger log = LoggerFactory.getLogger(VPGraph.class);
-
-    public VPEdge(VPNode c1, VPNode c2) {
-        super(c1,c2);
-    }
-
-    @Override public boolean sendMessage(VPNode sender, VPMessage message) {
-        boolean res = super.sendMessage(sender, message);
-        if (res && log.isTraceEnabled())
-            log.trace(sender.getName() + " -> " + getDestination(sender).getName() + " : " + message);
-        return res;
-    }
-
+public interface UPMessage extends Message {
+    public long getBytes();
 }

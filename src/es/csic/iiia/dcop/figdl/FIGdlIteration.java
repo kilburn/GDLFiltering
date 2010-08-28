@@ -39,12 +39,9 @@
 package es.csic.iiia.dcop.figdl;
 
 import es.csic.iiia.dcop.up.UPResults;
-import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
-import java.util.HashMap;
-import java.util.HashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,10 +55,7 @@ public class FIGdlIteration extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMess
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
 
-    /**
-     * Set of variables involved in this graph.
-     */
-    private HashSet<Variable> variableSet;
+    private int r = 2;
 
     /**
      * Constructs a clique graph that uses the specified {@code EdgeFactory} to
@@ -69,40 +63,12 @@ public class FIGdlIteration extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMess
      */
     public FIGdlIteration() {
         super();
-        variableSet = new HashSet<Variable>();
-    }
-
-    public FIGdlIteration(FIGdlIteration prev) {
-        this();
-
-        HashMap<FIGdlNode, FIGdlNode> map = new HashMap<FIGdlNode, FIGdlNode>(
-            prev.getNodes().size()
-        );
-
-        for(FIGdlNode nold : prev.getNodes()) {
-            //FIGdlNode nnew = new FIGdlNode(nold);
-            //map.put(nold, nnew);
-            //this.addNode(nnew);
-        }
-
-        for(UPEdge<FIGdlNode, IGdlMessage> eold : prev.getEdges()) {
-            FIGdlNode n1 = map.get(eold.getNode1());
-            FIGdlNode n2 = map.get(eold.getNode2());
-            UPEdge<FIGdlNode, IGdlMessage> enew = new UPEdge<FIGdlNode, IGdlMessage>(n1, n2);
-            enew.setVariables(eold.getVariables());
-            this.addEdge(enew);
-            n1.addEdge(enew);
-            n2.addEdge(enew);
-        }
     }
 
     @Override
     public void addNode(FIGdlNode clique) {
         super.addNode(clique);
-        variableSet.addAll(clique.getVariables());
     }
-
-    
 
     @Override
     protected UPResults buildResults() {
@@ -115,6 +81,7 @@ public class FIGdlIteration extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMess
     }
 
     public void setR(int r) {
+        this.r = r;
         for(FIGdlNode n : getNodes()) {
             n.setR(r);
         }
@@ -127,12 +94,23 @@ public class FIGdlIteration extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMess
 
     @Override
     public void reportStart() {
-        log.trace("\n======= PROPAGATING UTILITIES");
+        log.debug("\n======= RUNNING FIGDL ITERATION r=" + this.r);
     }
 
     @Override
     public void reportResults(UPResults results) {
-        log.trace("------- " + results);
+        if (log.isTraceEnabled()) {
+            log.trace("------- " + results);
+        }
+    }
+
+    void prepareNextIteration(double bound) {
+        for(FIGdlNode n : getNodes()) {
+            n.prepareNextIteration(bound);
+        }
+        for(UPEdge<FIGdlNode, IGdlMessage> e : getEdges()) {
+            e.clear();
+        }
     }
 
 }

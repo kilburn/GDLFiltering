@@ -382,4 +382,25 @@ public class CostFunctionStatsTest {
 
     }
 
+    @Test
+    public void testGetApproximation2() {
+        final double v = factory.getSummarizeOperation().getNoGood();
+        Variable x = new Variable("x", 2);
+        Variable y = new Variable("y", 2);
+        Variable z = new Variable("z", 2);
+        Variable t = new Variable("t", 2);
+        Variable u = new Variable("u", 2);
+        CostFunction cf = factory.buildCostFunction(new Variable[]{x,y,z,t,u});
+        cf.setValues(new double[] {
+            v, v, v, v, v, v, v, v, v, v, v, v, v, v, v, v, 4.61, 4.61, 4.61,
+            4.61, 4.61, 4.61, 4.61, 4.61, 4.61, 4.61, 4.61, 4.61, 4.61, 4.61,
+            4.61, 4.61
+        });
+
+        CostFunction[] fs = CostFunctionStats.getApproximation2(cf, 3);
+        for (CostFunction f : fs) {
+            System.out.println("F:" + f);
+        }
+    }
+
 }

@@ -42,11 +42,14 @@ package es.csic.iiia.dcop;
  *
  * @author marc
  */
-public class ListCostFunctionTest extends AbstractCostFunctionTest {
+public interface CostFunctionTypeFactory {
 
-    @Override
-    public CostFunctionFactory buildFactory() {
-        return new ListCostFunctionFactory();
-    }
+    CostFunction buildCostFunction(Variable[] variables);
+
+    CostFunction buildNeutralCostFunction(Variable[] variables);
+
+    CostFunction buildCostFunction(Variable[] variables, double initialValue);
+
+    CostFunction buildCostFunction(CostFunction function);
 
 }

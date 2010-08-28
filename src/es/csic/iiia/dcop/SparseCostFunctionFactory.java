@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  * 
- * Copyright (c) 2010, IIIA-CSIC, Artificial Intelligence Research Institute
+ * Copyright (c) 2010, Expression company is undefined on line 6, column 62 in Templates/Licenses/license-bsd.txt.
  * All rights reserved.
  * 
  * Redistribution and use of this software in source and binary forms, with or
@@ -17,11 +17,11 @@
  *   following disclaimer in the documentation and/or other
  *   materials provided with the distribution.
  * 
- *   Neither the name of IIIA-CSIC, Artificial Intelligence Research Institute 
+ *   Neither the name of Expression company is undefined on line 22, column 41 in Templates/Licenses/license-bsd.txt. 
  *   nor the names of its contributors may be used to
  *   endorse or promote products derived from this
  *   software without specific prior written permission of
- *   IIIA-CSIC, Artificial Intelligence Research Institute
+ *   Expression company is undefined on line 26, column 21 in Templates/Licenses/license-bsd.txt.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -36,29 +36,46 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.vp;
-
-import es.csic.iiia.dcop.mp.AbstractEdge;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+package es.csic.iiia.dcop;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author marc
  */
-public class VPEdge extends AbstractEdge<VPNode, VPMessage> {
+public class SparseCostFunctionFactory implements CostFunctionTypeFactory {
 
-    private static Logger log = LoggerFactory.getLogger(VPGraph.class);
+    CostFunctionFactory factory;
 
-    public VPEdge(VPNode c1, VPNode c2) {
-        super(c1,c2);
+    public SparseCostFunctionFactory(CostFunctionFactory f) {
+        factory = f;
     }
 
-    @Override public boolean sendMessage(VPNode sender, VPMessage message) {
-        boolean res = super.sendMessage(sender, message);
-        if (res && log.isTraceEnabled())
-            log.trace(sender.getName() + " -> " + getDestination(sender).getName() + " : " + message);
-        return res;
+    public CostFunction buildCostFunction(Variable[] variables) {
+        SparseCostFunction c = new SparseCostFunction(variables,
+                factory.getSummarizeOperation().getNoGood());
+        c.setFactory(factory);
+        return c;
+    }
+
+    public CostFunction buildNeutralCostFunction(Variable[] variables) {
+        SparseCostFunction c = new SparseCostFunction(variables,
+                factory.getSummarizeOperation().getNoGood());
+        c.setFactory(factory);
+        c.initialize(factory.getCombineOperation().getNeutralValue());
+        return c;
+    }
+
+    public CostFunction buildCostFunction(Variable[] variables, double initialValue) {
+        SparseCostFunction c = new SparseCostFunction(variables,
+                factory.getSummarizeOperation().getNoGood());
+        c.setFactory(factory);
+        c.initialize(initialValue);
+        return c;
+    }
+
+    public CostFunction buildCostFunction(CostFunction function) {
+        SparseCostFunction c = new SparseCostFunction(function);
+        return c;
     }
 
 }

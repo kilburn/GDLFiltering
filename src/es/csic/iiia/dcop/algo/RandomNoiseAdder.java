@@ -67,7 +67,6 @@ public class RandomNoiseAdder {
                 for (int i=0; i<values.length; i++) {
                     values[i] += variance*random.nextGaussian() - variance/2;
                 }
-                f.setValues(values);
             }
         }
     }

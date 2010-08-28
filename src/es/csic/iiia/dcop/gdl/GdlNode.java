@@ -38,6 +38,7 @@
 
 package es.csic.iiia.dcop.gdl;
 
+import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
@@ -105,7 +106,9 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
      * "Initializes" this clique, setting the summarize, combine and
      * normalization operations to use as well as sending it's initial messages.
      */
+    @Override
     public void initialize() {
+        super.initialize();
 
         // Calculate our potential
         previousBelief = null;
@@ -115,16 +118,18 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
         }
 
         if (potential == null) {
-            potential = factory.buildCostFunction(new Variable[0]);
+            potential = factory.buildNeutralCostFunction(new Variable[0]);
         } else {
             // Sort variables (this is not necessary, but useful for debugging)
             TreeSet<Variable> ss = new TreeSet<Variable>(potential.getVariableSet());
-            CostFunction sf = factory.buildCostFunction(ss.toArray(new Variable[0]));
+            CostFunction sf = factory.buildNeutralCostFunction(ss.toArray(new Variable[0]));
             potential = sf.combine(potential);
         }
+        
         // And our belief
-        belief = getFactory().buildCostFunction(variables.toArray(new Variable[0]));
-        belief = potential.combine(belief);
+        //belief = getFactory().buildCostFunction(variables.toArray(new Variable[0]));
+        //belief = potential.combine(belief);
+        belief = getFactory().buildCostFunction(potential);
 
         // Send initial messages
         sendMessages();
@@ -142,8 +147,7 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
         long cc = 0;
 
         // Combine incoming messages
-        CostFunction combi = getFactory().buildCostFunction(variables.toArray(new Variable[]{}),
-                factory.getCombineOperation().getNeutralValue());
+        CostFunction combi = getFactory().buildNeutralCostFunction(variables.toArray(new Variable[]{}));
         for (UPEdge<GdlNode, GdlMessage> e : getEdges()) {
             GdlMessage m = e.getMessage(this);
             if (m != null) {
@@ -241,6 +245,14 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
     @Override
     public double getOptimalValue() {
         return belief.getValue(belief.getOptimalConfiguration(null));
+    }
+
+    @Override
+    public VariableAssignment getOptimalConfiguration(VariableAssignment map) {
+        if (belief == null) {
+            return map;
+        }
+        return belief.reduce(map).getOptimalConfiguration(map);
     }
 
 }
