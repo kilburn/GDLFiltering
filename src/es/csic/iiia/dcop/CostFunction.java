@@ -213,11 +213,11 @@ public interface CostFunction {
     /**
      * Combine this factor with the given ones.
      *
-     * @param fs collection of functions to combine with.
+     * @param fs list of functions to combine with.
      * @return a new CostFunction which is the result of the combination between this
      * and the given ones.
      */
-    CostFunction combine(Collection<CostFunction> fs);
+    CostFunction combine(List<CostFunction> fs);
 
     /**
      * Negates this factor, applying the inverse of the given operation to

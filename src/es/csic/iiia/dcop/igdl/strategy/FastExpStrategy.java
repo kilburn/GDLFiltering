@@ -56,14 +56,9 @@ import org.slf4j.LoggerFactory;
 public class FastExpStrategy extends IGdlPartitionStrategy {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
-    private IGdlPartitionStrategy strategy, strategy2;
 
     @Override
     public void initialize(IUPNode node) {
-        strategy = new SharedVarsStrategy();
-        strategy2 = new ExpStrategy();
-        strategy.initialize(node);
-        strategy2.initialize(node);
         super.initialize(node);
     }
 
@@ -90,10 +85,9 @@ public class FastExpStrategy extends IGdlPartitionStrategy {
         IGdlMessage msg = new IGdlMessage();
 
         // Calculate the "big" function that should be sent
-        CostFunction remaining = null;
-        for (CostFunction f : fs) {
-            remaining = f.combine(remaining);
-        }
+        CostFunction remaining = node.getFactory().buildNeutralCostFunction(new Variable[0]);
+        remaining = remaining.combine(fs);
+        
         // null belief yields an empty message
         if (remaining == null) {
             return msg;

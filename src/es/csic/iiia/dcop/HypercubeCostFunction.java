@@ -96,8 +96,11 @@ public final class HypercubeCostFunction extends AbstractCostFunction implements
             throw new IllegalArgumentException("Invalid index specification");
         }
 
-        System.err.println("Warning: setValues is a dangerous function!");
-        this.values = values;
+        this.values = new double[values.length];
+        nNoGoods = 0;
+        for (int i=0; i<values.length; i++) {
+            setValue(i, values[i]);
+        }
     }
 
     /** {@inheritDoc} */

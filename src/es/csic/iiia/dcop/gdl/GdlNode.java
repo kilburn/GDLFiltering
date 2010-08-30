@@ -44,7 +44,7 @@ import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPNode;
-import java.util.TreeSet;
+import java.util.ArrayList;
 
 /**
  * GDL algorithm node.
@@ -112,24 +112,13 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
 
         // Calculate our potential
         previousBelief = null;
-        potential = null;
-        for (CostFunction f : relations) {
-            potential = f.combine(potential);
-        }
-
-        if (potential == null) {
-            potential = factory.buildNeutralCostFunction(new Variable[0]);
-        } else {
-            // Sort variables (this is not necessary, but useful for debugging)
-            TreeSet<Variable> ss = new TreeSet<Variable>(potential.getVariableSet());
-            CostFunction sf = factory.buildNeutralCostFunction(ss.toArray(new Variable[0]));
-            potential = sf.combine(potential);
-        }
+        potential = factory.buildNeutralCostFunction(new Variable[0]);
+        potential = potential.combine(relations);
         
         // And our belief
         //belief = getFactory().buildCostFunction(variables.toArray(new Variable[0]));
         //belief = potential.combine(belief);
-        belief = getFactory().buildCostFunction(potential);
+        belief = potential;
 
         // Send initial messages
         sendMessages();
@@ -147,19 +136,22 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
         long cc = 0;
 
         // Combine incoming messages
-        CostFunction combi = getFactory().buildNeutralCostFunction(variables.toArray(new Variable[]{}));
+        CostFunction combi = getFactory().buildNeutralCostFunction(new Variable[0]);
+
+        ArrayList<CostFunction> fns = new ArrayList<CostFunction>();
+        fns.add(potential);
         for (UPEdge<GdlNode, GdlMessage> e : getEdges()) {
             GdlMessage m = e.getMessage(this);
             if (m != null) {
                 CostFunction msg = m.getFactor();
-                combi = combi.combine(msg);
+                fns.add(msg);
                 cc += combi.getSize();
             }
         }
 
         // Compute our belief
         previousBelief = belief;
-        this.belief = combi.combine(this.potential);
+        this.belief = combi.combine(fns);
         cc += belief.getSize();
         this.belief = this.belief.normalize();
         cc += belief.getSize();
@@ -198,7 +190,7 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
 
     @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer(super.toString());
+        StringBuilder buf = new StringBuilder(super.toString());
         buf.append(" P:");
         buf.append(potential == null ? "null" : potential.toString());
         buf.append(" - B:");
