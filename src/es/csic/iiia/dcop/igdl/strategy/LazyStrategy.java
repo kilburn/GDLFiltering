@@ -165,7 +165,9 @@ public class LazyStrategy extends IGdlPartitionStrategy {
             final CostFunction f = parts.get(i).summarize(vars);
             msg.addFactor(f);
             msg.cc += f.getSize();
-            log.trace("\tSummarizes to : " + parts.get(i).summarize(vars));
+            if (log.isTraceEnabled()) {
+                log.trace("\tSummarizes to : " + f);
+            }
         }
 
         msg = this.filterMessage(e, msg);
