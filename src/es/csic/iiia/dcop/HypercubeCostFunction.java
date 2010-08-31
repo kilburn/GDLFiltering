@@ -50,7 +50,7 @@ import java.util.Iterator;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class HypercubeCostFunction extends AbstractCostFunction implements Serializable {
+public final class HypercubeCostFunction extends AbstractCostFunction implements Serializable {
 
     /**
      * Hypercube values storage array.
@@ -96,8 +96,11 @@ public class HypercubeCostFunction extends AbstractCostFunction implements Seria
             throw new IllegalArgumentException("Invalid index specification");
         }
 
-        System.err.println("Warning: setValues is a dangerous function!");
-        this.values = values;
+        this.values = new double[values.length];
+        nNoGoods = 0;
+        for (int i=0; i<values.length; i++) {
+            setValue(i, values[i]);
+        }
     }
 
     /** {@inheritDoc} */

@@ -38,7 +38,6 @@
 
 package es.csic.iiia.dcop.vp;
 
-import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.mp.Result;
 
@@ -61,7 +60,7 @@ public class VPResult implements Result {
 
     @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer("A : ");
+        StringBuilder buf = new StringBuilder("A : ");
         if (mapping != null) {
             buf.append(mapping);
         } else {

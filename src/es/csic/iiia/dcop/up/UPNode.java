@@ -207,7 +207,7 @@ public abstract class UPNode<E extends Edge, R extends UPResult> extends
 
     @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
 
         buf.append(getName());
 
@@ -222,7 +222,7 @@ public abstract class UPNode<E extends Edge, R extends UPResult> extends
     }
 
     public String getName() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         int i=0;
         for (Variable v : variables) {
             if (i++>0) buf.append(".");

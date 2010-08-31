@@ -39,8 +39,6 @@
 package es.csic.iiia.dcop.figdl;
 
 import es.csic.iiia.dcop.CostFunction.Summarize;
-import es.csic.iiia.dcop.MapCostFunction;
-import es.csic.iiia.dcop.MapCostFunctionFactory;
 import es.csic.iiia.dcop.bb.UBGraph;
 import es.csic.iiia.dcop.bb.UBResults;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
@@ -50,7 +48,6 @@ import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.up.UPResults;
 import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.VPResults;
-import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

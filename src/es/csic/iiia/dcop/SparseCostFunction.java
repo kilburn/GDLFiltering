@@ -52,7 +52,7 @@ import java.util.Iterator;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class SparseCostFunction extends AbstractCostFunction implements Serializable {
+public final class SparseCostFunction extends AbstractCostFunction implements Serializable {
 
     /**
      * Function's values storage array.
@@ -228,7 +228,7 @@ public class SparseCostFunction extends AbstractCostFunction implements Serializ
     /** {@inheritDoc} */
     @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append(getName());
         buf.append(" {");
         for(int i=0; i<used; i++) {

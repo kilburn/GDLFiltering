@@ -743,6 +743,33 @@ public abstract class CostFunctionTest {
     }
 
     /**
+     * Test of combine method, of class CostFunction.
+     */
+    @Test
+    public void testCombineListSparse() {
+        factory.setCombineOperation(CostFunction.Combine.SUM);
+        final double ng = factory.getSummarizeOperation().getNoGood();
+
+        ArrayList<CostFunction> fs = new ArrayList<CostFunction>();
+        CostFunction sf  = factory.buildCostFunction(new Variable[]{c});
+        sf.setValues(new double[]{ng, ng, 1.0});
+        fs.add(sf);
+        fs.add(fdc);
+        sf = factory.buildCostFunction(new Variable[]{a});
+        sf.setValues(new double[]{ng, 1.0});
+
+        CostFunction com = sf.combine(fs);
+        CostFunction res = factory.buildCostFunction(new Variable[]{c,a,d});
+        res.setValues(new double[]{
+            ng, ng, ng, ng,
+            ng, ng, ng, ng,
+            ng, ng, 2.25, 2.15
+        });
+        assertEquals(res, com);
+        assertSame(com.getFactory(), res.getFactory());
+    }
+
+    /**
      * Test of normalize method, of class CostFunction.
      */
     @Test

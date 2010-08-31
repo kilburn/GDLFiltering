@@ -40,7 +40,6 @@ package es.csic.iiia.dcop.vp;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunctionFactory;
-import es.csic.iiia.dcop.HypercubeCostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.algo.JunctionTreeAlgo;

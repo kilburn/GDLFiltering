@@ -42,8 +42,6 @@ import es.csic.iiia.dcop.igdl.strategy.AllCombStrategy;
 import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
 import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.CostFunction;
-import es.csic.iiia.dcop.MapCostFunctionFactory;
-import es.csic.iiia.dcop.SparseCostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.algo.JunctionTreeAlgo;
@@ -127,6 +125,7 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
      */
     public void prepareNextIteration(double bound) {
 
+        if (previousEdges != null) previousEdges.clear();
         previousEdges = new ArrayList<UPEdge<FIGdlNode, IGdlMessage>>();
         for(UPEdge<FIGdlNode, IGdlMessage> e : getEdges()) {
             if (e.getMessage(this) == null) {
@@ -205,10 +204,8 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
                 costFunctions.addAll(msg.getFactors());
         }
 
-        CostFunction belief = null;
-        for (CostFunction c : costFunctions) {
-            belief = c.combine(belief);
-        }
+        CostFunction belief = factory.buildNeutralCostFunction(new Variable[0]);
+        belief = belief.combine(costFunctions);
 
         return belief;
     }
@@ -222,9 +219,8 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
 
         CostFunction belief = null;
         if (log.isTraceEnabled()) {
-            for (CostFunction f : costFunctions) {
-                belief = f.combine(belief);
-            }
+            belief = factory.buildNeutralCostFunction(new Variable[0]);
+            belief = belief.combine(costFunctions);
         }
 
         for (UPEdge<FIGdlNode, IGdlMessage> e : getEdges()) {

@@ -40,11 +40,8 @@ package es.csic.iiia.dcop.igdl;
 
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPResults;
-import es.csic.iiia.dcop.CostFunctionFactory;
-import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
-import java.util.HashSet;
 
 /**
  * Utility Propagation message passing algorithm implementation using the GDL

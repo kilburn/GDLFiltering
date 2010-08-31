@@ -222,10 +222,10 @@ public class IGdlNode extends IUPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
 
     @Override
     public double getOptimalValue() {
-        GdlFactory factory = new GdlFactory();
-        factory.setMode(Modes.TREE_UP);
+        GdlFactory gdlFactory = new GdlFactory();
+        gdlFactory.setMode(Modes.TREE_UP);
         DFS dfs = dfs = new MCN(costFunctions.toArray(new CostFunction[0]));
-        UPGraph cg = JunctionTreeAlgo.buildGraph(factory, dfs.getFactorDistribution(), dfs.getAdjacency());
+        UPGraph cg = JunctionTreeAlgo.buildGraph(gdlFactory, dfs.getFactorDistribution(), dfs.getAdjacency());
         cg.setRoot(dfs.getRoot());
         JunctionTree jt = new JunctionTree(cg);
         cg.setFactory(getFactory());

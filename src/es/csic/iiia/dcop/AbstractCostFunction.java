@@ -42,9 +42,12 @@ import es.csic.iiia.dcop.util.CostFunctionStats;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
@@ -223,8 +226,8 @@ public abstract class AbstractCostFunction implements CostFunction {
     /**
      * Get the linearized index corresponding to the given variable mapping.
      * 
-     * @TODO: what happens when there's more than one index matching the given
-     * mapping?
+     * Warning: if there's more than one item matching the specified mapping,
+     * only the first one is returned by this function!
      *
      * @param mapping of the desired configuration.
      * @return corresponding linearized index.
@@ -251,9 +254,6 @@ public abstract class AbstractCostFunction implements CostFunction {
 
     /**
      * Get the linearized index corresponding to the given variable mapping.
-     *
-     * @TODO: what happens when there's more than one index matching the given
-     * mapping?
      *
      * @param mapping of the desired configuration.
      * @return corresponding linearized index.
@@ -330,7 +330,7 @@ public abstract class AbstractCostFunction implements CostFunction {
 
     /** {@inheritDoc} */
     public String getName() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("F(");
         if (variables.length > 0) {
             buf.append(variables[0].getName());
@@ -345,7 +345,7 @@ public abstract class AbstractCostFunction implements CostFunction {
 
     @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append(getName());
         buf.append(" {");
         if (size>0 && getValues() != null) {
@@ -362,7 +362,7 @@ public abstract class AbstractCostFunction implements CostFunction {
 
     @Override
     public String toLongString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append(getName());
         buf.append(" {\n");
         if (size>0 && getValues() != null) {
@@ -471,7 +471,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         CostFunction result;
         final double ratio1 = getNumberOfNoGoods() / (float)getSize();
         final double ratio2 = factor.getNumberOfNoGoods() / (float)factor.getSize();
-        if (ratio1 > 0.5 || ratio2 > 0.5) {
+        if (ratio1 > 0.8 || ratio2 > 0.8) {
             result = factory.buildSparseCostFunction(vars.toArray(new Variable[0]),
                 nogood);
         } else {
@@ -480,9 +480,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         }
 
         VariableAssignment map = null;
-        CostFunction left  = 
-                size - getNumberOfNoGoods() > factor.getSize() - factor.getNumberOfNoGoods()
-                ? this : factor;
+        CostFunction left  = ratio1 > ratio2 ? this : factor;
         CostFunction right = left == this ? factor : this;
 
         Iterator<Integer> it = left.iterator();
@@ -522,9 +520,14 @@ public abstract class AbstractCostFunction implements CostFunction {
 
 
     /** {@inheritDoc} */
-    public CostFunction combine(Collection<CostFunction> fs) {
+    public CostFunction combine(List<CostFunction> fs) {
+        // Remove null functions
+        for (int i=fs.size()-1; i>=0; i--) {
+            if (fs.get(i) == null) fs.remove(i);
+        }
+
         // If it's a single (or none) function, just fallback to normal combine.
-        if (fs.size() == 0) {
+        if (fs.isEmpty()) {
             return combine((CostFunction)null);
         } else if (fs.size() == 1) {
             return combine(fs.iterator().next());
@@ -552,11 +555,32 @@ public abstract class AbstractCostFunction implements CostFunction {
         boolean sparse = false;
         fs.add(this);
         for (CostFunction f : fs) {
-            final double ratio = getNumberOfNoGoods() / size;
-            if (ratio > 0.5) {
+            final double ratio = f.getNumberOfNoGoods() / (float)f.getSize();
+            if (ratio > 0.8) {
                 sparse = true;
                 break;
             }
+        }
+
+        if (sparse) {
+            // Sort functions by sparsity
+            Collections.sort(fs, new Comparator<CostFunction>() {
+                // Sort in ascending sparsity order
+                public int compare(CostFunction t, CostFunction t1) {
+                    final float r1 = t.getNumberOfNoGoods()/(float)t.getSize();
+                    final float r2 = t1.getNumberOfNoGoods()/(float)t1.getSize();
+                    return r1 > r2 ? 1 : (r1 == r2 ? 0 : 0);
+                }
+            });
+
+            // Perform the actual combination in decreasing sparsity order
+            CostFunction result = fs.remove(fs.size()-1);
+            for (int i=fs.size()-1; i>=0; i--) {
+                final CostFunction f = fs.remove(i);
+                result = result.combine(f);
+            }
+
+            return result;
         }
 
 
@@ -571,9 +595,11 @@ public abstract class AbstractCostFunction implements CostFunction {
             map = result.getMapping(i, map);
 
             double v = getValue(map);
-            for (CostFunction f : fs) {
-                v = operation.eval(v, f.getValue(map));
+            Iterator<CostFunction> it = fs.iterator();
+            while (v != nogood && it.hasNext()) {
+                v = operation.eval(v, it.next().getValue(map));
             }
+            if (v == nogood) continue;
 
             if (Double.isNaN(v)) {
                 throw new RuntimeException("Combination generated a NaN value. Halting.");

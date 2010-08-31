@@ -45,7 +45,7 @@ import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.up.UPNode;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +60,7 @@ public class VPGraph extends DefaultGraph<VPNode,VPEdge,VPResults> {
     private static Logger log = LoggerFactory.getLogger(VPGraph.class);
 
     private Random random = new Random();
-    private Hashtable<UPNode, VPNode> nodes;
+    private HashMap<UPNode, VPNode> nodes;
     private int root = -1;
 
     public VPGraph(UPGraph cg) {
@@ -75,7 +75,7 @@ public class VPGraph extends DefaultGraph<VPNode,VPEdge,VPResults> {
         HashSet<UPNode> visitedNodes = new HashSet<UPNode>();
 
         // Add all the nodes
-        nodes = new Hashtable<UPNode, VPNode>(remainingNodes.size());
+        nodes = new HashMap<UPNode, VPNode>(remainingNodes.size());
         for(UPNode n : remainingNodes) {
             VPNode stn = new VPNode(n);
             addNode(stn);
@@ -101,7 +101,7 @@ public class VPGraph extends DefaultGraph<VPNode,VPEdge,VPResults> {
     private void walkTree(HashSet<UPNode> visitedNodes, ArrayList<UPNode> remainingNodes) {
 
         // Ending condition
-        if (remainingNodes.size() == 0) {
+        if (remainingNodes.isEmpty()) {
             return;
         }
 

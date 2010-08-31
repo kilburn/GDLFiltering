@@ -192,7 +192,6 @@ public class CostFunctionStats {
     public static double getGain(CostFunction f, Variable[] vars) {
         Metric m = new Norm1();
         CostFunction res = f.summarize(vars);
-        /** TODO: check if the following line is useless */
         res = res.summarize(f.getVariableSet().toArray(new Variable[0]));
         res = f.combine(res.negate());
         return m.getValue(res);

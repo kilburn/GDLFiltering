@@ -141,7 +141,7 @@ public class VariableAssignment implements Map<Variable, Integer> {
         // Sorted for an easier visualization
         TreeMap<Variable, Integer> sorted = new TreeMap(assignment);
 
-        StringBuffer buf = new StringBuffer("{");
+        StringBuilder buf = new StringBuilder("{");
         int i = sorted.size();
         for(Variable v : sorted.keySet()) {
             buf.append(v.getName()).append(":").append(sorted.get(v));

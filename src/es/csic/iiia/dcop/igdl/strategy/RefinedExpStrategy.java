@@ -42,7 +42,6 @@ import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.igdl.IGdlDedupMessage;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
-import es.csic.iiia.dcop.igdl.IGdlNode;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
@@ -75,7 +74,7 @@ public class RefinedExpStrategy extends IGdlPartitionStrategy {
 
         // Informational, just for debugging
         if (log.isTraceEnabled()) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             int i = e.getVariables().length;
             for (Variable v : e.getVariables()) {
                 buf.append(v.getName());

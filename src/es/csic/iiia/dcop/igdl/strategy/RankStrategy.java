@@ -41,13 +41,11 @@ package es.csic.iiia.dcop.igdl.strategy;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
-import es.csic.iiia.dcop.igdl.IGdlNode;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.util.CostFunctionStats;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import org.slf4j.Logger;
@@ -74,7 +72,7 @@ public abstract class RankStrategy extends IGdlPartitionStrategy {
 
         // Informational, just for debugging
         if (log.isTraceEnabled()) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             int i = e.getVariables().length;
             for (Variable v : e.getVariables()) {
                 buf.append(v.getName());

@@ -70,7 +70,6 @@ public abstract class JunctionTreeAlgo {
 
             // If the node's potentital is empty and it only has one link, then
             // we have to add a constant neutral relation as its potential
-            // @TODO: see if this causes problems.
             if (factors[i].length == 0) {
                 int nlinks = 0;
                 for (int j=0; j<factors.length; j++) {

@@ -93,7 +93,7 @@ public class UPEdge<N extends UPNode, M extends UPMessage> extends AbstractEdge<
 
     @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer(super.toString());
+        StringBuilder buf = new StringBuilder(super.toString());
         buf.append(" [label=\"");
         int i=0;
         for (Variable v : variables) {

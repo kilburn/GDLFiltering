@@ -54,7 +54,7 @@ public class FactorGraph {
 
     @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer("graph G {\n");
+        StringBuilder buf = new StringBuilder("graph G {\n");
 
         for (CostFunction f : factors) {
             buf.append("  ");
