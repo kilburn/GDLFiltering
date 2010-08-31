@@ -130,6 +130,7 @@ public class CliApp {
     public static final int PS_SHARED   = 6;
     public static final int PS_REXP     = 7;
     public static final int PS_FEXP     = 8;
+    public static final int PS_LRE      = 9;
 
     private int algorithm = ALGO_GDL;
     private int heuristic = JT_HEURISTIC_MCS;
@@ -336,7 +337,7 @@ public class CliApp {
 
         // Run the solving algorithm
         cg.setFactory(factory);
-        UPResults results = cg.run(1000);
+        UPResults results = cg.run(100);
             
         System.out.println("ITERATIONS " + results.getIterations());
         System.out.println("CBR " + results.getCBR(communicationCost));
@@ -455,6 +456,9 @@ public class CliApp {
                             break;
                         case PS_FEXP:
                             strategy = new es.csic.iiia.dcop.igdl.strategy.FastExpStrategy();
+                            break;
+                        case PS_LRE:
+                            strategy = new es.csic.iiia.dcop.igdl.strategy.LREStrategy();
                             break;
                     }
                     factory = algorithm == ALGO_IGDL

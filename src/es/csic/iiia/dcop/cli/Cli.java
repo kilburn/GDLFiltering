@@ -44,6 +44,14 @@ import gnu.getopt.LongOpt;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryPoolMXBean;
+import java.lang.management.MemoryUsage;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.management.Notification;
+import javax.management.NotificationEmitter;
 
 /**
  *
@@ -109,6 +117,7 @@ public class Cli {
         System.err.println("      - exp      : merges functions using the lastest experimental strategy (dev only).");
         System.err.println("      - rexp     : merges functions using the lastest experimental strategy (refined).");
         System.err.println("      - fexp     : merges functions using the lastest experimental strategy (fast).");
+        System.err.println("      - lre      : merges functions using the local relative error strategy.");
         System.err.println("  -r [variance], --random-noise[=variance]");
         System.err.println("    Adds random noise with <variance> variance, or 0.001 if unspecified.");
         System.err.println("  -s operation, --summarize=operation (min)");
@@ -122,6 +131,11 @@ public class Cli {
     }
 
     public static void main(String[] argv) {
+        Cli cli = new Cli();
+        cli.launch(argv);
+    }
+
+    public void launch(String[] argv) {
 
         // Long options
         LongOpt[] longopts = new LongOpt[] {
@@ -285,6 +299,8 @@ public class Cli {
                         cli.setPartitionStrategy(CliApp.PS_REXP);
                     else if (arg.equals("fexp"))
                         cli.setPartitionStrategy(CliApp.PS_FEXP);
+                    else if (arg.equals("lre"))
+                        cli.setPartitionStrategy(CliApp.PS_LRE);
                     else {
                         System.err.println("Error: invalid heuristic \"" + arg + "\"");
                         System.exit(0);
@@ -354,8 +370,48 @@ public class Cli {
             System.err.println(ex.getLocalizedMessage());
         }
 
+        // Track memory usage
+        MemoryWatcher mw = new MemoryWatcher();
+        Thread t = new Thread(mw);
+        t.start();
+
         // All ready, now run!
+        long t1 = ManagementFactory.getThreadMXBean().getCurrentThreadUserTime();
         cli.run();
+        t1 = ManagementFactory.getThreadMXBean().getCurrentThreadUserTime() - t1;
+        System.out.println("TIME " + t1/(float)1000000000 + "s");
+
+
+        t.interrupt();
+        try {
+            t.join();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Cli.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        long bytes = mw.maxBytes;
+        System.out.println("MEM " + bytes/(1024*1024) + "Mb");
+    }
+
+    public class MemoryWatcher implements Runnable {
+        long maxBytes = 0;
+        private boolean done = false;
+        public void run() {
+            while(!done) {
+                long bytes = 0;
+                for (MemoryPoolMXBean m : ManagementFactory.getMemoryPoolMXBeans()) {
+                    MemoryUsage u = m.getPeakUsage();
+                    bytes += u.getUsed();
+                }
+                if (bytes > maxBytes) maxBytes = bytes;
+
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    done = true;
+                }
+            }
+        }
+
     }
 
 }
