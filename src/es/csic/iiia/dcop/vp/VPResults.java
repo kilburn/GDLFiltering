@@ -40,6 +40,7 @@ package es.csic.iiia.dcop.vp;
 
 import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.mp.DefaultResults;
+import java.util.ArrayList;
 
 /**
  * Value Propagation algorithm's collection of results.
@@ -48,27 +49,42 @@ import es.csic.iiia.dcop.mp.DefaultResults;
  */
 public class VPResults extends DefaultResults<VPResult> {
     
-    public VariableAssignment getMapping() {
+    public ArrayList<VariableAssignment> getMappings() {
 
         // Simple result collection
-        VariableAssignment result = new VariableAssignment();
+        ArrayList<VariableAssignment> results = new ArrayList<VariableAssignment>();
         for (VPResult r : getResults()) {
-            VariableAssignment map = r.getMapping();
-            if (map!=null) {
-                result.putAll(map);
+            int i=0;
+            for (VariableAssignment map : r.getMappings()) {
+                
+                VariableAssignment result;
+                if (i == results.size()) {
+                    result = new VariableAssignment();
+                    results.add(result);
+                } else {
+                    result = results.get(i);
+                }
+
+                if (map!=null) {
+                    result.putAll(map);
+                }
+                i++;
             }
         }
 
-        return result;
+        return results;
     }
 
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder(super.toString().split("\\n", 2)[0]);
-        buf.append("\nGlobal : ").append(getMapping().toString());
-        for (VPResult r : getResults()) {
-            buf.append("\n").append(r.toString());
+        buf.append("\nGlobal : ");
+        for (VariableAssignment map : getMappings()) {
+            buf.append("\n\t").append(map);
         }
+        /*for (VPResult r : getResults()) {
+            buf.append("\n\t").append(r);
+        }*/
 
         return buf.toString();
     }

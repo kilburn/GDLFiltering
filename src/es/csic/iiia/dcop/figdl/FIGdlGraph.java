@@ -48,6 +48,7 @@ import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.up.UPResults;
 import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.VPResults;
+import es.csic.iiia.dcop.vp.strategy.OptimalStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,7 +114,7 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMessage>
 
             
             // Solution extraction
-            VPGraph st = new VPGraph(this);
+            VPGraph st = new VPGraph(this, new OptimalStrategy(10));
             VPResults res = st.run(100);
             
             // Bound calculation

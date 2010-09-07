@@ -45,6 +45,7 @@ import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPNode;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * GDL algorithm node.
@@ -72,6 +73,11 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
      * Belief of this clique.
      */
     private CostFunction previousBelief;
+
+    /**
+     * Edges from where we have already processed their messages
+     */
+    private HashSet<UPEdge<GdlNode, GdlMessage>> alreadyReceived;
 
     /**
      * Constructs a new clique with the specified member variable and null
@@ -120,6 +126,8 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
         //belief = potential.combine(belief);
         belief = potential;
 
+        alreadyReceived = new HashSet<UPEdge<GdlNode, GdlMessage>>(getEdges().size());
+
         // Send initial messages
         sendMessages();
     }
@@ -131,6 +139,7 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
      * @return number of constraint checks consumed.
      */
     public long run() {
+        final Modes mode = getMode();
 
         // CC count
         long cc = 0;
@@ -139,22 +148,35 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
         CostFunction combi = getFactory().buildNeutralCostFunction(new Variable[0]);
 
         ArrayList<CostFunction> fns = new ArrayList<CostFunction>();
-        fns.add(potential);
+        if (mode == Modes.GRAPH) {
+            fns.add(potential);
+        } else {
+            fns.add(belief);
+        }
+
         for (UPEdge<GdlNode, GdlMessage> e : getEdges()) {
             GdlMessage m = e.getMessage(this);
             if (m != null) {
-                CostFunction msg = m.getFactor();
-                fns.add(msg);
-                cc += combi.getSize();
+                if (mode == Modes.GRAPH || !alreadyReceived.contains(e)) {
+                    CostFunction msg = m.getFactor();
+                    fns.add(msg);
+                    alreadyReceived.add(e);
+                }
             }
         }
 
         // Compute our belief
-        previousBelief = belief;
+        if (mode == Modes.GRAPH) {
+            previousBelief = belief;
+        }
+
         this.belief = combi.combine(fns);
         cc += belief.getSize();
-        this.belief = this.belief.normalize();
-        cc += belief.getSize();
+
+        if (mode == Modes.GRAPH) {
+            this.belief = this.belief.normalize();
+            cc += belief.getSize();
+        }
 
         // Send updated messages
         cc += sendMessages();
@@ -184,8 +206,17 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
      *
      * @return belief of this clique.
      */
-    public CostFunction getBelief() {
-        return belief;
+    public ArrayList<CostFunction> getBelief() {
+        ArrayList<CostFunction> bl = new ArrayList<CostFunction>();
+        bl.add(belief);
+        return bl;
+    }
+
+    @Override
+    public ArrayList<CostFunction> getReducedBelief(VariableAssignment map) {
+        ArrayList<CostFunction> bl = new ArrayList<CostFunction>();
+        bl.add(belief.reduce(map));
+        return bl;
     }
 
     @Override
@@ -232,19 +263,6 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
     @Override
     public boolean isConverged() {
         return belief.equals(previousBelief);
-    }
-
-    @Override
-    public double getOptimalValue() {
-        return belief.getValue(belief.getOptimalConfiguration(null));
-    }
-
-    @Override
-    public VariableAssignment getOptimalConfiguration(VariableAssignment map) {
-        if (belief == null) {
-            return map;
-        }
-        return belief.reduce(map).getOptimalConfiguration(map);
     }
 
 }

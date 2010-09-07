@@ -169,16 +169,8 @@ public class IGdlNode extends IUPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
     }
 
     @Override
-    public CostFunction getBelief() {
-        CostFunction belief = null;
-        for (CostFunction c : costFunctions) {
-            belief = c.combine(belief);
-        }
-        return belief;
-    }
-
-    public ArrayList<CostFunction> getCostFunctions() {
-        return costFunctions;
+    public ArrayList<CostFunction> getBelief() {
+        return new ArrayList<CostFunction>(costFunctions);
     }
 
     private void sendMessages() {
@@ -220,32 +212,6 @@ public class IGdlNode extends IUPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
         return false;
     }
 
-    @Override
-    public double getOptimalValue() {
-        GdlFactory gdlFactory = new GdlFactory();
-        gdlFactory.setMode(Modes.TREE_UP);
-        DFS dfs = dfs = new MCN(costFunctions.toArray(new CostFunction[0]));
-        UPGraph cg = JunctionTreeAlgo.buildGraph(gdlFactory, dfs.getFactorDistribution(), dfs.getAdjacency());
-        cg.setRoot(dfs.getRoot());
-        JunctionTree jt = new JunctionTree(cg);
-        cg.setFactory(getFactory());
-        cg.run(1000);
-        VPGraph st = new VPGraph(cg);
-        VPResults res = st.run(10000);
-        VariableAssignment map = res.getMapping();
-        // Evaluate solution
-        double cost = 0;
-        for (CostFunction f : costFunctions) {
-            cost += f.getValue(map);
-        }
-        return cost;
-        /*
-        VariableAssignment map;
-        CostFunction belief = getBelief();
-        map = belief.getOptimalConfiguration(null);
-        return belief.getValue(map);*/
-    }
-
     /**
      * @return the strategy
      */
@@ -261,10 +227,13 @@ public class IGdlNode extends IUPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
     }
 
     @Override
-    public VariableAssignment getOptimalConfiguration(VariableAssignment map) {
-        CostFunction foo = getBelief().reduce(map);
-        System.out.println(foo);
-        return foo.getOptimalConfiguration(map);
+    public ArrayList<CostFunction> getReducedBelief(VariableAssignment map) {
+        ArrayList<CostFunction> belief = getBelief();
+        ArrayList<CostFunction> rb = new ArrayList<CostFunction>(belief.size());
+        for (CostFunction f : belief) {
+            rb.add(f.reduce(map));
+        }
+        return rb;
     }
 
 }

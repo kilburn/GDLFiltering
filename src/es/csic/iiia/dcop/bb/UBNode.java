@@ -39,8 +39,10 @@
 package es.csic.iiia.dcop.bb;
 
 import es.csic.iiia.dcop.CostFunction;
+import es.csic.iiia.dcop.ValuesArray;
 import es.csic.iiia.dcop.mp.AbstractNode;
 import es.csic.iiia.dcop.vp.VPNode;
+import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,23 +54,23 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
 
     private static Logger log = LoggerFactory.getLogger(UBGraph.class);
 
-    private double ub;
-    private double localUB;
+    private ValuesArray ubs;
+    private ValuesArray localUBs;
     private double lb;
     private double localLB;
-    private VPNode node;
+    private VPNode vpnode;
 
     CostFunction.Summarize summarize;
     CostFunction.Combine combine;
 
     public UBNode(VPNode node) {
-        this.node = node;
+        this.vpnode = node;
         summarize = node.getFactory().getSummarizeOperation();
         combine = node.getFactory().getCombineOperation();
     }
 
     public String getName() {
-        return node.getName();
+        return vpnode.getName();
     }
 
     @Override
@@ -82,16 +84,24 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
         setMode(Modes.TREE_UP);
 
         // Calculate the local optimum acording to the agreed solution
-        localUB = node.getGlobalValue();
+        localUBs = vpnode.getGlobalValues();
         if (getEdges().size() == 1) {
-            localLB = node.getOptimalValue();
+            // TODO: Change this abomination
+            ArrayList<CostFunction> belief = vpnode.getUPNode().getBelief();
+            System.out.println("-----");
+            for (CostFunction f : belief) {
+                System.out.println("B: " + f);
+            }
+            CostFunction b = belief.remove(belief.size()-1);
+            b = b.combine(belief);
+            localLB = b.getValue(b.getOptimalConfiguration(null));
         } else {
             localLB = -summarize.getNoGood();
         }
-        log.trace(this.getName() + " llb: " + localLB + ", lub: " + localUB);
+        log.trace(this.getName() + " llb: " + localLB + ", lub: " + localUBs);
 
         // Send initial messages (if applicable)
-        ub = localUB;
+        ubs = new ValuesArray(localUBs);
         lb = localLB;
         sendMessages();
     }
@@ -100,12 +110,12 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
         long cc = 0;
 
         // Collect received values
-        ub = localUB;
+        ubs = new ValuesArray(localUBs);
         lb = localLB;
         for (UBEdge e : getEdges()) {
             UBMessage msg = e.getMessage(this);
             if (msg != null) {
-                ub = combine.eval(ub, msg.getUB());
+                ubs = ubs.combine(msg.getUBs(), combine);
                 if (!summarize.isBetter(msg.getLB(), lb)) {
                     lb = msg.getLB();
                 }
@@ -121,6 +131,7 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
     }
 
     public UBResult end() {
+        final double ub = ubs.getBest(summarize);
         return new UBResult(ub,lb);
     }
 
@@ -129,13 +140,13 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
             if (!readyToSend(e))
                 continue;
 
-            double mub = ub;
+            ValuesArray mub = new ValuesArray(ubs);
             UBMessage inMsg = e.getMessage(this);
             if (inMsg != null) {
-                mub = combine.eval(ub, combine.invert(inMsg.getUB()));
+                mub = mub.combine(inMsg.getUBs().invert(combine), combine);
             }
             UBMessage msg = new UBMessage();
-            msg.setUB(mub);
+            msg.setUBs(mub);
             msg.setLB(lb);
             e.sendMessage(this, msg);
         }

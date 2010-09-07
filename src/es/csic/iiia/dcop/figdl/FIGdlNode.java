@@ -44,17 +44,10 @@ import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.VariableAssignment;
-import es.csic.iiia.dcop.algo.JunctionTreeAlgo;
-import es.csic.iiia.dcop.dfs.DFS;
-import es.csic.iiia.dcop.dfs.MCN;
-import es.csic.iiia.dcop.gdl.GdlFactory;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
-import es.csic.iiia.dcop.jt.JunctionTree;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
-import es.csic.iiia.dcop.vp.VPGraph;
-import es.csic.iiia.dcop.vp.VPResults;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.slf4j.Logger;
@@ -83,7 +76,6 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
      * FIGdlNode from previous iteration
      */
     private ArrayList<UPEdge<FIGdlNode, IGdlMessage>> previousEdges;
-    private ArrayList<UPEdge<FIGdlNode, IGdlMessage>> bestEdges;
 
     /**
      * Bounds from previous iteration
@@ -138,7 +130,6 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
 
         if (Double.isNaN(this.bound) || factory.getSummarizeOperation().isBetter(bound, this.bound)) {
             this.bound = bound;
-            bestEdges = previousEdges;
         }
 
         strategy.setFilteringOptions(bound, previousEdges);
@@ -194,7 +185,7 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
     }
 
     @Override
-    public CostFunction getBelief() {
+    public ArrayList<CostFunction> getBelief() {
 
         /* Re-compute cost functions */
         costFunctions = new ArrayList<CostFunction>(relations);
@@ -204,13 +195,6 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
                 costFunctions.addAll(msg.getFactors());
         }
 
-        CostFunction belief = factory.buildNeutralCostFunction(new Variable[0]);
-        belief = belief.combine(costFunctions);
-
-        return belief;
-    }
-
-    public ArrayList<CostFunction> getCostFunctions() {
         return costFunctions;
     }
 
@@ -255,20 +239,6 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
         return false;
     }
 
-    @Override
-    public double getOptimalValue() {
-        /*VariableAssignment map = getOptimalConfigurationByGDL(costFunctions);
-        // Evaluate solution
-        double cost = 0;
-        for (CostFunction f : costFunctions) {
-            cost += f.getValue(map);
-        }
-        return cost;*/
-
-        final CostFunction belief = getBelief();
-        return belief.getValue(belief.getOptimalConfiguration(null));
-    }
-
     /**
      * @return the strategy
      */
@@ -283,25 +253,11 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
         this.strategy = strategy;
     }
 
-    
-
-    void fallbackLastIteration() {
-        // Recover messages from best iteration
-        int i = 0;
-        costFunctions.clear();
-        costFunctions.addAll(getRelations());
-        for (UPEdge<FIGdlNode, IGdlMessage> e : getEdges()) {
-            UPEdge<FIGdlNode, IGdlMessage> olde = bestEdges.get(i++);
-            costFunctions.addAll(olde.getMessage(this).getFactors());
-        }
-    }
-
     @Override
-    public VariableAssignment getOptimalConfiguration(VariableAssignment map) {
-
-        CostFunction reducedBelief = null;
+    public ArrayList<CostFunction> getReducedBelief(VariableAssignment map) {
+        ArrayList<CostFunction> fs = new ArrayList<CostFunction>();
         for (CostFunction f : relations) {
-            reducedBelief = f.reduce(map).combine(reducedBelief);
+            fs.add(f.reduce(map));
         }
 
         for (UPEdge<FIGdlNode, IGdlMessage> e : getEdges()) {
@@ -312,74 +268,12 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
                     if (f.getSize() == 1) {
                         continue;
                     }
-                    reducedBelief = f.reduce(map).combine(reducedBelief);
+                    fs.add(f.reduce(map));
                 }
             }
         }
 
-        if (reducedBelief == null) {
-            System.err.println("Warning: found empty belief");
-            return map;
-        }
-
-        return reducedBelief.getOptimalConfiguration(map);
-
-        /*
-        // This shoudn't happen...
-        if (costFunctions.isEmpty()) {
-            System.err.println("Warning: empty cost function list.");
-            return map;
-        }
-
-        ArrayList<CostFunction> cfs = new ArrayList<CostFunction>(costFunctions.size());
-        //log.debug("MAP: " + map);
-        for (CostFunction f : costFunctions) {
-            //log.debug("F: " + f);
-            final CostFunction fr = f.reduce(map);
-            //log.debug("R: " + fr);
-            // Constants do not alter the optimal configuration
-            if (fr.getSize() > 1) {
-                cfs.add(fr);
-            }
-        }
-
-        // Single function -> just fill the map and forget about it
-        if (cfs.size() == 1) {
-            return cfs.get(0).getOptimalConfiguration(map);
-        }
-
-        map.putAll(getOptimalConfigurationByGDL(cfs));
-        return map;*/
-    }
-
-    private VariableAssignment getOptimalConfigurationByGDL(ArrayList<CostFunction> cfs) {
-        /*log.debug("Solving by GDL:");
-        for(CostFunction f : cfs) {
-            log.debug(f.toString());
-        }*/
-
-        GdlFactory gfactory = new GdlFactory();
-        gfactory.setMode(Modes.TREE_UP);
-        DFS dfs = dfs = new MCN(cfs.toArray(new CostFunction[0]));
-        UPGraph cg = JunctionTreeAlgo.buildGraph(gfactory, dfs.getFactorDistribution(), dfs.getAdjacency());
-
-        // Our GDL doesn't work with a single node, so we tackle this shortcomming
-        if (cg.getNodes().size() < 2) {
-            CostFunction belief = null;
-            for(CostFunction f : cfs) {
-                belief = f.combine(belief);
-            }
-            return belief.getOptimalConfiguration(null);
-        }
-
-
-        cg.setRoot(dfs.getRoot());
-        JunctionTree jt = new JunctionTree(cg);
-        cg.setFactory(getFactory());
-        cg.run(1000);
-        VPGraph st = new VPGraph(cg);
-        VPResults res = st.run(10000);
-        return res.getMapping();
+        return fs;
     }
 
 }

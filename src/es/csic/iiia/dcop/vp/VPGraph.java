@@ -43,6 +43,7 @@ import es.csic.iiia.dcop.mp.DefaultGraph;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.up.UPNode;
+import es.csic.iiia.dcop.vp.strategy.VPStrategy;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.HashMap;
@@ -62,9 +63,11 @@ public class VPGraph extends DefaultGraph<VPNode,VPEdge,VPResults> {
     private Random random = new Random();
     private HashMap<UPNode, VPNode> nodes;
     private int root = -1;
+    private VPStrategy strategy;
 
-    public VPGraph(UPGraph cg) {
+    public VPGraph(UPGraph cg, VPStrategy strategy) {
         super();
+        this.strategy = strategy;
         setMode(Modes.TREE_DOWN);
         buildRandomSpanningTree(cg);
     }
@@ -78,6 +81,7 @@ public class VPGraph extends DefaultGraph<VPNode,VPEdge,VPResults> {
         nodes = new HashMap<UPNode, VPNode>(remainingNodes.size());
         for(UPNode n : remainingNodes) {
             VPNode stn = new VPNode(n);
+            stn.setStrategy(strategy);
             addNode(stn);
             nodes.put(n, stn);
         }
@@ -177,7 +181,9 @@ public class VPGraph extends DefaultGraph<VPNode,VPEdge,VPResults> {
         if (log.isTraceEnabled()) {
             log.trace("------- " + results);
         }
-        log.debug(results.getMapping().toString());
+        if (log.isDebugEnabled()) {
+            log.debug(results.toString());
+        }
     }
 
 }

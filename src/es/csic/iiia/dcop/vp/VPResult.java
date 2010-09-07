@@ -40,6 +40,7 @@ package es.csic.iiia.dcop.vp;
 
 import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.mp.Result;
+import java.util.ArrayList;
 
 /**
  * Value Propagation results for a single node.
@@ -48,21 +49,23 @@ import es.csic.iiia.dcop.mp.Result;
  */
 public class VPResult implements Result {
 
-    private VariableAssignment mapping;
+    private ArrayList<VariableAssignment> mappings;
 
-    VPResult(VariableAssignment mapping) {
-        this.mapping = mapping;
+    VPResult(ArrayList<VariableAssignment> mappings) {
+        this.mappings = mappings;
     }
 
-    public VariableAssignment getMapping() {
-        return mapping;
+    public ArrayList<VariableAssignment> getMappings() {
+        return mappings;
     }
 
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder("A : ");
-        if (mapping != null) {
-            buf.append(mapping);
+        StringBuilder buf = new StringBuilder("A:");
+        if (mappings != null) {
+            for (VariableAssignment map : mappings) {
+                buf.append("\n\t").append(map);
+            }
         } else {
             buf.append("null");
         }

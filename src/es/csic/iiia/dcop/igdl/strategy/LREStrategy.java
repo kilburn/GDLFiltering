@@ -47,6 +47,8 @@ import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.util.metrics.Metric;
 import es.csic.iiia.dcop.util.metrics.Norm1;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,6 +70,10 @@ public class LREStrategy extends IGdlPartitionStrategy {
     public IGdlMessage getPartition(ArrayList<CostFunction> fs,
             UPEdge<? extends IUPNode, IGdlMessage> e) {
 
+        if (fs.isEmpty()) {
+            System.out.println("Hugh?!");
+        }
+
         // Informational, just for debugging
         if (log.isTraceEnabled()) {
             StringBuffer buf = new StringBuffer();
@@ -82,11 +88,7 @@ public class LREStrategy extends IGdlPartitionStrategy {
             }
         }
 
-        ArrayList<CostFunction> nfs = nextChild(fs, e);
-        while(nfs != null) {
-            fs = nfs;
-            nfs = nextChild(fs, e);
-        }
+        fs = partition(fs, e);
 
         // Build the actual message
         log.trace("-- Resulting partitions");
@@ -105,9 +107,133 @@ public class LREStrategy extends IGdlPartitionStrategy {
             }
         }
 
-        return filterMessage(e, msg);
+        IGdlMessage msg2 = filterMessage(e, msg);
+        if (msg2.getFactors().get(0) == null) {
+            System.err.println("Hugh?!");
+        }
+        return msg2;
     }
 
+    private ArrayList<CostFunction> partition(ArrayList<CostFunction> fs,
+            UPEdge<? extends IUPNode, IGdlMessage> e) {
+        final CandidateComparator comparator = new CandidateComparator();
+
+            fs = new ArrayList<CostFunction>(fs);
+            ArrayList<Candidate> candidates = expand(fs, e);
+            while (!candidates.isEmpty()) {
+                Collections.sort(candidates, comparator);
+                Candidate chosen = candidates.remove(candidates.size()-1);
+                remove_candidates(candidates, chosen);
+                expand(fs, chosen, candidates, e);
+            }
+
+            return fs;
+    }
+
+    private void expand (ArrayList<CostFunction> fs, Candidate chosen,
+            ArrayList<Candidate> candidates,
+            UPEdge<? extends IUPNode, IGdlMessage> e) {
+
+        final int r = node.getR();
+        Metric metric = new Norm1();
+
+        HashSet<Variable> evs = new HashSet<Variable>();
+        for (Variable v : e.getVariables()) {
+            evs.add(v);
+        }
+
+        final CostFunction f2 = chosen.merged;
+        for (int i=fs.size()-1; i>=0; i--) {
+            final CostFunction f1 = fs.get(i);
+
+            if (f1 == chosen.f1 || f1 == chosen.f2) {
+                fs.remove(i);
+                continue;
+            }
+
+            // Skip combinations where the r-bound is not satisfied
+            HashSet<Variable> cvars = new HashSet<Variable>(f1.getVariableSet());
+            cvars.addAll(f2.getVariableSet());
+            cvars.retainAll(evs);
+            if (cvars.size() > r) {
+                continue;
+            }
+
+            CostFunction fprime = f1.combine(f2);
+            double gain = metric.getValue(fprime.combine(f1.negate()));
+            gain += metric.getValue(fprime.combine(f2.negate()));
+
+            candidates.add(new Candidate(gain, fprime, f1, f2));
+        }
+
+        fs.add(f2);
+    }
+
+    private void remove_candidates(ArrayList<Candidate> candidates, Candidate chosen) {
+        for (int i=candidates.size()-1; i>=0; i--) {
+            final Candidate c = candidates.get(i);
+            if (c.f1 == chosen.f1 || c.f2 == chosen.f1 || c.f1 == chosen.f2 || c.f2 == chosen.f2) {
+                candidates.remove(i);
+            }
+        }
+    }
+
+    private ArrayList<Candidate> expand (ArrayList<CostFunction> fs,
+            UPEdge<? extends IUPNode, IGdlMessage> e) {
+
+        final int r = node.getR();
+        Metric metric = new Norm1();
+
+        HashSet<Variable> evs = new HashSet<Variable>();
+        for (Variable v : e.getVariables()) {
+            evs.add(v);
+        }
+
+        ArrayList<Candidate> res = new ArrayList<Candidate>();
+        for (int i=0; i<fs.size()-1; i++) {
+            final CostFunction f1 = fs.get(i);
+
+            for (int j=i+1; j<fs.size(); j++) {
+                final CostFunction f2 = fs.get(j);
+
+                // Skip combinations where the r-bound is not satisfied
+                HashSet<Variable> cvars = new HashSet<Variable>(f1.getVariableSet());
+                cvars.addAll(f2.getVariableSet());
+                cvars.retainAll(evs);
+                if (cvars.size() > r) {
+                    continue;
+                }
+
+                // Evaluate the gain w.r.t. not merging the functions
+                CostFunction fprime = f1.combine(f2);
+                double gain = metric.getValue(fprime.combine(f1.negate()));
+                gain += metric.getValue(fprime.combine(f2.negate()));
+
+                res.add(new Candidate(gain, fprime, f1, f2));
+            }
+        }
+
+        return res;
+    }
+
+    private class Candidate {
+        public final Double gain;
+        public final CostFunction merged;
+        public final CostFunction f1;
+        public final CostFunction f2;
+        public Candidate(Double gain, CostFunction m, CostFunction f1, CostFunction f2) {
+            this.gain = gain;
+            this.merged = m;
+            this.f1 = f1;
+            this.f2 = f2;
+        }
+    }
+    private class CandidateComparator implements Comparator<Candidate> {
+        public int compare(Candidate o1, Candidate o2) {
+            return o1.gain.compareTo(o2.gain);
+        }
+    }
+/*
     private ArrayList<CostFunction> nextChild(ArrayList<CostFunction> fs,
             UPEdge<? extends IUPNode, IGdlMessage> e) {
         final int r = node.getR();
@@ -162,6 +288,6 @@ public class LREStrategy extends IGdlPartitionStrategy {
         }
 
         return res;
-    }
+    }*/
 
 }

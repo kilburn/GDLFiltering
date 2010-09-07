@@ -38,6 +38,7 @@
 
 package es.csic.iiia.dcop.bb;
 
+import es.csic.iiia.dcop.ValuesArray;
 import es.csic.iiia.dcop.mp.Message;
 
 /**
@@ -46,21 +47,21 @@ import es.csic.iiia.dcop.mp.Message;
  */
 public class UBMessage implements Message {
 
-    private double ub;
+    private ValuesArray ubs;
     private double lb;
 
     /**
      * @return the value
      */
-    public double getUB() {
-        return ub;
+    public ValuesArray getUBs() {
+        return ubs;
     }
 
     /**
      * @param value the value to set
      */
-    public void setUB(double ub) {
-        this.ub = ub;
+    public void setUBs(ValuesArray ubs) {
+        this.ubs = ubs;
     }
 
     /**
@@ -79,7 +80,7 @@ public class UBMessage implements Message {
 
     @Override
     public String toString() {
-        return "[" + this.lb + " - " + this.ub + "]";
+        return "[" + this.lb + " - " + this.ubs + "]";
     }
 
 

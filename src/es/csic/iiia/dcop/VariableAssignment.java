@@ -49,97 +49,29 @@ import java.util.TreeMap;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class VariableAssignment implements Map<Variable, Integer> {
+public class VariableAssignment extends HashMap<Variable, Integer> {
     private HashMap<Variable, Integer> assignment;
 
     public VariableAssignment() {
-        assignment = new HashMap<Variable, Integer>();
+        super();
+    }
+
+    public VariableAssignment(VariableAssignment other) {
+        super(other);
     }
 
     public VariableAssignment(int initialCapacity) {
-        assignment = new HashMap<Variable, Integer>(initialCapacity);
+        super(initialCapacity);
     }
 
     public VariableAssignment(int initialCapacity, float loadFactor) {
-        assignment = new HashMap<Variable, Integer>(initialCapacity, loadFactor);
-    }
-
-    public VariableAssignment(Map m) {
-        assignment = new HashMap<Variable, Integer>(m);
-    }
-
-    public int size() {
-        return assignment.size();
-    }
-
-    public boolean isEmpty() {
-        return assignment.isEmpty();
-    }
-
-    @SuppressWarnings("element-type-mismatch")
-    public boolean containsKey(Object key) {
-        return assignment.containsKey(key);
-    }
-
-    @SuppressWarnings("element-type-mismatch")
-    public boolean containsValue(Object value) {
-        return assignment.containsValue(value);
-    }
-
-    @SuppressWarnings("element-type-mismatch")
-    public Integer get(Object key) {
-        return assignment.get(key);
-    }
-
-    public Integer put(Variable key, Integer value) {
-        return assignment.put(key, value);
-    }
-
-    @SuppressWarnings("element-type-mismatch")
-    public Integer remove(Object key) {
-        return assignment.remove(key);
-    }
-
-    public void putAll(Map<? extends Variable, ? extends Integer> m) {
-        assignment.putAll(m);
-    }
-
-    public void clear() {
-        assignment.clear();
-    }
-
-    public Set<Variable> keySet() {
-        return assignment.keySet();
-    }
-
-    public Collection<Integer> values() {
-        return assignment.values();
-    }
-
-    public Set<Entry<Variable, Integer>> entrySet() {
-        return assignment.entrySet();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o instanceof VariableAssignment) {
-            VariableAssignment v = (VariableAssignment)o;
-            return assignment.equals(v.assignment);
-        }
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 83 * hash + (this.assignment != null ? this.assignment.hashCode() : 0);
-        return hash;
+        super(initialCapacity, loadFactor);
     }
 
     @Override
     public String toString() {
         // Sorted for an easier visualization
-        TreeMap<Variable, Integer> sorted = new TreeMap(assignment);
+        TreeMap<Variable, Integer> sorted = new TreeMap(this);
 
         StringBuilder buf = new StringBuilder("{");
         int i = sorted.size();
@@ -148,6 +80,16 @@ public class VariableAssignment implements Map<Variable, Integer> {
             if (--i != 0) buf.append(",");
         }
         return buf.append("}").toString();
+    }
+
+    public VariableAssignment filter(Set<Variable> vars) {
+        VariableAssignment filtered = new VariableAssignment(this);
+        for (Variable v : keySet()) {
+            if (!vars.contains(v)) {
+                filtered.remove(v);
+            }
+        }
+        return filtered;
     }
 
 }

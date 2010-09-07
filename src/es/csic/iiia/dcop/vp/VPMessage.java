@@ -38,8 +38,12 @@
 
 package es.csic.iiia.dcop.vp;
 
+import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.mp.Message;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Value propagation message, carrying the variable/value pairs assigned by
@@ -49,19 +53,39 @@ import es.csic.iiia.dcop.mp.Message;
  */
 public class VPMessage implements Message {
 
-    private VariableAssignment mapping;
+    private ArrayList<VariableAssignment> mappings;
 
-    public VPMessage(VariableAssignment mapping) {
-        this.mapping = mapping;
+    public VPMessage() {
+        mappings = new ArrayList<VariableAssignment>();
+    }
+    public VPMessage(ArrayList<VariableAssignment> mappings) {
+        this.mappings = new ArrayList<VariableAssignment>(mappings);
     }
 
-    public VariableAssignment getMapping() {
-        return mapping;
+    public void addMapping(VariableAssignment mapping) {
+        mappings.add(mapping);
+    }
+
+    public ArrayList<VariableAssignment> getMappings() {
+        return mappings;
+    }
+
+    public void filter(Set<Variable> vars) {
+        ArrayList<VariableAssignment> newMappings =
+                new ArrayList<VariableAssignment>(mappings.size());
+        for (VariableAssignment map : mappings) {
+            newMappings.add(map.filter(vars));
+        }
+        mappings = newMappings;
     }
 
     @Override
     public String toString() {
-        return "VP" + mapping.toString();
+        StringBuilder buf = new StringBuilder("VP:");
+        for(VariableAssignment m : mappings) {
+            buf.append("\n\t").append(m.toString());
+        }
+        return buf.toString();
     }
 
 }

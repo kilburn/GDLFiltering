@@ -193,6 +193,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         }
 
         int i = getOptimalConfiguration();
+        if (i < 0) {return mapping;}
         mapping.putAll(getMapping(i, null));
         return mapping;
     }
@@ -217,7 +218,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         }
 
         if (idx.isEmpty()) {
-            return 0;
+            return -1;
         }
 
         return idx.get(new Random().nextInt(idx.size()));
@@ -245,8 +246,7 @@ public abstract class AbstractCostFunction implements CostFunction {
             if (v != null) {
                 idx += sizes[len - i - 1] * v;
             } else {
-                System.err.println("Missing variable!");
-                System.exit(0);
+                
             }
         }
         return idx;
@@ -521,6 +521,8 @@ public abstract class AbstractCostFunction implements CostFunction {
 
     /** {@inheritDoc} */
     public CostFunction combine(List<CostFunction> fs) {
+        fs = new ArrayList<CostFunction>(fs);
+
         // Remove null functions
         for (int i=fs.size()-1; i>=0; i--) {
             if (fs.get(i) == null) fs.remove(i);
@@ -590,6 +592,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         CostFunction result = factory.buildCostFunction(vars.toArray(new Variable[0]),
                 nogood);
 
+        fs.remove(fs.size()-1);
         VariableAssignment map = null;
         for (int i=0; i<result.getSize(); i++) {
             map = result.getMapping(i, map);
@@ -699,7 +702,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         }
 
         if (allNogoods) {
-            return null;
+            return factory.buildCostFunction(new Variable[0], operation.getNoGood());
         }
 
         return result;

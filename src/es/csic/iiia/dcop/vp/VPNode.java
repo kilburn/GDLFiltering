@@ -40,9 +40,12 @@ package es.csic.iiia.dcop.vp;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunctionFactory;
+import es.csic.iiia.dcop.ValuesArray;
 import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.mp.AbstractNode;
 import es.csic.iiia.dcop.up.UPNode;
+import es.csic.iiia.dcop.vp.strategy.VPStrategy;
+import java.util.ArrayList;
 import java.util.Collection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,11 +59,13 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
 
     private static Logger log = LoggerFactory.getLogger(VPGraph.class);
     
-    private VariableAssignment mapping;
-    private UPNode node;
+    private ArrayList<VariableAssignment> mappings;
+    private VPStrategy strategy;
+
+    private UPNode upnode;
 
     public VPNode(UPNode n) {
-        node = n;
+        upnode = n;
     }
 
     @Override
@@ -72,24 +77,23 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
         long cc = 0;
 
         // Receive incoming messages
-        mapping = new VariableAssignment();
+        mappings = new ArrayList<VariableAssignment>();
         for(VPEdge e : getEdges()) {
             VPMessage msg = e.getMessage(this);
             if (msg != null) {
-                mapping.putAll(msg.getMapping());
-                cc += msg.getMapping().size();
+                mappings = msg.getMappings();
             }
         }
 
         // Take our decision
-        mapping = node.getOptimalConfiguration(mapping);
+        mappings = strategy.getExtendedMappings(mappings, upnode);
 
         // Send messages
         for(VPEdge e : getEdges()) {
             if (!readyToSend(e))
                 continue;
 
-            VPMessage msg = new VPMessage(mapping);
+            VPMessage msg = new VPMessage(mappings);
             e.sendMessage(this, msg);
         }
 
@@ -106,18 +110,18 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
 
     public VPResult end() {
         if (log.isTraceEnabled()) {
-            log.trace("B:" + node.getBelief());
+            log.trace("B:" + upnode.getBelief());
         }
-        return new VPResult(mapping);
+        return new VPResult(mappings);
     }
 
     public String getName() {
-        return node.getName();
+        return upnode.getName();
     }
 
     @Override
     public String toString() {
-        return node.getName();
+        return upnode.getName();
     }
 
     @Override
@@ -129,24 +133,36 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
         return res;
     }
     
-    public double getGlobalValue() {
-        double value = 0;
-        final CostFunction.Combine op = node.getFactory().getCombineOperation();
-        Collection<CostFunction> fs = node.getRelations();
-        for (CostFunction f : fs) {
-            final double v = f.getValue(mapping);
-            value = op.eval(value, v);
-            log.trace("F: " + v + " | " + f);
+    public ValuesArray getGlobalValues() {
+        final ValuesArray values = new ValuesArray(mappings.size());
+        final CostFunction.Combine op = upnode.getFactory().getCombineOperation();
+        Collection<CostFunction> fs = upnode.getRelations();
+
+        for (VariableAssignment map : mappings) {
+            log.trace(map.toString());
+            double value = 0;
+            for (CostFunction f : fs) {
+                final double v = f.getValue(map);
+                value = op.eval(value, v);
+            }
+            values.add(value);
         }
-        return value;
+        return values;
     }
 
-    public double getOptimalValue() {
-        return node.getOptimalValue();
+    public UPNode getUPNode() {
+        return upnode;
     }
 
     public CostFunctionFactory getFactory() {
-        return node.getFactory();
+        return upnode.getFactory();
+    }
+
+    /**
+     * @param strategy the strategy to set
+     */
+    public void setStrategy(VPStrategy strategy) {
+        this.strategy = strategy;
     }
 
 }

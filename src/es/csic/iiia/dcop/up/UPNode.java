@@ -199,11 +199,16 @@ public abstract class UPNode<E extends Edge, R extends UPResult> extends
     }
 
     /**
-     * Returns this node's belief.
+     * Returns this node's belief list of cost function.
      *
      * @return node's belief
      */
-    public abstract CostFunction getBelief();
+    public abstract ArrayList<CostFunction> getBelief();
+
+    /**
+     * Returns the reduced list of belief cost functions according to the given map.
+     */
+    public abstract ArrayList<CostFunction> getReducedBelief(VariableAssignment map);
 
     @Override
     public String toString() {
@@ -244,10 +249,4 @@ public abstract class UPNode<E extends Edge, R extends UPResult> extends
         return res;
     }
 
-    public abstract double getOptimalValue();
-
-    /**
-     * Returns the optimal configuration.
-     */
-    public abstract VariableAssignment getOptimalConfiguration(VariableAssignment map);
 }

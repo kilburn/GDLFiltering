@@ -39,7 +39,10 @@
 package es.csic.iiia.dcop.up;
 
 import es.csic.iiia.dcop.CostFunction;
+import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.mp.Result;
+import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * Utility Propagation result object for a single node.
@@ -48,6 +51,7 @@ import es.csic.iiia.dcop.mp.Result;
  */
 public class UPResult implements Result {
     private CostFunction factor;
+    private UPNode node;
     private int cliqueVariables;
     private int cliqueSize;
     private long sentBytes;
@@ -57,9 +61,14 @@ public class UPResult implements Result {
     }
 
     public UPResult(UPNode node) {
-        this.factor = node.getBelief();
+        this.node = node;
         cliqueVariables = node.getVariables().size();
-        cliqueSize = factor.getSize();
+        cliqueSize = 1;
+        
+        HashSet<Variable> nv = node.getVariables();
+        for (Variable v : nv) {
+            cliqueSize *= v.getDomain();
+        }
         sentBytes = node.getSentBytes();
     }
 
@@ -69,7 +78,8 @@ public class UPResult implements Result {
 
     @Override
     public String toString() {
-        return factor.toString();
+        ArrayList<CostFunction> belief = node.getBelief();
+        return belief.remove(belief.size()-1).combine(belief).toString();
     }
 
     public int getNumberOfVariables() {

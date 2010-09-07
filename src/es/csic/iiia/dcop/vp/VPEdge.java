@@ -55,6 +55,8 @@ public class VPEdge extends AbstractEdge<VPNode, VPMessage> {
     }
 
     @Override public boolean sendMessage(VPNode sender, VPMessage message) {
+        //VPNode recipient = getDestination(sender);
+        //message.filter(recipient.getUPNode().getVariables());
         boolean res = super.sendMessage(sender, message);
         if (res && log.isTraceEnabled())
             log.trace(sender.getName() + " -> " + getDestination(sender).getName() + " : " + message);
