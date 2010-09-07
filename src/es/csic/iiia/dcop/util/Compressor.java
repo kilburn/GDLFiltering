@@ -38,16 +38,11 @@
 
 package es.csic.iiia.dcop.util;
 
-import com.colloquial.arithcode.ArithCodeOutputStream;
-import com.colloquial.arithcode.PPMModel;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
+import es.csic.iiia.dcop.cli.CliApp;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -60,76 +55,98 @@ import java.util.zip.Deflater;
  */
 public class Compressor {
 
+    public static int METHOD = CliApp.CO_ARITH;
+
     public static long getCompressedSizeF(CostFunction f) {
-        //return f.getSize() * 8;
-        return arithmeticCompress(f);
+        switch(METHOD) {
+            case CliApp.CO_BZIP2:
+            case CliApp.CO_ARITH:
+                return arithmeticCompress(f);
+            default:
+                return f.getSize() * 8;
+        }
     }
 
-    /*public static long getCompressedSizeFs(Collection<CostFunction> fs) {
-
-        long bytes = 0;
+    public static long getCompressedSizeFs(Collection<CostFunction> fs) {
+        long sum = 0;
         for (CostFunction f : fs) {
-            bytes += f.getVariableSet().size() * 4;
-
-            // State machine to count the number of elements that must be
-            // captured.
-             
-            long els = 0; boolean hasZeros = false;
-            final Iterator<Integer> it = f.iterator();
-            int i = 0, n = 0, state = 0;
-            while(it.hasNext()) {
-                n = it.next();
-                double v = f.getValue(n);
-                if (i != n) {els++; state=2;}
-
-                switch(state) {
-                    case 0:
-                        els++;
-
-                        if (v == 0)
-                            state = 1;
-                        else if (Double.isInfinite(v))
-                            state = 2;
-
-                        break;
-
-                    case 1:
-                        hasZeros = true;
-                        if (v == 0)
-                            break;
-
-                        els++;
-
-                        if (Double.isInfinite(v))
-                            state = 2;
-                        else
-                            state = 0;
-
-                        break;
-
-                    case 2:
-                        if (Double.isInfinite(v))
-                            break;
-
-                        els++;
-
-                        if (v == 0)
-                            state = 1;
-                        else
-                            state = 0;
-                        break;
-                }
-
-                i = n+1;
+            switch(METHOD) {
+                case CliApp.CO_BZIP2:
+                case CliApp.CO_ARITH:
+                    sum += arithmeticCompressWithHeader(f);
+                    break;
+                default:
+                    sum += f.getVariableSet().size()*4 + f.getSize()*8;
+                    break;
             }
-            if (i != n) {els++; state=2;}
-
-            final long overheadBits = els * (hasZeros ? 2 : 1);
-            bytes += els*8 + overheadBits/8;
         }
 
+        return sum;
+    }
+
+    private static long manualCompressWithHeader(CostFunction f) {
+
+        long bytes = 0;
+        bytes += f.getVariableSet().size() * 4;
+
+        // State machine to count the number of elements that must be
+        // captured.
+
+        long els = 0; boolean hasZeros = false;
+        final Iterator<Integer> it = f.iterator();
+        int i = 0, n = 0, state = 0;
+        while(it.hasNext()) {
+            n = it.next();
+            double v = f.getValue(n);
+            if (i != n) {els++; state=2;}
+
+            switch(state) {
+                case 0:
+                    els++;
+
+                    if (v == 0)
+                        state = 1;
+                    else if (Double.isInfinite(v))
+                        state = 2;
+
+                    break;
+
+                case 1:
+                    hasZeros = true;
+                    if (v == 0)
+                        break;
+
+                    els++;
+
+                    if (Double.isInfinite(v))
+                        state = 2;
+                    else
+                        state = 0;
+
+                    break;
+
+                case 2:
+                    if (Double.isInfinite(v))
+                        break;
+
+                    els++;
+
+                    if (v == 0)
+                        state = 1;
+                    else
+                        state = 0;
+                    break;
+            }
+
+            i = n+1;
+        }
+        if (i != n) {els++; state=2;}
+
+        final long overheadBits = els * (hasZeros ? 2 : 1);
+        bytes += els*8 + overheadBits/8;
+
         return bytes;
-    }*/
+    }
 
 //    public static long getCompressedSizeFs(Collection<CostFunction> fs) {
 //        ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -154,15 +171,6 @@ public class Compressor {
 //
 //        return sum;
 //    }
-
-    public static long getCompressedSizeFs(Collection<CostFunction> fs) {
-        long sum = 0;
-        for (CostFunction f : fs) {
-            sum += arithmeticCompressWithHeader(f);
-        }
-
-        return sum;
-    }
 
     private static int arithmeticCompressWithHeader(CostFunction f) {
         CompressOutputStream c = new CompressOutputStream();
@@ -228,41 +236,6 @@ public class Compressor {
             (byte)((d >> 8) & 0xff),
             (byte)((d >> 0) & 0xff),
         };
-    }
-
-
-    /**
-     * Compress data.
-     * @param bytesToCompress is the byte array to compress.
-     * @return a compressed byte array.
-     * @throws java.io.IOException
-     */
-    private static byte[] compress(byte[] bytesToCompress)
-    {
-        // Compressor with highest level of compression.
-        Deflater compressor = new Deflater(Deflater.BEST_COMPRESSION);
-        compressor.setInput(bytesToCompress); // Give the compressor the data to compress.
-        compressor.finish();
-
-        // Create an expandable byte array to hold the compressed data.
-        // It is not necessary that the compressed data will be smaller than
-        // the uncompressed data.
-        ByteArrayOutputStream bos = new ByteArrayOutputStream(bytesToCompress.length);
-
-        // Compress the data
-        byte[] buf = new byte[bytesToCompress.length + 100];
-        while (!compressor.finished())
-        {
-            bos.write(buf, 0, compressor.deflate(buf));
-        }
-        try {
-            bos.close();
-        } catch (IOException ex) {
-            Logger.getLogger(Compressor.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        // Get the compressed data
-        return bos.toByteArray();
     }
 
 }

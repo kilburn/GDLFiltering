@@ -40,8 +40,12 @@ package es.csic.iiia.dcop.util;
 
 import com.colloquial.arithcode.ArithCodeOutputStream;
 import com.colloquial.arithcode.PPMModel;
+import es.csic.iiia.dcop.cli.CliApp;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.tools.bzip2.CBZip2OutputStream;
 
 /**
  *
@@ -49,12 +53,24 @@ import java.io.OutputStream;
  */
 public class CompressOutputStream extends OutputStream {
 
-    private ArithCodeOutputStream compressor;
+    private OutputStream compressor;
     private CountOutputStream byteCounter;
 
     public CompressOutputStream() {
         byteCounter = new CountOutputStream();
-        compressor = new ArithCodeOutputStream(byteCounter, new PPMModel(8));
+        switch(Compressor.METHOD) {
+            case CliApp.CO_ARITH:
+                compressor = new ArithCodeOutputStream(byteCounter, new PPMModel(8));
+                break;
+            case CliApp.CO_BZIP2:
+                try {
+                    compressor = new CBZip2OutputStream(compressor);
+                } catch (IOException ex) {
+                    Logger.getLogger(CompressOutputStream.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                break;
+        }
+
     }
 
     public int getBytes() throws IOException {

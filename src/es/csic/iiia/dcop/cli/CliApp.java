@@ -66,8 +66,11 @@ import es.csic.iiia.dcop.jt.JunctionTree;
 import es.csic.iiia.dcop.mp.AbstractNode.Modes;
 import es.csic.iiia.dcop.up.UPFactory;
 import es.csic.iiia.dcop.up.UPGraph;
+import es.csic.iiia.dcop.util.Compressor;
 import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.VPResults;
+import es.csic.iiia.dcop.vp.strategy.OptimalStrategy;
+import es.csic.iiia.dcop.vp.strategy.VPStrategy;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -76,6 +79,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -132,6 +136,19 @@ public class CliApp {
     public static final int PS_FEXP     = 8;
     public static final int PS_LRE      = 9;
 
+    /**
+     * Solution propagation strategies
+     */
+    public static final int SS_OPTIMAL  = 0;
+    public static final int SS_PARTIAL  = 1;
+
+    /**
+     * Compession methods
+     */
+    public static final int CO_ARITH    = 0;
+    public static final int CO_BZIP2    = 1;
+    public static final int CO_NONE     = 2;
+
     private int algorithm = ALGO_GDL;
     private int heuristic = JT_HEURISTIC_MCS;
     private CostFunction.Summarize summarizeOperation = CostFunction.Summarize.MIN;
@@ -149,6 +166,7 @@ public class CliApp {
     private String traceFile = "trace.txt";
     private int IGdlR = 2;
     private int partitionStrategy = PS_RANKUP;
+    private int solutionStrategy = SS_OPTIMAL;
 
     /**
      * Get the maximum number of junction tree's built trying to minimize the
@@ -345,9 +363,17 @@ public class CliApp {
         System.out.println("LOAD_FACTOR " + results.getLoadFactor());
 
         // Extract a solution
-        VPGraph st = new VPGraph(cg);
+        VPStrategy sStrategy = null;
+        switch (solutionStrategy) {
+            case SS_OPTIMAL:
+                sStrategy = new OptimalStrategy(1);
+                break;
+
+        }
+        VPGraph st = new VPGraph(cg, sStrategy);
         VPResults res = st.run(10000);
-        VariableAssignment map = res.getMapping();
+        ArrayList<VariableAssignment> maps = res.getMappings();
+        VariableAssignment map = maps.get(0);
 
         // Compute UB for IGdl
         if (algorithm == ALGO_IGDL || algorithm == ALGO_FIGDL) {
@@ -428,42 +454,42 @@ public class CliApp {
                     factory = new GdlFactory();
                     ((GdlFactory)factory).setMode(Modes.TREE_UP);
                 } else {
-                    IGdlPartitionStrategy strategy = null;
+                    IGdlPartitionStrategy pStrategy = null;
                     switch (partitionStrategy) {
                         case PS_LAZY:
-                            strategy = new es.csic.iiia.dcop.igdl.strategy.LazyStrategy();
+                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.LazyStrategy();
                             break;
                         case PS_LAZIER:
-                            strategy = new es.csic.iiia.dcop.igdl.strategy.LaziestStrategy();
+                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.LaziestStrategy();
                             break;
                         case PS_RANKUP:
-                            strategy = new es.csic.iiia.dcop.igdl.strategy.RankUpStrategy();
+                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.RankUpStrategy();
                             break;
                         case PS_RANKDOWN:
-                            strategy = new es.csic.iiia.dcop.igdl.strategy.RankDownStrategy();
+                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.RankDownStrategy();
                             break;
                         case PS_EXP:
-                            strategy = new es.csic.iiia.dcop.igdl.strategy.ExpStrategy();
+                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.ExpStrategy();
                             break;
                         case PS_ENTROPY:
-                            strategy = new es.csic.iiia.dcop.igdl.strategy.EntropyStrategy();
+                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.EntropyStrategy();
                             break;
                         case PS_SHARED:
-                            strategy = new es.csic.iiia.dcop.igdl.strategy.SharedVarsStrategy();
+                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.SharedVarsStrategy();
                             break;
                         case PS_REXP:
-                            strategy = new es.csic.iiia.dcop.igdl.strategy.RefinedExpStrategy();
+                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.RefinedExpStrategy();
                             break;
                         case PS_FEXP:
-                            strategy = new es.csic.iiia.dcop.igdl.strategy.FastExpStrategy();
+                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.FastExpStrategy();
                             break;
                         case PS_LRE:
-                            strategy = new es.csic.iiia.dcop.igdl.strategy.LREStrategy();
+                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.LREStrategy();
                             break;
                     }
                     factory = algorithm == ALGO_IGDL
-                        ? new IGdlFactory(this.getIGdlR(), strategy)
-                        : new FIGdlFactory(this.getIGdlR(), strategy);
+                        ? new IGdlFactory(this.getIGdlR(), pStrategy)
+                        : new FIGdlFactory(this.getIGdlR(), pStrategy);
                 }
                 int variables = 0;
                 JTResults results = null;
@@ -615,6 +641,10 @@ public class CliApp {
 
     void setPartitionStrategy(int partitionStrategy) {
         this.partitionStrategy = partitionStrategy;
+    }
+
+    void setCompressionMethod(int method) {
+        Compressor.METHOD = method;
     }
 
 }

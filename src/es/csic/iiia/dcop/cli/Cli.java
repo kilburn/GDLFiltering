@@ -45,13 +45,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryUsage;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.management.Notification;
-import javax.management.NotificationEmitter;
 
 /**
  *
@@ -81,6 +78,11 @@ public class Cli {
         System.err.println("    Uses the specified combining operator, where operator is one of: ");
         System.err.println("      - sum : combine using addition.");
         System.err.println("      - prod : combine using product.");
+        System.err.println("  --compress=method (arith)");
+        System.err.println("    Uses the specified compression method for sent messages, method iis one of: ");
+        System.err.println("      - arith : compress using an arithmetic compressor with a 8-byte PPM model.");
+        System.err.println("      - bz2   : compress using a bzip2 compressor.");
+        System.err.println("      - none  : do not perform any compression of sent messages.");
         System.err.println("  -e heuristic, --heuristic=heuristic (mcs)");
         System.err.println("    Uses the specified heuristic function to build the Junction Tree,");
         System.err.println("    where heuristic is one of: ");
@@ -141,6 +143,7 @@ public class Cli {
         LongOpt[] longopts = new LongOpt[] {
             new LongOpt("algorithm", LongOpt.REQUIRED_ARGUMENT, null, 'a'),
             new LongOpt("combine", LongOpt.REQUIRED_ARGUMENT, null, 'c'),
+            new LongOpt("compress", LongOpt.REQUIRED_ARGUMENT, null, 0),
             new LongOpt("heuristic", LongOpt.REQUIRED_ARGUMENT, null, 'e'),
             new LongOpt("factor-graph", LongOpt.OPTIONAL_ARGUMENT, null, 'f'),
             new LongOpt("clique-graph", LongOpt.OPTIONAL_ARGUMENT, null, 'g'),
@@ -162,6 +165,19 @@ public class Cli {
         String arg;
         while ((c = g.getopt()) != -1) {
             switch(c) {
+                case 0:
+                    arg = g.getOptarg().toLowerCase();
+                    if (arg.equals("arith"))
+                        cli.setCompressionMethod(CliApp.CO_ARITH);
+                    else if (arg.equals("bz2")) {
+                        cli.setCompressionMethod(CliApp.CO_BZIP2);
+                    } else if (arg.equals("none")) {
+                        cli.setCompressionMethod(CliApp.CO_NONE);
+                    } else {
+                        System.err.println("Error: invalid compression method \"" + arg + "\"");
+                        System.exit(0);
+                    }
+                    break;
 
                 case 'a':
                     arg = g.getOptarg().toLowerCase();
@@ -376,17 +392,20 @@ public class Cli {
         t.start();
 
         // All ready, now run!
-        long t1 = ManagementFactory.getThreadMXBean().getCurrentThreadUserTime();
-        cli.run();
-        t1 = ManagementFactory.getThreadMXBean().getCurrentThreadUserTime() - t1;
-        System.out.println("TIME " + t1/(float)1000000000 + "s");
-
-
-        t.interrupt();
         try {
+            long t1 = ManagementFactory.getThreadMXBean().getCurrentThreadUserTime();
+            cli.run();
+            t1 = ManagementFactory.getThreadMXBean().getCurrentThreadUserTime() - t1;
+            System.out.println("TIME " + t1/(float)1000000000 + "s");
+
+            t.interrupt();
             t.join();
         } catch (InterruptedException ex) {
-            Logger.getLogger(Cli.class.getName()).log(Level.SEVERE, null, ex);
+            ex.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            t.interrupt();
         }
         long bytes = mw.maxBytes;
         System.out.println("MEM " + bytes/(1024*1024) + "Mb");
