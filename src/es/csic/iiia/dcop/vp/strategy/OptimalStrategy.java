@@ -41,13 +41,18 @@ package es.csic.iiia.dcop.vp.strategy;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.up.UPNode;
+import es.csic.iiia.dcop.vp.VPGraph;
 import java.util.ArrayList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
 public class OptimalStrategy extends VPStrategy {
+
+    private static Logger log = LoggerFactory.getLogger(VPGraph.class);
 
     public static int nMappings = 1;
 
@@ -74,20 +79,25 @@ public class OptimalStrategy extends VPStrategy {
                 if (mapping.equals(lastMap)) {
                     try {
                         int idx = reducedBelief.getIndex(lastMapResult);
+                        //log.trace("RRB: " + reducedBelief);
                         reducedBelief.setValue(idx, ng);
                     } catch(Exception e) {}
                 } else {
+                    //log.trace("Map: " + mapping);
                     ArrayList<CostFunction> rb = mapping.isEmpty()
                         ? upnode.getBelief()
                         : upnode.getReducedBelief(mapping);
                     reducedBelief = rb.remove(rb.size()-1).combine(rb);
+                    //log.trace("FRB: " + reducedBelief);
                     lastMap = mapping;
                 }
                 lastMapResult = reducedBelief.getOptimalConfiguration(null);
+                //log.trace("Res: " + lastMapResult);
                 if (lastMapResult.isEmpty() && !nm.isEmpty()) {
-                    lastMapResult = nm.get(nm.size()-1);
+                    lastMapResult = new VariableAssignment(nm.get(nm.size()-1));
                 }
                 lastMapResult.putAll(lastMap);
+                //log.trace("Add: " + lastMapResult);
                 nm.add(lastMapResult);
             }
         }
