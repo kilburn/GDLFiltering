@@ -88,10 +88,6 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
         if (getEdges().size() == 1) {
             // TODO: Change this abomination
             ArrayList<CostFunction> belief = vpnode.getUPNode().getBelief();
-            System.out.println("-----");
-            for (CostFunction f : belief) {
-                System.out.println("B: " + f);
-            }
             CostFunction b = belief.remove(belief.size()-1);
             b = b.combine(belief);
             localLB = b.getValue(b.getOptimalConfiguration(null));

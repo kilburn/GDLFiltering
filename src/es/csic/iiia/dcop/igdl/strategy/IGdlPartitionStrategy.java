@@ -89,6 +89,9 @@ public abstract class IGdlPartitionStrategy {
         }
 
         IGdlMessage prev = fetchPreviousMessage(e);
+        //ArrayList<CostFunction> fs = prev.getFactors();
+
+        
         CostFunction prevf = null;
         for(CostFunction f : prev.getFactors()) {
             prevf = f.combine(prevf);
@@ -106,19 +109,24 @@ public abstract class IGdlPartitionStrategy {
             return msg;
         }
 
+
         IGdlMessage res = new IGdlMessage();
         IGdlMessage prev = fetchPreviousMessage(e);
+        ArrayList<CostFunction> fs = prev.getFactors();
 
+        /*
         CostFunction prevf = null;
         for(CostFunction f : prev.getFactors()) {
             prevf = f.combine(prevf);
-        }
+        }*/
 
         // Now, every previously incoming factor is used to filter the outgoing
         // factor.
         for (CostFunction outf : msg.getFactors()) {
-            log.trace("Input b:" + bound + " f:" + outf);
-            outf = outf.filter(prevf, bound);
+            if (log.isTraceEnabled()) {
+                log.trace("Input b:" + bound + " f:" + outf);
+            }
+            outf = outf.filter(fs, bound);
             res.addFactor(outf);
         }
 

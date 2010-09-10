@@ -255,6 +255,19 @@ public interface CostFunction {
     CostFunction filter(CostFunction f, double bound);
 
     /**
+     * Filters this cost function with the given ones.
+     *
+     * The filter operation removes (sets to the worst possible value) any
+     * tuples that, when combined with the given cost functions, surpasses
+     * the specified bound.
+     *
+     * @param fs cost functions to filter with.
+     * @param bound
+     * @return new filtered factor.
+     */
+    CostFunction filter(List<CostFunction> fs, double bound);
+
+    /**
      * {@inheritDoc}
      */
     @Override boolean equals(Object obj);

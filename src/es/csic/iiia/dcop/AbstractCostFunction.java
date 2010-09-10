@@ -708,6 +708,46 @@ public abstract class AbstractCostFunction implements CostFunction {
         return result;
     }
 
+    @Override
+    public CostFunction filter(List<CostFunction> infs, double bound) {
+        CostFunction result = factory.buildCostFunction(this);
+        Summarize sum = factory.getSummarizeOperation();
+        Combine   com = factory.getCombineOperation();
+        ArrayList<CostFunction> fs = new ArrayList<CostFunction>(infs.size());
+
+        // Reduce to shared variables (lower memory usage)
+        for (CostFunction f : infs) {
+            Set<Variable> sv = this.getSharedVariables(f);
+            if (sv.size() != f.getVariableSet().size()) {
+                fs.add(f.summarize(sv.toArray(new Variable[0])));
+            } else {
+                fs.add(f);
+            }
+        }
+
+        // Perform the actual filtering
+        boolean allNogoods = true; VariableAssignment map = null;
+        for (int i = 0, len = result.getSize(); i < len; i++) {
+            map = result.getMapping(i, map);
+            double v = getValue(i);
+
+            for (CostFunction f : fs) {
+                v = com.eval(v, f.getValue(map));
+            }
+            if (sum.isBetter(bound, v)) {
+                result.setValue(i, sum.getNoGood());
+            } else {
+                allNogoods = false;
+            }
+        }
+
+        if (allNogoods) {
+            return factory.buildCostFunction(new Variable[0], sum.getNoGood());
+        }
+
+        return result;
+    }
+
     /** {@inheritDoc} */
     public void setValue(int[] index, double value) {
         setValue(subindexToIndex(index), value);
