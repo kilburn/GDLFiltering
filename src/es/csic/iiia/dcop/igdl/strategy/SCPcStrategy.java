@@ -54,7 +54,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class LazyStrategy extends IGdlPartitionStrategy {
+public class SCPcStrategy extends IGdlPartitionStrategy {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
 
@@ -63,22 +63,9 @@ public class LazyStrategy extends IGdlPartitionStrategy {
         super.initialize(node);
     }
 
-    public IGdlMessage getPartition(ArrayList<CostFunction> fs,
+    @Override
+    protected IGdlMessage partition(ArrayList<CostFunction> fs,
             UPEdge<? extends IUPNode, IGdlMessage> e) {
-
-        // Informational, just for debugging
-        if (log.isTraceEnabled()) {
-            StringBuilder buf = new StringBuilder();
-            int i = e.getVariables().length;
-            for (Variable v : e.getVariables()) {
-                buf.append(v.getName());
-                if (--i != 0) buf.append(",");
-            }
-            log.trace("-- Edge vars: {" + buf.toString() + "}, Functions:");
-            for (CostFunction f : fs) {
-                log.trace("\t" + f);
-            }
-        }
         
         // Message to be sent
         IGdlMessage msg = new IGdlMessage();

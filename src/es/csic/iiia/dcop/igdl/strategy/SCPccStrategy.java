@@ -44,11 +44,10 @@ import es.csic.iiia.dcop.igdl.IGdlMessage;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
-import es.csic.iiia.dcop.util.CostFunctionStats;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.TreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +55,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public abstract class CombinedRankStrategy extends IGdlPartitionStrategy {
+public class SCPccStrategy extends IGdlPartitionStrategy {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
 
@@ -65,19 +64,9 @@ public abstract class CombinedRankStrategy extends IGdlPartitionStrategy {
         super.initialize(node);
     }
 
-    public IGdlMessage getPartition(ArrayList<CostFunction> fs,
+    @Override
+    protected IGdlMessage partition(ArrayList<CostFunction> fs,
             UPEdge<? extends IUPNode, IGdlMessage> e) {
-
-        // Informational, just for debugging
-        if (log.isTraceEnabled()) {
-            StringBuilder buf = new StringBuilder();
-            int i = e.getVariables().length;
-            for (Variable v : e.getVariables()) {
-                buf.append(v.getName());
-                if (--i != 0) buf.append(",");
-            }
-            log.trace("-- Edge vars: {" + buf.toString() + "}, Functions:");
-        }
         
         // Message to be sent
         IGdlMessage msg = new IGdlMessage();
@@ -90,22 +79,13 @@ public abstract class CombinedRankStrategy extends IGdlPartitionStrategy {
         // in the corresponding part.
         ArrayList<Collection<Variable>> partsev = new ArrayList<Collection<Variable>>();
 
-        // Sort the functions according to their rank (max - min)
-        fs = sortFunctions(fs);
-        if (log.isTraceEnabled()) {
-            log.trace("-- Sorted:");
-            for (CostFunction f : fs) {
-                log.trace("\t" + CostFunctionStats.formatValue(CostFunctionStats.getRank(f)) + "\t" + f);
-            }
-        }
-
         // Iterate over the functions, merging them whenever it's possible
         // or creating a new function when it's not.
         final int r = node.getR();
         log.trace("-- Calculating partitions (r=" + r + ")");
         for (CostFunction inFunction : fs) {
-            // Obtain a set of edge variables in inFunction
-            Collection<Variable> sev = inFunction.getSharedVariables(e.getVariables());
+            // Obtain a set of variables in inFunction
+            Collection<Variable> sev = new HashSet<Variable>(inFunction.getVariableSet());
 
             // Check if the source function is already bigger than what we
             // can manage.
@@ -113,13 +93,11 @@ public abstract class CombinedRankStrategy extends IGdlPartitionStrategy {
                 // Remove one variable
                 Variable v = sev.iterator().next();
                 sev.remove(v);
-                Collection<Variable> nfv = new HashSet<Variable>(inFunction.getVariableSet());
-                nfv.remove(v);
 
                 if (log.isTraceEnabled()) {
                     log.trace("\tRemoving " + v.getName() + " from " + inFunction);
                 }
-                inFunction = inFunction.summarize(nfv.toArray(new Variable[0]));
+                inFunction = inFunction.summarize(sev.toArray(new Variable[0]));
                 if (log.isTraceEnabled()) {
                     log.trace("\t-> " + inFunction);
                 }
@@ -143,6 +121,7 @@ public abstract class CombinedRankStrategy extends IGdlPartitionStrategy {
                     }
 
                     parts.set(i, parts.get(i).combine(inFunction));
+                    msg.cc += parts.get(i).getSize();
                     partsev.set(i, tmp);
                     merged = true;
                     break;
@@ -168,28 +147,19 @@ public abstract class CombinedRankStrategy extends IGdlPartitionStrategy {
             if (log.isTraceEnabled()) {
                 log.trace("\t" + parts.get(i));
             }
+            partsev.get(i).retainAll(Arrays.asList(e.getVariables()));
             final Variable[] vars = partsev.get(i).toArray(new Variable[0]);
-            msg.addFactor(parts.get(i).summarize(vars));
-            log.trace("\tSummarizes to : " + parts.get(i).summarize(vars));
+            final CostFunction f = parts.get(i).summarize(vars);
+            msg.addFactor(f);
+            msg.cc += f.getSize();
+            if (log.isTraceEnabled()) {
+                log.trace("\tSummarizes to : " + parts.get(i).summarize(vars));
+            }
         }
-        
+
+        msg = this.filterMessage(e, msg);
+
         return msg;
     }
-
-    private ArrayList<CostFunction> sortFunctions(ArrayList<CostFunction> fs) {
-        int order = getOrder();
-        TreeMap<Double, CostFunction> m = new TreeMap<Double, CostFunction>();
-        for (CostFunction f : fs) {
-            m.put(CostFunctionStats.getRank(f)*order, f);
-        }
-        return new ArrayList<CostFunction>(m.values());
-    }
-
-    /**
-     * Returns 1 to sort in ascending order, -1 to sort descending.
-     *
-     * @return
-     */
-    protected abstract int getOrder();
 
 }

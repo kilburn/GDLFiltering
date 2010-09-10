@@ -125,17 +125,14 @@ public class CliApp {
     /**
      * Partitioning strategies
      */
-    public static final int PS_LAZY     = 0;
-    public static final int PS_LAZIER   = 1;
+    public static final int PS_SCP_C    = 0;
+    public static final int PS_SCP_CC   = 1;
     public static final int PS_RANKUP   = 2;
     public static final int PS_RANKDOWN = 3;
-    public static final int PS_EXP      = 4;
-    public static final int PS_ENTROPY  = 5;
-    public static final int PS_SHARED   = 6;
-    public static final int PS_REXP     = 7;
-    public static final int PS_FEXP     = 8;
-    public static final int PS_LRE_C    = 9;
-    public static final int PS_LRE_CC   = 10;
+    public static final int PS_GREEDY_D = 4;
+    public static final int PS_ZEROS_D  = 5;
+    public static final int PS_LRE_C    = 6;
+    public static final int PS_LRE_CC   = 7;
 
     /**
      * Solution propagation strategies
@@ -367,7 +364,7 @@ public class CliApp {
         VPStrategy sStrategy = null;
         switch (solutionStrategy) {
             case SS_OPTIMAL:
-                sStrategy = new OptimalStrategy(1);
+                sStrategy = new OptimalStrategy();
                 break;
 
         }
@@ -457,11 +454,11 @@ public class CliApp {
                 } else {
                     IGdlPartitionStrategy pStrategy = null;
                     switch (partitionStrategy) {
-                        case PS_LAZY:
-                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.LazyStrategy();
+                        case PS_SCP_C:
+                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.SCPcStrategy();
                             break;
-                        case PS_LAZIER:
-                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.LaziestStrategy();
+                        case PS_SCP_CC:
+                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.SCPccStrategy();
                             break;
                         case PS_RANKUP:
                             pStrategy = new es.csic.iiia.dcop.igdl.strategy.RankUpStrategy();
@@ -469,20 +466,11 @@ public class CliApp {
                         case PS_RANKDOWN:
                             pStrategy = new es.csic.iiia.dcop.igdl.strategy.RankDownStrategy();
                             break;
-                        case PS_EXP:
-                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.ExpStrategy();
+                        case PS_GREEDY_D:
+                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.GreedyDecompositionStrategy();
                             break;
-                        case PS_ENTROPY:
-                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.EntropyStrategy();
-                            break;
-                        case PS_SHARED:
-                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.SharedVarsStrategy();
-                            break;
-                        case PS_REXP:
-                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.RefinedExpStrategy();
-                            break;
-                        case PS_FEXP:
-                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.FastExpStrategy();
+                        case PS_ZEROS_D:
+                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.ZerosDecompositionStrategy();
                             break;
                         case PS_LRE_C:
                             pStrategy = new es.csic.iiia.dcop.igdl.strategy.cbp.LREcStrategy();

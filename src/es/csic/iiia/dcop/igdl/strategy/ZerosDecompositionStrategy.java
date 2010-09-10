@@ -40,16 +40,12 @@ package es.csic.iiia.dcop.igdl.strategy;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.igdl.IGdlDedupMessage;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.util.CostFunctionStats;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,65 +53,62 @@ import org.slf4j.LoggerFactory;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class RefinedExpStrategy extends IGdlPartitionStrategy {
+public class ZerosDecompositionStrategy extends IGdlPartitionStrategy {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
-    private IGdlPartitionStrategy strategy;
 
     @Override
     public void initialize(IUPNode node) {
-        strategy = new LazyStrategy();
-        strategy.initialize(node);
         super.initialize(node);
     }
 
-    public IGdlMessage getPartition(ArrayList<CostFunction> fs,
+    @Override
+    protected IGdlMessage partition(ArrayList<CostFunction> fs,
             UPEdge<? extends IUPNode, IGdlMessage> e) {
 
-        // Informational, just for debugging
-        if (log.isTraceEnabled()) {
-            StringBuilder buf = new StringBuilder();
-            int i = e.getVariables().length;
-            for (Variable v : e.getVariables()) {
-                buf.append(v.getName());
-                if (--i != 0) buf.append(",");
-            }
-            log.trace("-- Edge vars: {" + buf.toString() + "}, Functions:");
-            for (CostFunction f : fs) {
-                log.trace("\t" + f);
-            }
-        }
+        long cc = 0;
         
         // Message to be sent
-        IGdlMessage msg = new IGdlDedupMessage();
+        IGdlMessage msg = new IGdlMessage();
 
-        // Separate functions containing only separator variables, and calculate
-        // the belief
-        CostFunction remaining = null;
-        Set<Variable> vs = new HashSet<Variable>(Arrays.asList(e.getVariables()));
-        for (int i=fs.size()-1; i>=0; i--) {
-            final CostFunction f = fs.get(i);
-            if (vs.containsAll(f.getVariableSet())) {
-                log.trace("\t Contained: " + f);
-                msg.addFactor(f);
-            } else {
-                fs.remove(i);
-                remaining = f.combine(remaining);
-            }
+        // Calculate the "big" function that should be sent
+        CostFunction remaining = node.getFactory().buildNeutralCostFunction(new Variable[0]);
+        remaining = remaining.combine(fs);
+        
+        // null belief yields an empty message
+        if (remaining == null) {
+            return msg;
         }
 
-        // Obtain the best approximation
-        if (remaining != null) {
-            remaining = remaining.summarize(e.getVariables());
-            CostFunction res[] = CostFunctionStats.getVotedBestApproximation(remaining, node.getR(), 1000);
-            for (int i=0; i<res.length-1; i++) {
-                msg.addFactor(res[i]);
-            }
+        msg.cc += remaining.getSize();
+        
+        // Filter the belief
+        remaining = this.filterFactor(e, remaining);
+
+        // Summarize the belief to the shared variables
+        remaining = remaining.summarize(
+            remaining.getSharedVariables(e.getVariables()).toArray(new Variable[0])
+        );
+
+        msg.cc += remaining.getSize();
+
+        // Don't try to break a fitting message into smaller pieces
+        if (remaining.getVariableSet().size() <= node.getR()) {
+            msg.addFactor(remaining);
+            return msg;
         }
 
-        // Test even further merging
-        //msg = strategy.getPartition(msg.getFactors(), e);
-        //msg.setBelief(belief);
+        // Remove the constant value (summarization to no variables)
+        CostFunction cst = remaining.summarize(new Variable[0]);
+        msg.addFactor(cst);
+        remaining = remaining.combine(cst.negate());
+        msg.cc += remaining.getSize();
+
+        // Obtain the projection approximation
+        for (CostFunction f : CostFunctionStats.getApproximation2(remaining, node.getR())) {
+            msg.addFactor(f);
+            msg.cc += remaining.getSize();
+        }
 
         return msg;
     }

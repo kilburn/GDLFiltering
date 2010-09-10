@@ -39,16 +39,14 @@
 package es.csic.iiia.dcop.cli;
 
 import es.csic.iiia.dcop.CostFunction;
+import es.csic.iiia.dcop.vp.strategy.OptimalStrategy;
 import gnu.getopt.Getopt;
 import gnu.getopt.LongOpt;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryUsage;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -109,17 +107,17 @@ public class Cli {
         System.err.println("      - none : do not perform any normalization (default for junction tree algorithm).");
         System.err.println("      - sum0 : values are normalized to sum zero (default for maxsum).");
         System.err.println("      - sum1 : values are normalized to sum one.");
+        System.err.println("  --nsols=<number> (1)");
+        System.err.println("    Sets figdl to test <number> number of possible solutions at each iteration");
         System.err.println("  -p strategy, --partition-strategy=strategy (rank)");
-        System.err.println("    Uses the specified partitioning strategy, where strategy is one of: ");
-        System.err.println("      - lazy     : merges functions in the order being received, without any");
-        System.err.println("                   special consideration.");
-        System.err.println("      - rankup   : merges functions from lowest ranked (max-min value) to highest.");
-        System.err.println("      - rankdown : merges functions from highest ranked (max-min value) to lowest.");
-        System.err.println("      - shared   : merges functions using greedy graph-cutting heuristics.");
-        System.err.println("      - exp      : merges functions using the lastest experimental strategy (dev only).");
-        System.err.println("      - rexp     : merges functions using the lastest experimental strategy (refined).");
-        System.err.println("      - fexp     : merges functions using the lastest experimental strategy (fast).");
-        System.err.println("      - lre      : merges functions using the local relative error strategy.");
+        System.err.println("    Uses the specified approximation strategy, where strategy is one of: ");
+        System.err.println("      - scp-cc   : scope-based partitioning communication & computation bounded");
+        System.err.println("      - scp-c    : scope-based partitioning communication bounded");
+        System.err.println("      - lre-cc   : content-based local relative error strategy (communication and computation bounded).");
+        System.err.println("      - lre-c    : content-based local relative error strategy (just communication bounded).");
+        //System.err.println("      - rankdown : merges functions from highest ranked (max-min value) to lowest.");
+        System.err.println("      - greedy-d : greedy decomposition.");
+        System.err.println("      - zeros-d  : zero-avoiding decomposition.");
         System.err.println("  -r [variance], --random-noise[=variance]");
         System.err.println("    Adds random noise with <variance> variance, or 0.001 if unspecified.");
         System.err.println("  -s operation, --summarize=operation (min)");
@@ -153,6 +151,7 @@ public class Cli {
             new LongOpt("load-tree", LongOpt.REQUIRED_ARGUMENT, null, 'l'),
             new LongOpt("max-clique-size", LongOpt.REQUIRED_ARGUMENT, null, 'l'),
             new LongOpt("normalize", LongOpt.REQUIRED_ARGUMENT, null, 'n'),
+            new LongOpt("nsols", LongOpt.REQUIRED_ARGUMENT, null, 1),
             new LongOpt("partition-strategy", LongOpt.REQUIRED_ARGUMENT, null, 'p'),
             new LongOpt("random-noise", LongOpt.OPTIONAL_ARGUMENT, null, 'r'),
             new LongOpt("summarize", LongOpt.REQUIRED_ARGUMENT, null, 's'),
@@ -177,6 +176,16 @@ public class Cli {
                         System.err.println("Error: invalid compression method \"" + arg + "\"");
                         System.exit(0);
                     }
+                    break;
+
+                case 1:
+                    arg = g.getOptarg();
+                    int nsols = Integer.parseInt(arg);
+                    if (nsols < 1) {
+                        System.err.println("Error: the number of solutions to propagate must be greater than 0.");
+                        System.exit(0);
+                    }
+                    OptimalStrategy.nMappings = nsols;
                     break;
 
                 case 'a':
@@ -297,24 +306,18 @@ public class Cli {
 
                 case 'p':
                     arg = g.getOptarg();
-                    if (arg.equals("lazy"))
-                        cli.setPartitionStrategy(CliApp.PS_LAZY);
-                    else if (arg.equals("lazier"))
-                        cli.setPartitionStrategy(CliApp.PS_LAZIER);
+                    if (arg.equals("scp-c"))
+                        cli.setPartitionStrategy(CliApp.PS_SCP_C);
+                    else if (arg.equals("scp-cc"))
+                        cli.setPartitionStrategy(CliApp.PS_SCP_CC);
                     else if (arg.equals("rankup"))
                         cli.setPartitionStrategy(CliApp.PS_RANKUP);
                     else if (arg.equals("rankdown"))
                         cli.setPartitionStrategy(CliApp.PS_RANKDOWN);
-                    else if (arg.equals("exp"))
-                        cli.setPartitionStrategy(CliApp.PS_EXP);
-                    else if (arg.equals("entropy"))
-                        cli.setPartitionStrategy(CliApp.PS_ENTROPY);
-                    else if (arg.equals("shared"))
-                        cli.setPartitionStrategy(CliApp.PS_SHARED);
-                    else if (arg.equals("rexp"))
-                        cli.setPartitionStrategy(CliApp.PS_REXP);
-                    else if (arg.equals("fexp"))
-                        cli.setPartitionStrategy(CliApp.PS_FEXP);
+                    else if (arg.equals("greedy-d"))
+                        cli.setPartitionStrategy(CliApp.PS_GREEDY_D);
+                    else if (arg.equals("zeros-d"))
+                        cli.setPartitionStrategy(CliApp.PS_ZEROS_D);
                     else if (arg.equals("lre-cc"))
                         cli.setPartitionStrategy(CliApp.PS_LRE_CC);
                     else if (arg.equals("lre-c"))
@@ -382,10 +385,9 @@ public class Cli {
                 cli.setOutputFile(new File(argv[c++]));
             }
 
-        } catch(IOException ex) {
+        } catch(Exception ex) {
             System.err.println(ex.getLocalizedMessage());
-        } catch(InterruptedException ex) {
-            System.err.println(ex.getLocalizedMessage());
+            System.exit(0);
         }
 
         // Track memory usage

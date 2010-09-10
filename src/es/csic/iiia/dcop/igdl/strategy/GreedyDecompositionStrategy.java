@@ -44,81 +44,52 @@ import es.csic.iiia.dcop.igdl.IGdlMessage;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
+import es.csic.iiia.dcop.util.CombinationGenerator;
 import es.csic.iiia.dcop.util.CostFunctionStats;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Implements the greedy decomposition approximation for FIGDL's cost
+ * propagation phase.
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class EntropyStrategy extends IGdlPartitionStrategy {
+public class GreedyDecompositionStrategy extends IGdlPartitionStrategy {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
-    private IGdlPartitionStrategy strategy;
 
     @Override
     public void initialize(IUPNode node) {
-        strategy = new LazyStrategy();
-        strategy.initialize(node);
         super.initialize(node);
     }
 
-    public IGdlMessage getPartition(ArrayList<CostFunction> fs,
+    @Override
+    protected IGdlMessage partition(ArrayList<CostFunction> fs,
             UPEdge<? extends IUPNode, IGdlMessage> e) {
 
-        // Informational, just for debugging
-        if (log.isTraceEnabled()) {
-            StringBuilder buf = new StringBuilder();
-            int i = e.getVariables().length;
-            for (Variable v : e.getVariables()) {
-                buf.append(v.getName());
-                if (--i != 0) buf.append(",");
-            }
-            log.trace("-- Edge vars: {" + buf.toString() + "}, Functions:");
-            for (CostFunction f : fs) {
-                log.trace("\t" + f);
-            }
+        // Message to be sent
+        IGdlMessage msg = new IGdlMessage();
+
+        // Combine everything
+        CostFunction belief = null;
+        for (CostFunction f : fs) {
+            belief = f.combine(belief);
+        }
+        msg.cc += belief.getSize();
+        belief = belief.summarize(e.getVariables());
+        msg.cc += belief.getSize();
+        msg.setBelief(belief);
+
+        // Obtain the best approximation
+        CostFunction res[] = CostFunctionStats.getVotedBestApproximation(belief, node.getR(), 1000);
+        for (int i=0; i<res.length-1; i++) {
+            msg.addFactor(res[i]);
+            msg.cc += belief.getSize() * CombinationGenerator.binom(belief.getVariableSet().size(), node.getR());
         }
 
-        // Sort the functions according to their rank (max - min)
-        if (log.isTraceEnabled()) {
-            ArrayList<CostFunction> prev = fs;
-            fs = sortFunctions(fs);
-            log.trace("-- Sorted:");
-            for (CostFunction f : fs) {
-                log.trace("\t" + CostFunctionStats.formatValue(CostFunctionStats.getEntropy(f)) + "\t" + f);
-            }
-            // Check that the list hasn't been modified
-            for(CostFunction f : fs) {
-                prev.remove(f);
-            }
-            if (prev.size() > 0) {
-                System.err.println("List differs!");
-                System.exit(0);
-            }
-        } else {
-            fs = sortFunctions(fs);
-        }
-
-        return strategy.getPartition(fs, e);
-    }
-
-    private ArrayList<CostFunction> sortFunctions(ArrayList<CostFunction> fs) {
-        ArrayList<CostFunction> res = new ArrayList<CostFunction>(fs);
-        Collections.sort(res, new EntropyComparator());
-        return res;
-    }
-
-    private class EntropyComparator implements Comparator<CostFunction> {
-        public int compare(CostFunction o1, CostFunction o2) {
-            double r1 = CostFunctionStats.getEntropy(o1);
-            double r2 = CostFunctionStats.getEntropy(o1);
-            return r1 == r2 ? 0 : (r1 < r2 ? -1 : 1);
-        }
+        return msg;
     }
 
 }

@@ -88,24 +88,10 @@ public abstract class CBPartitioningStrategy extends IGdlPartitionStrategy {
     }
 
     @Override
-    public IGdlMessage getPartition(ArrayList<CostFunction> fs,
+    protected IGdlMessage partition(ArrayList<CostFunction> fs,
             UPEdge<? extends IUPNode, IGdlMessage> e) {
 
-        // Informational, just for debugging
-        if (log.isTraceEnabled()) {
-            StringBuffer buf = new StringBuffer();
-            int i = e.getVariables().length;
-            for (Variable v : e.getVariables()) {
-                buf.append(v.getName());
-                if (--i != 0) buf.append(",");
-            }
-            log.trace("-- Edge vars: {" + buf.toString() + "}, Functions:");
-            for (CostFunction f : fs) {
-                log.trace("\t" + f);
-            }
-        }
-
-        fs = partition(fs, e);
+        fs = partition2(fs, e);
 
         // Build the actual message
         log.trace("-- Resulting partitions");
@@ -127,7 +113,7 @@ public abstract class CBPartitioningStrategy extends IGdlPartitionStrategy {
         return filterMessage(e, msg);
     }
 
-    private ArrayList<CostFunction> partition(ArrayList<CostFunction> fs,
+    private ArrayList<CostFunction> partition2(ArrayList<CostFunction> fs,
             UPEdge<? extends IUPNode, IGdlMessage> e) {
         final CandidateComparator comparator = new CandidateComparator();
 

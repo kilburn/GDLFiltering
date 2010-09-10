@@ -49,11 +49,7 @@ import java.util.ArrayList;
  */
 public class OptimalStrategy extends VPStrategy {
 
-    private int nMappings = 1;
-
-    public OptimalStrategy(int nMappings) {
-        this.nMappings = nMappings;
-    }
+    public static int nMappings = 1;
 
     @Override
     public ArrayList<VariableAssignment> getExtendedMappings(ArrayList<VariableAssignment> mappings, UPNode upnode) {

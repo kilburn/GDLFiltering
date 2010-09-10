@@ -39,7 +39,6 @@
 package es.csic.iiia.dcop.igdl.strategy;
 
 import es.csic.iiia.dcop.CostFunction;
-import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
@@ -62,27 +61,14 @@ public abstract class RankStrategy extends IGdlPartitionStrategy {
 
     @Override
     public void initialize(IUPNode node) {
-        strategy = new LazyStrategy();
+        strategy = new SCPcStrategy();
         strategy.initialize(node);
         super.initialize(node);
     }
 
-    public IGdlMessage getPartition(ArrayList<CostFunction> fs,
+    @Override
+    protected IGdlMessage partition(ArrayList<CostFunction> fs,
             UPEdge<? extends IUPNode, IGdlMessage> e) {
-
-        // Informational, just for debugging
-        if (log.isTraceEnabled()) {
-            StringBuilder buf = new StringBuilder();
-            int i = e.getVariables().length;
-            for (Variable v : e.getVariables()) {
-                buf.append(v.getName());
-                if (--i != 0) buf.append(",");
-            }
-            log.trace("-- Edge vars: {" + buf.toString() + "}, Functions:");
-            for (CostFunction f : fs) {
-                log.trace("\t" + f);
-            }
-        }
 
         // Sort the functions according to their rank (max - min)
         if (log.isTraceEnabled()) {

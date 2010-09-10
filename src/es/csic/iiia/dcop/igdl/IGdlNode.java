@@ -38,22 +38,15 @@
 
 package es.csic.iiia.dcop.igdl;
 
-import es.csic.iiia.dcop.igdl.strategy.AllCombStrategy;
 import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
 import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.VariableAssignment;
-import es.csic.iiia.dcop.algo.JunctionTreeAlgo;
-import es.csic.iiia.dcop.dfs.DFS;
-import es.csic.iiia.dcop.dfs.MCN;
-import es.csic.iiia.dcop.gdl.GdlFactory;
-import es.csic.iiia.dcop.jt.JunctionTree;
+import es.csic.iiia.dcop.igdl.strategy.SCPccStrategy;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
-import es.csic.iiia.dcop.vp.VPGraph;
-import es.csic.iiia.dcop.vp.VPResults;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.slf4j.Logger;
@@ -76,7 +69,7 @@ public class IGdlNode extends IUPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
     /**
      * Partitioning strategy to use
      */
-    private IGdlPartitionStrategy strategy = new AllCombStrategy();
+    private IGdlPartitionStrategy strategy;
 
     /**
      * Constructs a new clique with the specified member variable and null

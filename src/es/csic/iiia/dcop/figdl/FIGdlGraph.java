@@ -114,7 +114,7 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMessage>
 
             
             // Solution extraction
-            VPGraph st = new VPGraph(this, new OptimalStrategy(10));
+            VPGraph st = new VPGraph(this, new OptimalStrategy());
             VPResults res = st.run(100);
             
             // Bound calculation

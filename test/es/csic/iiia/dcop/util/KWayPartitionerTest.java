@@ -44,8 +44,8 @@ import es.csic.iiia.dcop.HypercubeCostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
 import es.csic.iiia.dcop.igdl.IGdlNode;
-import es.csic.iiia.dcop.igdl.strategy.ExpStrategy;
-import es.csic.iiia.dcop.igdl.strategy.FastExpStrategy;
+import es.csic.iiia.dcop.igdl.strategy.GreedyDecompositionStrategy;
+import es.csic.iiia.dcop.igdl.strategy.ZerosDecompositionStrategy;
 import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
@@ -114,7 +114,7 @@ public class KWayPartitionerTest {
         IGdlMessage result = instance.getPartitions();
         
 
-        IGdlPartitionStrategy s = new ExpStrategy();
+        IGdlPartitionStrategy s = new GreedyDecompositionStrategy();
         IUPNode n1 = new IGdlNode();
         n1.setR(2);
         IUPNode n2 = new IGdlNode();
@@ -124,7 +124,7 @@ public class KWayPartitionerTest {
         s.initialize(n1);
         IGdlMessage result2 = s.getPartition(new ArrayList<CostFunction>(fs),e);
 
-        IGdlPartitionStrategy s3 = new FastExpStrategy();
+        IGdlPartitionStrategy s3 = new ZerosDecompositionStrategy();
         s3.initialize(n1);
         IGdlMessage result3 = s3.getPartition(new ArrayList<CostFunction>(fs),e);
 

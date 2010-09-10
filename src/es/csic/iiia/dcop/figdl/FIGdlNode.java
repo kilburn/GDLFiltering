@@ -38,7 +38,6 @@
 
 package es.csic.iiia.dcop.figdl;
 
-import es.csic.iiia.dcop.igdl.strategy.AllCombStrategy;
 import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
 import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.CostFunction;
@@ -70,7 +69,7 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
     /**
      * Partitioning strategy to use
      */
-    private IGdlPartitionStrategy strategy = new AllCombStrategy();
+    private IGdlPartitionStrategy strategy;
 
     /**
      * FIGdlNode from previous iteration
