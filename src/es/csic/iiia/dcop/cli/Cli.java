@@ -315,8 +315,10 @@ public class Cli {
                         cli.setPartitionStrategy(CliApp.PS_REXP);
                     else if (arg.equals("fexp"))
                         cli.setPartitionStrategy(CliApp.PS_FEXP);
-                    else if (arg.equals("lre"))
-                        cli.setPartitionStrategy(CliApp.PS_LRE);
+                    else if (arg.equals("lre-cc"))
+                        cli.setPartitionStrategy(CliApp.PS_LRE_CC);
+                    else if (arg.equals("lre-c"))
+                        cli.setPartitionStrategy(CliApp.PS_LRE_C);
                     else {
                         System.err.println("Error: invalid heuristic \"" + arg + "\"");
                         System.exit(0);

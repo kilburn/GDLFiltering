@@ -36,11 +36,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.igdl.strategy;
+package es.csic.iiia.dcop.igdl.strategy.cbp;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
+import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
@@ -57,7 +58,27 @@ import org.slf4j.LoggerFactory;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class LREStrategy extends IGdlPartitionStrategy {
+public abstract class CBPartitioningStrategy extends IGdlPartitionStrategy {
+
+    /**
+     * Removes from the cvars set all these variables that do not count
+     * towards the r-bound.
+     * 
+     * @param cvars
+     * @param evs
+     */
+    protected abstract void filterVars(HashSet<Variable> cvars, HashSet<Variable> evs);
+
+    /**
+     * Returns the gain (according to an specific metric) obtained by
+     * merging f1 and f2.
+     *
+     * @param merged
+     * @param f1
+     * @param f2
+     * @return
+     */
+    protected abstract double getGain(CostFunction merged, CostFunction f1, CostFunction f2);
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
 
@@ -69,10 +90,6 @@ public class LREStrategy extends IGdlPartitionStrategy {
     @Override
     public IGdlMessage getPartition(ArrayList<CostFunction> fs,
             UPEdge<? extends IUPNode, IGdlMessage> e) {
-
-        if (fs.isEmpty()) {
-            System.out.println("Hugh?!");
-        }
 
         // Informational, just for debugging
         if (log.isTraceEnabled()) {
@@ -107,11 +124,7 @@ public class LREStrategy extends IGdlPartitionStrategy {
             }
         }
 
-        IGdlMessage msg2 = filterMessage(e, msg);
-        if (msg2.getFactors().get(0) == null) {
-            System.err.println("Hugh?!");
-        }
-        return msg2;
+        return filterMessage(e, msg);
     }
 
     private ArrayList<CostFunction> partition(ArrayList<CostFunction> fs,
@@ -154,15 +167,14 @@ public class LREStrategy extends IGdlPartitionStrategy {
             // Skip combinations where the r-bound is not satisfied
             HashSet<Variable> cvars = new HashSet<Variable>(f1.getVariableSet());
             cvars.addAll(f2.getVariableSet());
-            cvars.retainAll(evs);
+            filterVars(cvars, evs);
+            //cvars.retainAll(evs);
             if (cvars.size() > r) {
                 continue;
             }
 
             CostFunction fprime = f1.combine(f2);
-            double gain = metric.getValue(fprime.combine(f1.negate()));
-            gain += metric.getValue(fprime.combine(f2.negate()));
-
+            double gain = getGain(fprime, f1, f2);
             candidates.add(new Candidate(gain, fprime, f1, f2));
         }
 
@@ -206,9 +218,7 @@ public class LREStrategy extends IGdlPartitionStrategy {
 
                 // Evaluate the gain w.r.t. not merging the functions
                 CostFunction fprime = f1.combine(f2);
-                double gain = metric.getValue(fprime.combine(f1.negate()));
-                gain += metric.getValue(fprime.combine(f2.negate()));
-
+                double gain = getGain(fprime, f1, f2);
                 res.add(new Candidate(gain, fprime, f1, f2));
             }
         }
@@ -233,61 +243,5 @@ public class LREStrategy extends IGdlPartitionStrategy {
             return o1.gain.compareTo(o2.gain);
         }
     }
-/*
-    private ArrayList<CostFunction> nextChild(ArrayList<CostFunction> fs,
-            UPEdge<? extends IUPNode, IGdlMessage> e) {
-        final int r = node.getR();
-        Metric metric = new Norm1();
-
-        HashSet<Variable> evs = new HashSet<Variable>();
-        for (Variable v : e.getVariables()) {
-            evs.add(v);
-        }
-
-        ArrayList<CostFunction> res = null;
-        double maxGain = Double.MIN_VALUE;
-
-        for (int i=0; i<fs.size(); i++) {
-            final CostFunction f1 = fs.get(i);
-
-            for (int j=i+1; j<fs.size(); j++) {
-                // Try each possible combination
-                final CostFunction f2 = fs.get(j);
-
-                // Skip combinations where the r-bound is not satisfied
-                HashSet<Variable> cvars = new HashSet<Variable>(f1.getVariableSet());
-                cvars.addAll(f2.getVariableSet());
-                cvars.retainAll(evs);
-                if (cvars.size() > r) {
-                    continue;
-                }
-
-                // Evaluate the gain w.r.t. not merging the functions
-                CostFunction fprime = f1.combine(f2);
-                double gain = metric.getValue(fprime.combine(f1.negate()));
-                gain += metric.getValue(fprime.combine(f2.negate()));
-                
-                // Compute result size
-                gain = gain / fprime.getSize();
-
-                // Check if this child is better, or skip it altogether
-                if (gain < maxGain) continue;
-
-                // Actually build the new partition
-                maxGain = gain;
-
-                // Create the new child
-                res = new ArrayList<CostFunction>(fs.size()-1);
-                // Add all other previous partitions except the combined ones
-                for (int k=0; k<fs.size(); k++) {
-                    if (k==i || k==j) continue;
-                    res.add(fs.get(k));
-                }
-                res.add(fprime);
-            }
-        }
-
-        return res;
-    }*/
 
 }

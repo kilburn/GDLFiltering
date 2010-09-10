@@ -134,7 +134,8 @@ public class CliApp {
     public static final int PS_SHARED   = 6;
     public static final int PS_REXP     = 7;
     public static final int PS_FEXP     = 8;
-    public static final int PS_LRE      = 9;
+    public static final int PS_LRE_C    = 9;
+    public static final int PS_LRE_CC   = 10;
 
     /**
      * Solution propagation strategies
@@ -483,8 +484,11 @@ public class CliApp {
                         case PS_FEXP:
                             pStrategy = new es.csic.iiia.dcop.igdl.strategy.FastExpStrategy();
                             break;
-                        case PS_LRE:
-                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.LREStrategy();
+                        case PS_LRE_C:
+                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.cbp.LREcStrategy();
+                            break;
+                        case PS_LRE_CC:
+                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.cbp.LREccStrategy();
                             break;
                     }
                     factory = algorithm == ALGO_IGDL
