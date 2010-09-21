@@ -60,6 +60,10 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class CBPartitioningStrategy extends IGdlPartitionStrategy {
 
+    public final static int ORDER_MIN = 1;
+    public final static int ORDER_MAX = 2;
+    public static int order = ORDER_MAX;
+
     /**
      * Removes from the cvars set all these variables that do not count
      * towards the r-bound.
@@ -78,7 +82,8 @@ public abstract class CBPartitioningStrategy extends IGdlPartitionStrategy {
      * @param f2
      * @return
      */
-    protected abstract double getGain(CostFunction merged, CostFunction f1, CostFunction f2);
+    protected abstract double getGain(CostFunction merged, 
+            CostFunction f1, CostFunction f2, Variable[] vars);
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
 
@@ -115,7 +120,9 @@ public abstract class CBPartitioningStrategy extends IGdlPartitionStrategy {
 
     private ArrayList<CostFunction> partition2(ArrayList<CostFunction> fs,
             UPEdge<? extends IUPNode, IGdlMessage> e) {
-        final CandidateComparator comparator = new CandidateComparator();
+        final Comparator<Candidate> comparator = order == ORDER_MAX
+            ? new CandidateComparatorMax()
+            : new CandidateComparatorMin();
 
             fs = new ArrayList<CostFunction>(fs);
             ArrayList<Candidate> candidates = expand(fs, e);
@@ -134,8 +141,6 @@ public abstract class CBPartitioningStrategy extends IGdlPartitionStrategy {
             UPEdge<? extends IUPNode, IGdlMessage> e) {
 
         final int r = node.getR();
-        Metric metric = new Norm1();
-
         HashSet<Variable> evs = new HashSet<Variable>();
         for (Variable v : e.getVariables()) {
             evs.add(v);
@@ -160,7 +165,7 @@ public abstract class CBPartitioningStrategy extends IGdlPartitionStrategy {
             }
 
             CostFunction fprime = f1.combine(f2);
-            double gain = getGain(fprime, f1, f2);
+            double gain = getGain(fprime, f1, f2, e.getVariables());
             candidates.add(new Candidate(gain, fprime, f1, f2));
         }
 
@@ -180,7 +185,6 @@ public abstract class CBPartitioningStrategy extends IGdlPartitionStrategy {
             UPEdge<? extends IUPNode, IGdlMessage> e) {
 
         final int r = node.getR();
-        Metric metric = new Norm1();
 
         HashSet<Variable> evs = new HashSet<Variable>();
         for (Variable v : e.getVariables()) {
@@ -204,7 +208,7 @@ public abstract class CBPartitioningStrategy extends IGdlPartitionStrategy {
 
                 // Evaluate the gain w.r.t. not merging the functions
                 CostFunction fprime = f1.combine(f2);
-                double gain = getGain(fprime, f1, f2);
+                double gain = getGain(fprime, f1, f2, e.getVariables());
                 res.add(new Candidate(gain, fprime, f1, f2));
             }
         }
@@ -224,10 +228,14 @@ public abstract class CBPartitioningStrategy extends IGdlPartitionStrategy {
             this.f2 = f2;
         }
     }
-    private class CandidateComparator implements Comparator<Candidate> {
+    private class CandidateComparatorMax implements Comparator<Candidate> {
         public int compare(Candidate o1, Candidate o2) {
             return o1.gain.compareTo(o2.gain);
         }
     }
-
+    private class CandidateComparatorMin implements Comparator<Candidate> {
+        public int compare(Candidate o1, Candidate o2) {
+            return o2.gain.compareTo(o1.gain);
+        }
+    }
 }

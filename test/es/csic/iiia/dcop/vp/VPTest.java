@@ -47,6 +47,7 @@ import es.csic.iiia.dcop.dfs.MCS;
 import es.csic.iiia.dcop.gdl.GdlFactory;
 import es.csic.iiia.dcop.up.UPFactory;
 import es.csic.iiia.dcop.up.UPGraph;
+import es.csic.iiia.dcop.vp.strategy.OptimalStrategy;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -117,7 +118,7 @@ public class VPTest {
      */
     @Test
     public void testBuildResults() {
-        VPGraph instance = new VPGraph(cg);
+        VPGraph instance = new VPGraph(cg, new OptimalStrategy());
         VPResults result = instance.buildResults();
         assertNotNull(result);
     }
@@ -142,14 +143,14 @@ public class VPTest {
         factory.setMode(summarize, combine, normalize);
         cg.setFactory(factory);
         cg.run(100);
-        VPGraph instance = new VPGraph(cg);
+        VPGraph instance = new VPGraph(cg, new OptimalStrategy());
 
         VariableAssignment expResult = new VariableAssignment();
         for (int i=0; i<5; i++) {
             expResult.put(v[i], 0);
         }
         VPResults result = instance.run(100);
-        assertEquals(result.getMapping(), expResult);
+        assertEquals(result.getMappings().get(0), expResult);
     }
 
     /**
@@ -163,14 +164,14 @@ public class VPTest {
         factory.setMode(summarize, combine, normalize);
         cg.setFactory(factory);
         cg.run(100);
-        VPGraph instance = new VPGraph(cg);
+        VPGraph instance = new VPGraph(cg, new OptimalStrategy());
 
         VariableAssignment expResult = new VariableAssignment();
         for (int i=0; i<5; i++) {
             expResult.put(v[i], 1);
         }
         VPResults result = instance.run(100);
-        assertEquals(result.getMapping(), expResult);
+        assertEquals(result.getMappings().get(0), expResult);
     }
 
 }

@@ -127,6 +127,9 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
     }
 
     public UBResult end() {
+        if (log.isDebugEnabled()) {
+            log.debug(ubs.toString());
+        }
         final double ub = ubs.getBest(summarize);
         return new UBResult(ub,lb);
     }

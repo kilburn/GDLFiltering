@@ -57,10 +57,13 @@ public class LREcStrategy extends CBPartitioningStrategy {
     }
 
     @Override
-    protected double getGain(CostFunction merged, CostFunction f1, CostFunction f2) {
+    protected double getGain(CostFunction merged, CostFunction f1, CostFunction f2, Variable[] vars) {
         double gain = 0;
-        gain += metric.getValue(merged.combine(f1.negate()));
-        gain += metric.getValue(merged.combine(f2.negate()));
+
+        vars = merged.getSharedVariables(vars).toArray(new Variable[0]);
+        CostFunction sc = f1.summarize(vars).combine(f2.summarize(vars));
+        CostFunction cs = merged.summarize(vars);
+        gain = metric.getValue(cs.combine(sc.negate()));
         gain /= (double)merged.getVariableSet().size();
 
         return gain;

@@ -62,6 +62,7 @@ import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.util.CostFunctionStats;
 import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.VPResults;
+import es.csic.iiia.dcop.vp.strategy.OptimalStrategy;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -140,9 +141,9 @@ public class GDLTest {
         System.out.println(results);
 
         // Extract a solution
-        VPGraph vp = new VPGraph(g);
+        VPGraph vp = new VPGraph(g, new OptimalStrategy());
         VPResults res = vp.run(100);
-        VariableAssignment map = res.getMapping();
+        VariableAssignment map = res.getMappings().get(0);
 
         // The solution should be 0 0 1
         assertEquals((int)map.get(a), 0);
@@ -230,9 +231,9 @@ public class GDLTest {
         System.out.println(results);
 
         // Extract a solution
-        VPGraph vp = new VPGraph(g);
+        VPGraph vp = new VPGraph(g, new OptimalStrategy());
         VPResults res = vp.run(100);
-        VariableAssignment map = res.getMapping();
+        VariableAssignment map = res.getMappings().get(0);
 
         // The solution should be 0 0 1
         assertEquals(1, (int)map.get(x));
@@ -310,9 +311,9 @@ public class GDLTest {
         System.out.println(results);
 
         // Extract a solution
-        VPGraph vp = new VPGraph(g);
+        VPGraph vp = new VPGraph(g, new OptimalStrategy());
         VPResults res = vp.run(100);
-        VariableAssignment map = res.getMapping();
+        VariableAssignment map = res.getMappings().get(0);
 
         // The solution should be 0 0 1
         assertEquals((int)map.get(x), 1);

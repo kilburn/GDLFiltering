@@ -39,6 +39,7 @@
 package es.csic.iiia.dcop.cli;
 
 import es.csic.iiia.dcop.CostFunction;
+import es.csic.iiia.dcop.igdl.strategy.cbp.CBPartitioningStrategy;
 import es.csic.iiia.dcop.vp.strategy.OptimalStrategy;
 import gnu.getopt.Getopt;
 import gnu.getopt.LongOpt;
@@ -318,11 +319,17 @@ public class Cli {
                         cli.setPartitionStrategy(CliApp.PS_GREEDY_D);
                     else if (arg.equals("zeros-d"))
                         cli.setPartitionStrategy(CliApp.PS_ZEROS_D);
-                    else if (arg.equals("lre-cc"))
+                    else if (arg.equals("lre-cc")) {
                         cli.setPartitionStrategy(CliApp.PS_LRE_CC);
-                    else if (arg.equals("lre-c"))
+                    } else if (arg.equals("lre-cc-min")) {
+                        cli.setPartitionStrategy(CliApp.PS_LRE_CC);
+                        CBPartitioningStrategy.order = CBPartitioningStrategy.ORDER_MIN;
+                    } else if (arg.equals("lre-c")) {
                         cli.setPartitionStrategy(CliApp.PS_LRE_C);
-                    else {
+                    } else if (arg.equals("lre-c-min")) {
+                        cli.setPartitionStrategy(CliApp.PS_LRE_C);
+                        CBPartitioningStrategy.order = CBPartitioningStrategy.ORDER_MIN;
+                    } else {
                         System.err.println("Error: invalid heuristic \"" + arg + "\"");
                         System.exit(0);
                     }
