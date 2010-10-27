@@ -36,18 +36,30 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.util.metrics;
+package es.csic.iiia.dcop.igdl.strategy;
 
-import es.csic.iiia.dcop.CostFunction;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public interface Metric {
+public class SCPcStrategyTest extends IGdlPartitionStrategyTest {
 
-    public double getValue(CostFunction f);
+    public SCPcStrategyTest() {
+    }
 
-    public double getValue(CostFunction f, double boundValue);
+    @Before
+    @Override
+    public void setUp() {
+    }
+
+    @After
+    @Override
+    public void tearDown() {
+    }
 
 }

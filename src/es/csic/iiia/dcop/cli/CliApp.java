@@ -129,10 +129,12 @@ public class CliApp {
     public static final int PS_SCP_CC   = 1;
     public static final int PS_RANKUP   = 2;
     public static final int PS_RANKDOWN = 3;
-    public static final int PS_GREEDY_D = 4;
+    public static final int PS_LRE_D    = 4;
     public static final int PS_ZEROS_D  = 5;
     public static final int PS_LRE_C    = 6;
     public static final int PS_LRE_CC   = 7;
+    public static final int PS_LMRE_C   = 8;
+    public static final int PS_LMRE_D   = 9;
 
     /**
      * Solution propagation strategies
@@ -353,7 +355,7 @@ public class CliApp {
 
         // Run the solving algorithm
         cg.setFactory(factory);
-        UPResults results = cg.run(100);
+        UPResults results = cg.run(1000);
             
         System.out.println("ITERATIONS " + results.getIterations());
         System.out.println("CBR " + results.getCBR(communicationCost));
@@ -376,7 +378,7 @@ public class CliApp {
         // Compute UB for IGdl
         if (algorithm == ALGO_IGDL || algorithm == ALGO_FIGDL) {
             UBGraph ub = new UBGraph(st);
-            UBResults ubres = ub.run(100);
+            UBResults ubres = ub.run(1000);
             System.out.println("BOUND " + ubres.getBound());
         }
 
@@ -466,8 +468,11 @@ public class CliApp {
                         case PS_RANKDOWN:
                             pStrategy = new es.csic.iiia.dcop.igdl.strategy.RankDownStrategy();
                             break;
-                        case PS_GREEDY_D:
-                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.GreedyDecompositionStrategy();
+                        case PS_LRE_D:
+                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.gd.LREGreedyStrategy();
+                            break;
+                        case PS_LMRE_D:
+                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.gd.LMREGreedyStrategy();
                             break;
                         case PS_ZEROS_D:
                             pStrategy = new es.csic.iiia.dcop.igdl.strategy.ZerosDecompositionStrategy();
@@ -477,6 +482,9 @@ public class CliApp {
                             break;
                         case PS_LRE_CC:
                             pStrategy = new es.csic.iiia.dcop.igdl.strategy.cbp.LREccStrategy();
+                            break;
+                        case PS_LMRE_C:
+                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.cbp.LMREcStrategy();
                             break;
                     }
                     factory = algorithm == ALGO_IGDL

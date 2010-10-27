@@ -36,18 +36,24 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.util.metrics;
+package es.csic.iiia.dcop.igdl.strategy.gd;
 
 import es.csic.iiia.dcop.CostFunction;
+import es.csic.iiia.dcop.util.metrics.Metric;
+import es.csic.iiia.dcop.util.metrics.NormInf;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public interface Metric {
+public class LMREGreedyStrategy extends GreedyDecompositionStrategy {
+    
+    private static final Metric metric = new NormInf();
 
-    public double getValue(CostFunction f);
-
-    public double getValue(CostFunction f, double boundValue);
+    @Override
+    protected double getGain(CostFunction f) {
+        final double bound = node.getBound();
+        return Double.isNaN(bound) ? metric.getValue(f) : metric.getValue(f, bound);
+    }
 
 }

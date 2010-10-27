@@ -60,6 +60,12 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMessage>
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
 
+    private static int minR = 2;
+
+    public static void setMinR(int min_r) {
+        minR = min_r;
+    }
+
     private FIGdlIteration iteration = new FIGdlIteration();
     private int maxR;
 
@@ -88,7 +94,7 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMessage>
         UPResults globalResults = (UPResults)getResults();
         double bestCost = Double.NaN, bestBound = Double.NaN;
 
-        for (int i=2; i<=maxR; i++) {
+        for (int i=minR; i<=maxR; i++) {
 
             // Value propagation
             iteration.setR(i);
@@ -115,11 +121,11 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMessage>
             
             // Solution extraction
             VPGraph st = new VPGraph(this, new OptimalStrategy());
-            VPResults res = st.run(100);
+            VPResults res = st.run(1000);
             
             // Bound calculation
             UBGraph ub = new UBGraph(st);
-            UBResults ubres = ub.run(maxIterations);
+            UBResults ubres = ub.run(1000);
             System.out.println("THIS_ITER_LB " + ubres.getBound());
             System.out.println("THIS_ITER_UB " + ubres.getCost());
 

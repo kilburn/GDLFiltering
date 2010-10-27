@@ -36,60 +36,37 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.igdl.strategy;
+package es.csic.iiia.dcop.igdl.strategy.cbp;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.igdl.IGdlMessage;
-import es.csic.iiia.dcop.up.IUPNode;
-import es.csic.iiia.dcop.up.UPEdge;
-import es.csic.iiia.dcop.up.UPGraph;
-import es.csic.iiia.dcop.util.CombinationGenerator;
-import es.csic.iiia.dcop.util.CostFunctionStats;
-import java.util.ArrayList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import es.csic.iiia.dcop.util.metrics.Metric;
+import es.csic.iiia.dcop.util.metrics.NormInf;
+import java.util.HashSet;
 
 /**
- * Implements the greedy decomposition approximation for FIGDL's cost
- * propagation phase.
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class GreedyDecompositionStrategy extends IGdlPartitionStrategy {
-
-    private static Logger log = LoggerFactory.getLogger(UPGraph.class);
+public class LMREcStrategy extends CBPartitioningStrategy {
+    private static Metric metric = new NormInf();
 
     @Override
-    public void initialize(IUPNode node) {
-        super.initialize(node);
+    protected void filterVars(HashSet<Variable> cvars, HashSet<Variable> evs) {
+        cvars.retainAll(evs);
     }
 
     @Override
-    protected IGdlMessage partition(ArrayList<CostFunction> fs,
-            UPEdge<? extends IUPNode, IGdlMessage> e) {
+    protected double getGain(CostFunction merged, CostFunction f1, CostFunction f2, Variable[] vars) {
+        double gain = 0;
 
-        // Message to be sent
-        IGdlMessage msg = new IGdlMessage();
+        vars = merged.getSharedVariables(vars).toArray(new Variable[0]);
+        CostFunction sc = f1.summarize(vars).combine(f2.summarize(vars));
+        CostFunction cs = merged.summarize(vars);
+        gain = metric.getValue(cs.combine(sc.negate()));
+        gain /= (double)merged.getVariableSet().size();
 
-        // Combine everything
-        CostFunction belief = null;
-        for (CostFunction f : fs) {
-            belief = f.combine(belief);
-        }
-        msg.cc += belief.getSize();
-        belief = belief.summarize(e.getVariables());
-        msg.cc += belief.getSize();
-        msg.setBelief(belief);
-
-        // Obtain the best approximation
-        CostFunction res[] = CostFunctionStats.getVotedBestApproximation(belief, node.getR(), 1000);
-        for (int i=0; i<res.length-1; i++) {
-            msg.addFactor(res[i]);
-            msg.cc += belief.getSize() * CombinationGenerator.binom(belief.getVariableSet().size(), node.getR());
-        }
-
-        return msg;
+        return gain;
     }
 
 }

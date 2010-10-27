@@ -40,11 +40,10 @@ package es.csic.iiia.dcop.util;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunctionFactory;
-import es.csic.iiia.dcop.HypercubeCostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
 import es.csic.iiia.dcop.igdl.IGdlNode;
-import es.csic.iiia.dcop.igdl.strategy.GreedyDecompositionStrategy;
+import es.csic.iiia.dcop.igdl.strategy.gd.GreedyDecompositionStrategy;
 import es.csic.iiia.dcop.igdl.strategy.ZerosDecompositionStrategy;
 import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
 import es.csic.iiia.dcop.up.IUPNode;
@@ -114,7 +113,7 @@ public class KWayPartitionerTest {
         IGdlMessage result = instance.getPartitions();
         
 
-        IGdlPartitionStrategy s = new GreedyDecompositionStrategy();
+        IGdlPartitionStrategy s = new ZerosDecompositionStrategy();
         IUPNode n1 = new IGdlNode();
         n1.setR(2);
         IUPNode n2 = new IGdlNode();

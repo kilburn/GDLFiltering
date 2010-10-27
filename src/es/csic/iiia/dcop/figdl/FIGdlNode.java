@@ -127,7 +127,7 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
             previousEdges.add(newe);
         }
 
-        if (Double.isNaN(this.bound) || factory.getSummarizeOperation().isBetter(bound, this.bound)) {
+        if (Double.isNaN(this.getBound()) || factory.getSummarizeOperation().isBetter(bound, this.getBound())) {
             this.bound = bound;
         }
 
@@ -222,7 +222,13 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
             // Obtain the partition
             IGdlMessage msg = getPartitionStrategy().getPartition(fs, e);
             if (log.isTraceEnabled()) {
-                msg.setBelief(belief.summarize(e.getVariables()));
+                CostFunction lb = belief.summarize(e.getVariables());
+                if (e.getMessage(this) != null) {
+                    for (CostFunction f : e.getMessage(this).getFactors()) {
+                        lb.combine(f.negate());
+                    }
+                }
+                msg.setBelief(lb);
             }
             cc += msg.cc;
 
@@ -273,6 +279,11 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
         }
 
         return fs;
+    }
+
+    @Override
+    public double getBound() {
+        return bound;
     }
 
 }

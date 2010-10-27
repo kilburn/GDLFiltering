@@ -74,4 +74,6 @@ public abstract class IUPNode <E extends UPEdge, R extends UPResult> extends
         return r;
     }
 
+    public double getBound() {return Double.NaN;};
+
 }
