@@ -40,157 +40,44 @@ package es.csic.iiia.dcop.io;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunctionFactory;
-import es.csic.iiia.dcop.Variable;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
 public class DatasetReader {
-    
-    Matcher agent = Pattern.compile("(?i)^AGENT\\s+(\\d+)\\s*$").matcher("");
-    Matcher variable = Pattern.compile("(?i)^VARIABLE\\s+(\\w+)\\s+(\\w+)\\s+(\\d+)").matcher("");
-    Matcher constraint = Pattern.compile("(?i)^CONSTRAINT(\\s+\\w+)+").matcher("");
-    Matcher nogood = Pattern.compile("(?i)^NOGOOD\\s+(\\d+)\\s+(\\d+)\\s*$").matcher("");
-    Matcher f = Pattern.compile("(?i)^F\\s+").matcher("");
-
-    private HashMap<String, Variable> variables;
-    private ArrayList<CostFunction> factors;
-    private CostFunction lastFactor;
-    private CostFunctionFactory factory;
-
-    public DatasetReader() {
-        this.variables = new HashMap<String, Variable>();
-        this.factors = new ArrayList<CostFunction>();
-    }
 
     public CostFunction[] read(InputStream problem, CostFunctionFactory factory) {
-        this.factory = factory;
+
+        BufferedReader input = new BufferedReader(new InputStreamReader(problem));
 
         try {
+            String firstLine = input.readLine().toUpperCase();
 
-            //use buffering, reading one line at a time
-            BufferedReader input =  new BufferedReader(new InputStreamReader(problem));
-            try {
-
-                String line = null; //not declared within while loop
-                /*
-                * readLine is a bit quirky :
-                * it returns the content of a line MINUS the newline.
-                * it returns null only for the END of the stream.
-                * it returns an empty String if two newlines appear in a row.
-                */
-                while (( line = input.readLine()) != null){
-                    this.parseLine(line);
-                }
-
-            } finally {
-                input.close();
+            if (firstLine.equals("BAYES")) {
+                System.err.println("This solver can not process BAYES problems.");
+                System.exit(1);
             }
 
-        } catch (IOException ex){
-            ex.printStackTrace();
-        }
-
-        this.factory = null;
-        return factors.toArray(new CostFunction[]{});
-    }
-
-    private void parseLine(String line) {
-
-        Method m = getParsingMethod(line);
-        if (m != null) {
-            try {
-                m.invoke(this, line);
-            } catch (Exception ex) {
-                System.err.println("Conflict line: " + line);
-                ex.printStackTrace();
+            if (firstLine.equals("MARKOV")) {
+                return new UAIDatasetReader().read(input, factory);
+            } else {
+                return new UCIDatasetReader().read(input, factory, firstLine);
             }
-        } else {
-            System.out.println("[WARNING] Ignored line: " + line);
-        }
-    }
 
-    public void parseAgent(String line) {
-        //if (agent.reset(line).find()) {}
-    }
-
-    public void parseVariable(String line) {
-        if (!variable.reset(line).find()) {
-            return;
-        }
-        
-        Variable v = new Variable(variable.group(1),
-                Integer.valueOf(variable.group(3)));
-        variables.put(variable.group(1), v);
-    }
-
-    public void parseConstraint(String line) {
-        if (!constraint.reset(line).find()) {
-            return;
-        }
-
-        String[] parts = line.split("\\s+");
-        Variable[] vars = new Variable[parts.length-1];
-        for(int i=1; i<parts.length; i++) {
-            vars[i-1] = variables.get(parts[i]);
-        }
-
-        lastFactor = factory.buildCostFunction(vars);
-        factors.add(lastFactor);
-    }
-
-    public void parseNogood(String line) {
-        if (!nogood.reset(line).find()) {
-            return;
-        }
-
-        lastFactor.setValue(new int[] {
-            Integer.valueOf(nogood.group(1)),
-            Integer.valueOf(nogood.group(2)),
-        }, 1);
-    }
-
-    public void parseF(String line) {
-        if (!f.reset(line).find()) {
-            return;
-        }
-
-        String[] parts = line.split("\\s+");
-        int[] idx = new int[parts.length-2];
-        for(int i=1; i<parts.length-1; i++) {
-            idx[i-1] = Integer.valueOf(parts[i]);
-        }
-
-        if (lastFactor == null) return;
-        lastFactor.setValue(idx, Double.valueOf(parts[parts.length-1]));
-    }
-
-    private Method getParsingMethod(String line) {
-        // Construct parsing method name
-        String mn = line.split("\\s+", 2)[0].toLowerCase();
-        if (mn.length() == 0) return null;
-        
-        mn = "parse" + mn.substring(0, 1).toUpperCase() + mn.substring(1);
-
-        // Look for it
-        Method m = null;
-        try {
-            m = getClass().getMethod(mn, new Class[]{String.class});
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             ex.printStackTrace();
+            System.err.println("Unable to read the problem.");
+            System.exit(1);
         }
 
-        return m;
+        return null;
     }
 
 }
