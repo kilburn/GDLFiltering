@@ -91,6 +91,7 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
             CostFunction b = belief.remove(belief.size()-1);
             b = b.combine(belief);
             localLB = b.getValue(b.getOptimalConfiguration(null));
+            //log.debug(vpnode.getName() + " LB: " + localLB);
         } else {
             localLB = -summarize.getNoGood();
         }
