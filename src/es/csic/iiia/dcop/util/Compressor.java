@@ -39,6 +39,7 @@
 package es.csic.iiia.dcop.util;
 
 import es.csic.iiia.dcop.CostFunction;
+import es.csic.iiia.dcop.MapCostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.cli.CliApp;
 import java.io.ByteArrayOutputStream;
@@ -182,8 +183,21 @@ public class Compressor {
             }
 
             // Values next
-            for (int i = 0; i < f.getSize(); i++) {
-                c.write(toByteArray(f.getValue(i)));
+            if (f instanceof MapCostFunction) {
+                // Sparse functions are handled by key/value!
+                Iterator<Integer> iter = f.iterator();
+                while (iter.hasNext()) {
+                    c.write(toByteArray(iter.next()));
+                }
+                iter = f.iterator();
+                while (iter.hasNext()) {
+                    c.write(toByteArray(f.getValue(iter.next())));
+                }
+            } else {
+                // Dense functions simply send all values
+                for (int i = 0; i < f.getSize(); i++) {
+                    c.write(toByteArray(f.getValue(i)));
+                }
             }
 
             // Get byte count
