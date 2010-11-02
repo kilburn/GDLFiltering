@@ -98,61 +98,70 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMessage>
 
             // Value propagation
             iteration.setR(i);
-            
-            UPResults iterResults = iteration.run(maxIterations);
-            if (iterResults == null) {
-                // Early termination, use results from the previous iteration
+            boolean exit = false;
 
-            }
-            globalResults.addCycle(iterResults.getMaximalCcc(), iterResults.getTotalCcc());
-            for (Object result : iterResults.getResults()) {
-                globalResults.add((UPResult)result);
-            }
-            System.out.println("ITERBYTES " + iterResults.getSentBytes());
+            for (int j=0; j<i; j++) {
 
-            Summarize summarize = null;
-            for(FIGdlNode n : getNodes()) {
-                if (n.getRelations().size() > 0) {
-                    summarize = n.getRelations().get(0).getFactory().getSummarizeOperation();
+                UPResults iterResults = iteration.run(maxIterations);
+                if (iterResults == null) {
+                    // Early termination, use results from the previous iteration
+                    exit = true;
                     break;
                 }
+                globalResults.addCycle(iterResults.getMaximalCcc(), iterResults.getTotalCcc());
+                for (Object result : iterResults.getResults()) {
+                    globalResults.add((UPResult)result);
+                }
+                System.out.println("ITERBYTES " + iterResults.getSentBytes());
+
+                Summarize summarize = null;
+                for(FIGdlNode n : getNodes()) {
+                    if (n.getRelations().size() > 0) {
+                        summarize = n.getRelations().get(0).getFactory().getSummarizeOperation();
+                        exit = true;
+                        break;
+                    }
+                }
+
+
+                // Solution extraction
+                VPGraph st = new VPGraph(this, new OptimalStrategy());
+                VPResults res = st.run(1000);
+
+                // Bound calculation
+                UBGraph ub = new UBGraph(st);
+                UBResults ubres = ub.run(1000);
+                System.out.println("THIS_ITER_LB " + ubres.getBound());
+                System.out.println("THIS_ITER_UB " + ubres.getCost());
+
+    /*            if (Double.isInfinite(ubres.getCost()) || Double.isInfinite(ubres.getBound())) {
+                    fallbackLastIteration();
+                    break;
+                }
+     *
+     */
+
+                final double newCost = ubres.getCost();
+                if (Double.isNaN(bestCost) || summarize.isBetter(newCost, bestCost)) {
+                    bestCost = newCost;
+                }
+                final double newBound = ubres.getBound();
+                if (Double.isNaN(bestBound) || !summarize.isBetter(newBound, bestBound)) {
+                    bestBound = newBound;
+                }
+                System.out.println("ITER_LB " + bestBound);
+                System.out.println("ITER_UB " + bestCost);
+
+                if (Math.abs(newCost - bestBound) < 0.0005) {
+                    exit = true;
+                    break;
+                }
+
+                // Build the new iteration
+                iteration.prepareNextIteration(bestCost);
             }
 
-            
-            // Solution extraction
-            VPGraph st = new VPGraph(this, new OptimalStrategy());
-            VPResults res = st.run(1000);
-            
-            // Bound calculation
-            UBGraph ub = new UBGraph(st);
-            UBResults ubres = ub.run(1000);
-            System.out.println("THIS_ITER_LB " + ubres.getBound());
-            System.out.println("THIS_ITER_UB " + ubres.getCost());
-
-/*            if (Double.isInfinite(ubres.getCost()) || Double.isInfinite(ubres.getBound())) {
-                fallbackLastIteration();
-                break;
-            }
- *
- */
-
-            final double newCost = ubres.getCost();
-            if (Double.isNaN(bestCost) || summarize.isBetter(newCost, bestCost)) {
-                bestCost = newCost;
-            }
-            final double newBound = ubres.getBound();
-            if (Double.isNaN(bestBound) || !summarize.isBetter(newBound, bestBound)) {
-                bestBound = newBound;
-            }
-            System.out.println("ITER_LB " + bestBound);
-            System.out.println("ITER_UB " + bestCost);
-
-            if (Math.abs(newCost - bestBound) < 0.0005) {
-                break;
-            }
-
-            // Build the new iteration
-            iteration.prepareNextIteration(bestCost);
+            if (exit) break;
         }
 
         return globalResults;
