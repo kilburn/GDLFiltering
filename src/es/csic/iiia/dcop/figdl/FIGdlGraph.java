@@ -46,6 +46,7 @@ import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.up.UPResults;
+import es.csic.iiia.dcop.util.FunctionCounter;
 import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.VPResults;
 import es.csic.iiia.dcop.vp.strategy.OptimalStrategy;
@@ -109,6 +110,7 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMessage>
                 globalResults.add((UPResult)result);
             }
             System.out.println("ITERBYTES " + iterResults.getSentBytes());
+            System.out.println("ITERSPARSITY " + FunctionCounter.getRatio());
 
             Summarize summarize = null;
             for(FIGdlNode n : getNodes()) {
