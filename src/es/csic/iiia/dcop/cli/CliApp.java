@@ -59,6 +59,7 @@ import es.csic.iiia.dcop.figdl.FIGdlFactory;
 import es.csic.iiia.dcop.gdl.GdlFactory;
 import es.csic.iiia.dcop.igdl.IGdlFactory;
 import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
+import es.csic.iiia.dcop.io.CliqueTreeSerializer;
 import es.csic.iiia.dcop.io.DatasetReader;
 import es.csic.iiia.dcop.io.TreeReader;
 import es.csic.iiia.dcop.jt.JTResults;
@@ -157,16 +158,40 @@ public class CliApp {
     private int maxCliqueVariables = 14;
     private int maxJunctionTreeTries = 1;
     private double randomVariance = 0;
+
+    /**
+     * Tree/Graph import/export options
+     */
+    private boolean createCliqueTree = false;
     private boolean createCliqueGraph = false;
     private boolean createFactorGraph = false;
     private InputStream treeFile = null;
     private String cliqueGraphFile = "cgraph.dot";
     private String factorGraphFile = "fgraph.dot";
+    private String cliqueTreeFile  = "problem.tree";
+
+
     private boolean createTraceFile = false;
     private String traceFile = "trace.txt";
     private int IGdlR = 2;
     private int partitionStrategy = PS_RANKUP;
     private int solutionStrategy = SS_OPTIMAL;
+
+    public String getCliqueTreeFile() {
+        return cliqueTreeFile;
+    }
+
+    public void setCliqueTreeFile(String cliqueTreeFile) {
+        this.cliqueTreeFile = cliqueTreeFile;
+    }
+
+    public boolean isCreateCliqueTree() {
+        return createCliqueTree;
+    }
+
+    public void setCreateCliqueTree(boolean createCliqueTree) {
+        this.createCliqueTree = createCliqueTree;
+    }
 
     /**
      * Get the maximum number of junction tree's built trying to minimize the
@@ -441,6 +466,23 @@ public class CliApp {
         }
     }
 
+    private void createCliqueTreeFile(UPGraph cg) {
+        if (!createCliqueTree) {
+            return;
+        }
+
+        FileWriter fw;
+        try {
+            fw = new FileWriter(new File(cliqueTreeFile), false);
+            CliqueTreeSerializer serializer = new CliqueTreeSerializer();
+            fw.write(serializer.serializeTreeStructure(cg));
+            fw.close();
+        } catch (IOException ex) {
+            System.err.println("Error: " + ex.getLocalizedMessage());
+            System.exit(1);
+        }
+    }
+
     private UPGraph createCliqueGraph(CostFunction[] factors) {
         
         UPGraph cg = null;
@@ -457,10 +499,10 @@ public class CliApp {
                     IGdlPartitionStrategy pStrategy = null;
                     switch (partitionStrategy) {
                         case PS_SCP_C:
-                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.SCPcStrategy();
+                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.scp.SCPcStrategy();
                             break;
                         case PS_SCP_CC:
-                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.SCPccStrategy();
+                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.scp.SCPccStrategy();
                             break;
                         case PS_RANKUP:
                             pStrategy = new es.csic.iiia.dcop.igdl.strategy.RankUpStrategy();
@@ -500,7 +542,7 @@ public class CliApp {
                     cg = JunctionTreeAlgo.buildGraph(factory, treeReader.getFactorDistribution(), treeReader.getAdjacency());
                     cg.setRoot(treeReader.getRoot());
                     JunctionTree jt = new JunctionTree(cg);
-                    results = jt.run(100);
+                    results = jt.run(1000);
                     variables = results.getMaxVariables();
                 } else {
                     int minVariables = Integer.MAX_VALUE;
@@ -536,6 +578,7 @@ public class CliApp {
                 System.out.println("MAX_CLIQUE_SIZE " + results.getMaxSize());
                 System.out.println("MAX_EDGE_VARIABLES " + results.getMaxEdgeVariables());
                 createCliqueGraphFile(cg);
+                createCliqueTreeFile(cg);
                 if (results.getMaxVariables() >= maxCliqueVariables) {
                     System.err.println("Error: minimum clique variables found is greater than the specified max.");
                     System.exit(1);

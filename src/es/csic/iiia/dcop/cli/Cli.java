@@ -88,6 +88,9 @@ public class Cli {
         System.err.println("    where heuristic is one of: ");
         System.err.println("      - mcn : chooses the most connected node next, randomly breaking ties.");
         System.err.println("      - mcs : chooses the most related node next, then mcn to break ties.");
+        System.err.println("  --export-tree[=treeFile]");
+        System.err.println("    Exports the clique graph to <graphFile>, so that it can be reused later");
+        System.err.println("    with the --load-tree argument.");
         System.err.println("  -f [graphFile], --factor-graph[=graphFile]");
         System.err.println("    Outputs the factor graph representation in .dot format to [graphFile],");
         System.err.println("    or \"fgraph.dot\" if unspecified.");
@@ -151,6 +154,7 @@ public class Cli {
             new LongOpt("heuristic", LongOpt.REQUIRED_ARGUMENT, null, 'e'),
             new LongOpt("factor-graph", LongOpt.OPTIONAL_ARGUMENT, null, 'f'),
             new LongOpt("clique-graph", LongOpt.OPTIONAL_ARGUMENT, null, 'g'),
+            new LongOpt("export-tree", LongOpt.OPTIONAL_ARGUMENT, null, 3),
             new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
             new LongOpt("igdl-r", LongOpt.REQUIRED_ARGUMENT, null, 'i'),
             new LongOpt("jt-tries", LongOpt.REQUIRED_ARGUMENT, null, 'j'),
@@ -203,6 +207,14 @@ public class Cli {
                         System.exit(0);
                     }
                     FIGdlGraph.setMinR(min_r);
+                    break;
+
+                case 3:
+                    cli.setCreateCliqueTree(true);
+                    arg = g.getOptarg();
+                    if (arg != null) {
+                        cli.setCliqueTreeFile(arg);
+                    }
                     break;
 
                 case 'a':

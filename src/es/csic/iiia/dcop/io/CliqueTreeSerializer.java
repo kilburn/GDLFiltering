@@ -36,57 +36,65 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.up;
+package es.csic.iiia.dcop.io;
 
-import es.csic.iiia.dcop.CostFunctionFactory;
-import es.csic.iiia.dcop.mp.DefaultGraph;
+import es.csic.iiia.dcop.CostFunction;
+import es.csic.iiia.dcop.Variable;
+import es.csic.iiia.dcop.up.UPEdge;
+import es.csic.iiia.dcop.up.UPGraph;
+import es.csic.iiia.dcop.up.UPNode;
 import java.util.ArrayList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Collection;
+import java.util.HashMap;
 
 /**
- * Utility propagation graph.
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public abstract class UPGraph<N extends UPNode, E extends UPEdge, R extends UPResults>
-        extends DefaultGraph<N,E,R> {
+public class CliqueTreeSerializer {
+
+    private HashMap<UPNode, Integer> nodeIndexes;
+    private StringBuilder buf;
     
-    private static Logger log = LoggerFactory.getLogger(UPGraph.class);
-    private CostFunctionFactory factory;
+    public String serializeTreeStructure(UPGraph graph) {
+        buf = new StringBuilder();
+        nodeIndexes = new HashMap<UPNode, Integer>();
+        int i = 0;
+        ArrayList<UPNode> nodes = graph.getNodes();
+        for (UPNode n : nodes) {
+            buf.append("NODE n" + i + "\n");
+            nodeIndexes.put(n, i);
+            ArrayList<CostFunction> rs = n.getRelations();
+            for (CostFunction f : rs) {
+                buf.append("F");
+                for (Variable v : f.getVariableSet()) {
+                    buf.append(" " + v.getName());
+                }
+                buf.append("\n");
+            }
+            i++;
+        }
 
-    public void setFactory(CostFunctionFactory factory) {
-        this.factory = factory;
-        for (N clique : getNodes()) {
-            clique.setFactory(factory);
+        // DFS graph walking
+        int root = graph.getRoot();
+        this._dfs_walk(nodes.get(root), null);
+
+        return buf.toString();
+    }
+
+    private void _dfs_walk(UPNode node, UPEdge incomingEdge) {
+        Collection<UPEdge> edges = node.getEdges();
+        for (UPEdge e : edges) {
+            if (e == incomingEdge) {
+                buf.append("LINK n")
+                   .append(nodeIndexes.get(e.getDestination(node)))
+                   .append(" n")
+                   .append(nodeIndexes.get(node))
+                   .append("\n");
+            } else {
+                this._dfs_walk(e.getDestination(node), e);
+            }
         }
     }
 
-    public CostFunctionFactory getFactory() {
-        return factory;
-    }
-
-    @Override
-    public void reportIteration(int i) {
-        log.trace("------- Iter " + i);
-    }
-
-    @Override
-    public void reportStart() {
-        log.debug("\n======= PROPAGATING UTILITIES");
-    }
-
-    @Override
-    public void reportResults(R results) {
-        if (log.isTraceEnabled()) {
-            log.trace("------- " + results);
-        }
-    }
-
-    /*
-     * More boilerplate code to make the compiler realize the types.
-     */
-    @Override public ArrayList<N> getNodes() {return super.getNodes();}
-    @Override public ArrayList<E> getEdges() {return super.getEdges();}
-    @Override public R run(int maxIterations) {return super.run(maxIterations);}
 }
