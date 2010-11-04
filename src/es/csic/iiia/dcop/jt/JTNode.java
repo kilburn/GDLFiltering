@@ -43,6 +43,7 @@ import es.csic.iiia.dcop.mp.AbstractNode;
 import es.csic.iiia.dcop.mp.Edge;
 import es.csic.iiia.dcop.mp.Result;
 import es.csic.iiia.dcop.up.UPNode;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map.Entry;
@@ -59,8 +60,10 @@ public class JTNode extends AbstractNode<JTEdge, Result> {
     private static Logger log = LoggerFactory.getLogger(JunctionTree.class);
 
     private UPNode node;
-    private Set<Variable> previousVariables;
+    
     private Set<Variable> reachableVariables;
+    private HashMap<Edge, HashSet<Variable>> variablesSent;
+    private boolean converged;
 
     public JTNode(UPNode node) {
         this.node = node;
@@ -74,48 +77,48 @@ public class JTNode extends AbstractNode<JTEdge, Result> {
     public void initialize() {
         setMode(Modes.GRAPH);
 
+        variablesSent = new HashMap<Edge, HashSet<Variable>>(getEdges().size());
         Set variables = node.getVariables();
         for (Edge e : getEdges()) {
+            HashSet<Variable> variablesSentEdge = new HashSet<Variable>(variables);
+            variablesSent.put(e, variablesSentEdge);
             e.sendMessage(this, new JTMessage(variables));
         }
 
-        previousVariables = new HashSet<Variable>();
         reachableVariables = new HashSet<Variable>(variables);
     }
 
     public long run() {
         // CC count
         long cc = 0;
+        converged = true;
 
-        // Keep the list of previously reachable variables
-        previousVariables.addAll(reachableVariables);
+        // List of new variables received
+        ArrayList<Variable> newVariables = new ArrayList<Variable>();
 
-        // Count incoming variable occurrences
-        HashMap<Variable,Integer> count = new HashMap<Variable,Integer>();
+        // Track received variables
         for (JTEdge e : getEdges()) {
             JTMessage msg = e.getMessage(this);
             for (Variable v : msg.getVariables()) {
-                reachableVariables.add(v);
-                Integer c = count.get(v);
-                if (c==null) {
-                    c = 0;
+                if (reachableVariables.contains(v)) {
+                    node.addVariable(v);
+                } else {
+                    converged = false;
                 }
-                count.put(v, ++c);
-            }
-        }
-
-        // Seek variables with more than 1 ocurrence
-        for (Entry<Variable,Integer> e : count.entrySet()) {
-            if (e.getValue() > 1) {
-                node.addVariable(e.getKey());
+                reachableVariables.add(v);
+                newVariables.add(v);
             }
         }
 
         // Send updated messages
         for (JTEdge e : getEdges()) {
-            HashSet<Variable> msg = new HashSet<Variable>(reachableVariables);
-            msg.removeAll(e.getMessage(this).getVariables());
-            msg.addAll(node.getVariables());
+            HashSet<Variable> variablesSentEdge = variablesSent.get(e);
+            ArrayList<Variable> msg = new ArrayList<Variable>(newVariables);
+            for (Variable v : e.getMessage(this).getVariables()) {
+                msg.remove(v);
+            }
+            msg.removeAll(variablesSentEdge);
+            variablesSentEdge.addAll(msg);
             e.sendMessage(this, new JTMessage(msg));
         }
         
@@ -125,11 +128,10 @@ public class JTNode extends AbstractNode<JTEdge, Result> {
     }
 
     public boolean isConverged() {
-        boolean res = previousVariables.equals(reachableVariables);
-        if (res && log.isTraceEnabled()) {
+        if (converged && log.isTraceEnabled()) {
             log.trace("Node " + this.getName() + " done.");
         }
-        return res;
+        return converged;
     }
 
     public Result end() {
