@@ -97,7 +97,10 @@ public class CostFunctionFactory {
     }
 
     public CostFunction buildCostFunction(CostFunction function) {
-        return denseFactory.buildCostFunction(function);
+        double sparsity = function.getNumberOfNoGoods()/(double)function.getSize();
+        return sparsity > 0.8
+                ? sparseFactory.buildCostFunction(function)
+                : denseFactory.buildCostFunction(function);
     }
 
     public CostFunction buildSparseCostFunction(Variable[] variables) {
@@ -113,7 +116,10 @@ public class CostFunctionFactory {
     }
 
     public CostFunction buildSparseCostFunction(CostFunction function) {
-        return sparseFactory.buildCostFunction(function);
+        double sparsity = function.getNumberOfNoGoods()/(double)function.getSize();
+        return sparsity > 0.8
+                ? sparseFactory.buildCostFunction(function)
+                : denseFactory.buildCostFunction(function);
     }
 
     public void setMode(CostFunction.Summarize summarizeOperation,

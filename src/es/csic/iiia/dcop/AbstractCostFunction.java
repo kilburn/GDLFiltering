@@ -713,6 +713,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         CostFunction result = factory.buildCostFunction(this);
         Summarize sum = factory.getSummarizeOperation();
         Combine   com = factory.getCombineOperation();
+        final double ng = sum.getNoGood();
         ArrayList<CostFunction> fs = new ArrayList<CostFunction>(infs.size());
 
         // Reduce to shared variables (lower memory usage)
@@ -725,11 +726,14 @@ public abstract class AbstractCostFunction implements CostFunction {
             }
         }
 
-        // Perform the actual filtering
+        // Perform the actual filtering (only on "good" tuples)
         boolean allNogoods = true; VariableAssignment map = null;
-        for (int i = 0, len = result.getSize(); i < len; i++) {
+        Iterator<Integer> it = iterator();
+        while(it.hasNext()) {
+            final int i = it.next();
             map = result.getMapping(i, map);
             double v = getValue(i);
+            if (v == ng) continue;
 
             for (CostFunction f : fs) {
                 v = com.eval(v, f.getValue(map));
@@ -742,7 +746,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         }
 
         if (allNogoods) {
-            return factory.buildCostFunction(new Variable[0], sum.getNoGood());
+            return factory.buildCostFunction(new Variable[0], ng);
         }
 
         return result;
