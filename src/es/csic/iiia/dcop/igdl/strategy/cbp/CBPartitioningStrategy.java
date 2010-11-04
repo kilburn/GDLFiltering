@@ -45,8 +45,6 @@ import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
-import es.csic.iiia.dcop.util.metrics.Metric;
-import es.csic.iiia.dcop.util.metrics.Norm1;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -59,10 +57,6 @@ import org.slf4j.LoggerFactory;
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
 public abstract class CBPartitioningStrategy extends IGdlPartitionStrategy {
-
-    public final static int ORDER_MIN = 1;
-    public final static int ORDER_MAX = 2;
-    public static int order = ORDER_MAX;
 
     /**
      * Removes from the cvars set all these variables that do not count
@@ -120,9 +114,7 @@ public abstract class CBPartitioningStrategy extends IGdlPartitionStrategy {
 
     private ArrayList<CostFunction> partition2(ArrayList<CostFunction> fs,
             UPEdge<? extends IUPNode, IGdlMessage> e) {
-        final Comparator<Candidate> comparator = order == ORDER_MAX
-            ? new CandidateComparatorMax()
-            : new CandidateComparatorMin();
+            final Comparator<Candidate> comparator = new CandidateComparatorMax();
 
             fs = new ArrayList<CostFunction>(fs);
             ArrayList<Candidate> candidates = expand(fs, e);
@@ -231,11 +223,6 @@ public abstract class CBPartitioningStrategy extends IGdlPartitionStrategy {
     private class CandidateComparatorMax implements Comparator<Candidate> {
         public int compare(Candidate o1, Candidate o2) {
             return o1.gain.compareTo(o2.gain);
-        }
-    }
-    private class CandidateComparatorMin implements Comparator<Candidate> {
-        public int compare(Candidate o1, Candidate o2) {
-            return o2.gain.compareTo(o1.gain);
         }
     }
 }

@@ -87,6 +87,12 @@ public class OptimalStrategy extends VPStrategy {
                     ArrayList<CostFunction> rb = mapping.isEmpty()
                         ? upnode.getBelief()
                         : upnode.getReducedBelief(mapping);
+
+                    if (rb.isEmpty()) {
+                        System.err.println("Empty belief?!");
+                        upnode.getBelief();
+                        System.exit(0);
+                    }
                     reducedBelief = rb.remove(rb.size()-1).combine(rb);
                     //log.trace("FRB: " + reducedBelief);
                     lastMap = mapping;

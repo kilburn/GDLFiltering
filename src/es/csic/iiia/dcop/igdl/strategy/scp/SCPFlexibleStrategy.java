@@ -36,11 +36,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.igdl.strategy;
+package es.csic.iiia.dcop.igdl.strategy.scp;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
+import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
@@ -48,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.TreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +57,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class SCPccStrategy extends IGdlPartitionStrategy {
+public class SCPFlexibleStrategy extends IGdlPartitionStrategy {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
 
@@ -71,13 +73,17 @@ public class SCPccStrategy extends IGdlPartitionStrategy {
         // Message to be sent
         IGdlMessage msg = new IGdlMessage();
         
-        // Parts is a list of functions that will be sent through the edge
-        // (after summarizing to the edge's variable)
-        ArrayList<CostFunction> parts = new ArrayList<CostFunction>();
+        // Partitions is a list of functions that will be sent through the edge
+        // (after summarizing to the edge's variables)
+        ArrayList<ArrayList<CostFunction>> partitions = new ArrayList<ArrayList<CostFunction>>();
 
-        // Partsev is a list containing the sets of edge variables present
-        // in the corresponding part.
-        ArrayList<Collection<Variable>> partsev = new ArrayList<Collection<Variable>>();
+        // PartitionsVariables is a list containing the sets of variables present
+        // in the corresponding partition.
+        ArrayList<Collection<Variable>> partitionsVariables = new ArrayList<Collection<Variable>>();
+
+        // Sort the input functions by decreasing arity, randomizing the order
+        // of functions with the same arity.
+        //fs = sortByArityWithRandomness(fs);
 
         // Iterate over the functions, merging them whenever it's possible
         // or creating a new function when it's not.
@@ -85,19 +91,19 @@ public class SCPccStrategy extends IGdlPartitionStrategy {
         log.trace("-- Calculating partitions (r=" + r + ")");
         for (CostFunction inFunction : fs) {
             // Obtain a set of variables in inFunction
-            Collection<Variable> sev = new HashSet<Variable>(inFunction.getVariableSet());
+            Collection<Variable> variableSet = new HashSet<Variable>(inFunction.getVariableSet());
 
             // Check if the source function is already bigger than what we
             // can manage.
-            while (sev.size() > r) {
+            while (variableSet.size() > r) {
                 // Remove one variable
-                Variable v = sev.iterator().next();
-                sev.remove(v);
+                Variable v = variableSet.iterator().next();
+                variableSet.remove(v);
 
                 if (log.isTraceEnabled()) {
                     log.trace("\tRemoving " + v.getName() + " from " + inFunction);
                 }
-                inFunction = inFunction.summarize(sev.toArray(new Variable[0]));
+                inFunction = inFunction.summarize(variableSet.toArray(new Variable[0]));
                 if (log.isTraceEnabled()) {
                     log.trace("\t-> " + inFunction);
                 }
@@ -107,12 +113,12 @@ public class SCPccStrategy extends IGdlPartitionStrategy {
             // inFunction
             boolean merged = false;
             
-            for (int i=0, len=parts.size(); i<len; i++) {
-                final Collection<Variable> partev = partsev.get(i);
+            for (int i=0, len=partitions.size(); i<len; i++) {
+                final Collection<Variable> partitionVariables = partitionsVariables.get(i);
 
                 // Tmp is to avoid editing the original set
-                Collection<Variable> tmp = new HashSet<Variable>(partev);
-                tmp.addAll(sev);
+                Collection<Variable> tmp = new HashSet<Variable>(partitionVariables);
+                tmp.addAll(variableSet);
                 //log.trace("\t\t(" + i + ") tmp size: " + tmp.size());
                 if (tmp.size() <= r) {
 
@@ -120,9 +126,8 @@ public class SCPccStrategy extends IGdlPartitionStrategy {
                         log.trace("\tP(" + i + ") += " + inFunction);
                     }
 
-                    parts.set(i, parts.get(i).combine(inFunction));
-                    msg.cc += parts.get(i).getSize();
-                    partsev.set(i, tmp);
+                    partitions.get(i).add(inFunction);
+                    partitionsVariables.set(i, tmp);
                     merged = true;
                     break;
                 }
@@ -133,33 +138,62 @@ public class SCPccStrategy extends IGdlPartitionStrategy {
             if (!merged) {
 
                 if (log.isTraceEnabled()) {
-                    log.trace("\tP(" + parts.size() + ")  = " + inFunction);
+                    log.trace("\tP(" + partitions.size() + ")  = " + inFunction);
                 }
 
-                parts.add(inFunction);
-                partsev.add(sev);
+                ArrayList<CostFunction> newPartition = new ArrayList<CostFunction>();
+                newPartition.add(inFunction);
+                partitions.add(newPartition);
+                partitionsVariables.add(variableSet);
             }
         }
 
         // Now that we have all the parts, summarize and add them
         log.trace("-- Resulting partitions");
-        for (int i=0, len=parts.size(); i<len; i++) {
+        Collection<Variable> edgeVariables = Arrays.asList(e.getVariables());
+        for (int i=0, len=partitions.size(); i<len; i++) {
             if (log.isTraceEnabled()) {
-                log.trace("\t" + parts.get(i));
+                log.trace("\t" + partitions.get(i));
             }
-            partsev.get(i).retainAll(Arrays.asList(e.getVariables()));
-            final Variable[] vars = partsev.get(i).toArray(new Variable[0]);
-            final CostFunction f = parts.get(i).summarize(vars);
+            partitionsVariables.get(i).retainAll(edgeVariables);
+            final Variable[] vars = partitionsVariables.get(i).toArray(new Variable[0]);
+            final ArrayList<CostFunction> partition = partitions.get(i);
+            final CostFunction f = partition.remove(partition.size()-1).combine(partition).summarize(vars);
             msg.addFactor(f);
             msg.cc += f.getSize();
             if (log.isTraceEnabled()) {
-                log.trace("\tSummarizes to : " + parts.get(i).summarize(vars));
+                log.trace("\tSummarizes to : " + f);
             }
         }
 
         msg = this.filterMessage(e, msg);
 
         return msg;
+    }
+
+    private ArrayList<CostFunction> sortByArityWithRandomness(ArrayList<CostFunction> fs) {
+        TreeMap<Integer, ArrayList<CostFunction>> arityMap = new TreeMap<Integer, ArrayList<CostFunction>>();
+
+        for(CostFunction f : fs) {
+            final Integer arity = f.getSize();
+            ArrayList<CostFunction> fsOfArity = null;
+            if (arityMap.containsKey(arity)) {
+                fsOfArity = arityMap.get(arity);
+            } else {
+                fsOfArity = new ArrayList<CostFunction>();
+            }
+            fsOfArity.add(f);
+            arityMap.put(arity, fsOfArity);
+        }
+
+        ArrayList<CostFunction> result = new ArrayList<CostFunction>();
+        for(Integer key : arityMap.keySet()) {
+            ArrayList<CostFunction> fsOfArity = arityMap.get(key);
+            //Collections.shuffle(fsOfArity);
+            result.addAll(fsOfArity);
+        }
+
+        return result;
     }
 
 }

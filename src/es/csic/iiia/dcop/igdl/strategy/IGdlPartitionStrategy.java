@@ -45,6 +45,7 @@ import es.csic.iiia.dcop.igdl.IGdlMessage;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
+import es.csic.iiia.dcop.util.FunctionCounter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -109,6 +110,10 @@ public abstract class IGdlPartitionStrategy {
         this.previousEdges = previousEdges;
     }
 
+    protected double getBound() {
+        return bound;
+    }
+
     protected CostFunction filterFactor(UPEdge<? extends IUPNode, IGdlMessage> e,
             CostFunction factor) {
 
@@ -137,19 +142,11 @@ public abstract class IGdlPartitionStrategy {
             return msg;
         }
 
-
         IGdlMessage res = new IGdlMessage();
         IGdlMessage prev = fetchPreviousMessage(e);
         ArrayList<CostFunction> fs = prev.getFactors();
 
-        /*
-        CostFunction prevf = null;
-        for(CostFunction f : prev.getFactors()) {
-            prevf = f.combine(prevf);
-        }*/
-
-        // Now, every previously incoming factor is used to filter the outgoing
-        // factor.
+        // Every previously incoming factor is used to filter the outgoing factor.
         for (CostFunction outf : msg.getFactors()) {
             if (log.isTraceEnabled()) {
                 log.trace("Input b:" + bound + " f:" + outf);
@@ -172,7 +169,7 @@ public abstract class IGdlPartitionStrategy {
      * @param e
      * @return
      */
-    private IGdlMessage fetchPreviousMessage(UPEdge<? extends IUPNode, IGdlMessage> e) {
+    protected final IGdlMessage fetchPreviousMessage(UPEdge<? extends IUPNode, IGdlMessage> e) {
         IGdlMessage prev = e.getMessage(node);
         if (prev == null) {
             // Fetch the "previous" copy of the current edge
@@ -186,7 +183,7 @@ public abstract class IGdlPartitionStrategy {
         return prev;
     }
 
-    private UPEdge<? extends IUPNode, IGdlMessage> fetchPreviousEdge(UPEdge<? extends IUPNode, IGdlMessage> edge) {
+    protected final UPEdge<? extends IUPNode, IGdlMessage> fetchPreviousEdge(UPEdge<? extends IUPNode, IGdlMessage> edge) {
 
         for (UPEdge<? extends IUPNode, IGdlMessage> e : previousEdges) {
             if (e.getNode1() == edge.getNode1() && e.getNode2() == edge.getNode2()) {

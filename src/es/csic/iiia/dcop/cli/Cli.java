@@ -123,9 +123,11 @@ public class Cli {
         System.err.println("      - lre-cc   : content-based local relative error strategy (communication and computation bounded).");
         System.err.println("      - lre-c    : content-based local relative error strategy (just communication bounded).");
         System.err.println("      - lmre-c   : content-based local max relative error strategy (just communication bounded).");
+        System.err.println("      - lmre-cc  : content-based local max relative error strategy (communication and computation bounded).");
         //System.err.println("      - rankdown : merges functions from highest ranked (max-min value) to lowest.");
         System.err.println("      - lre-d    : greedy decomposition using LRE.");
         System.err.println("      - lmre-d   : greedy decomposition using LMRE.");
+        System.err.println("      - superset : superset scope-based partitioning.");
         System.err.println("      - zeros-d  : zero-avoiding decomposition.");
         System.err.println("  -r [variance], --random-noise[=variance]");
         System.err.println("    Adds random noise with <variance> variance, or 0.001 if unspecified.");
@@ -336,32 +338,30 @@ public class Cli {
                 case 'p':
                     arg = g.getOptarg();
                     if (arg.equals("scp-c"))
-                        cli.setPartitionStrategy(CliApp.PS_SCP_C);
+                        cli.setPartitionStrategy(CliApp.PS.SCP_C);
                     else if (arg.equals("scp-cc"))
-                        cli.setPartitionStrategy(CliApp.PS_SCP_CC);
+                        cli.setPartitionStrategy(CliApp.PS.SCP_CC);
                     else if (arg.equals("rankup"))
-                        cli.setPartitionStrategy(CliApp.PS_RANKUP);
+                        cli.setPartitionStrategy(CliApp.PS.RANKUP);
                     else if (arg.equals("rankdown"))
-                        cli.setPartitionStrategy(CliApp.PS_RANKDOWN);
+                        cli.setPartitionStrategy(CliApp.PS.RANKDOWN);
                     else if (arg.equals("lre-d"))
-                        cli.setPartitionStrategy(CliApp.PS_LRE_D);
+                        cli.setPartitionStrategy(CliApp.PS.LRE_D);
                     else if (arg.equals("lmre-d"))
-                        cli.setPartitionStrategy(CliApp.PS_LMRE_D);
+                        cli.setPartitionStrategy(CliApp.PS.LMRE_D);
                     else if (arg.equals("zeros-d"))
-                        cli.setPartitionStrategy(CliApp.PS_ZEROS_D);
-                    else if (arg.equals("lre-cc")) {
-                        cli.setPartitionStrategy(CliApp.PS_LRE_CC);
-                    } else if (arg.equals("lre-cc-min")) {
-                        cli.setPartitionStrategy(CliApp.PS_LRE_CC);
-                        CBPartitioningStrategy.order = CBPartitioningStrategy.ORDER_MIN;
-                    } else if (arg.equals("lre-c")) {
-                        cli.setPartitionStrategy(CliApp.PS_LRE_C);
-                    } else if (arg.equals("lre-c-min")) {
-                        cli.setPartitionStrategy(CliApp.PS_LRE_C);
-                        CBPartitioningStrategy.order = CBPartitioningStrategy.ORDER_MIN;
-                    } else if (arg.equals("lmre-c")) {
-                        cli.setPartitionStrategy(CliApp.PS_LMRE_C);
-                    } else {
+                        cli.setPartitionStrategy(CliApp.PS.ZEROS_D);
+                    else if (arg.equals("lre-cc"))
+                        cli.setPartitionStrategy(CliApp.PS.LRE_CC);
+                    else if (arg.equals("lmre-cc"))
+                        cli.setPartitionStrategy(CliApp.PS.LMRE_CC);
+                    else if (arg.equals("lre-c"))
+                        cli.setPartitionStrategy(CliApp.PS.LRE_C);
+                    else if (arg.equals("lmre-c"))
+                        cli.setPartitionStrategy(CliApp.PS.LMRE_C);
+                    else if (arg.equals("superset"))
+                        cli.setPartitionStrategy(CliApp.PS.SUPERSET);
+                    else {
                         System.err.println("Error: invalid heuristic \"" + arg + "\"");
                         System.exit(0);
                     }

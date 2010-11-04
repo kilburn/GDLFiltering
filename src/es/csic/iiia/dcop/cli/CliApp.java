@@ -84,6 +84,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,19 +124,35 @@ public class CliApp {
      */
     public static final int JT_HEURISTIC_MCN = 1;
 
-    /**
-     * Partitioning strategies
-     */
-    public static final int PS_SCP_C    = 0;
-    public static final int PS_SCP_CC   = 1;
-    public static final int PS_RANKUP   = 2;
-    public static final int PS_RANKDOWN = 3;
-    public static final int PS_LRE_D    = 4;
-    public static final int PS_ZEROS_D  = 5;
-    public static final int PS_LRE_C    = 6;
-    public static final int PS_LRE_CC   = 7;
-    public static final int PS_LMRE_C   = 8;
-    public static final int PS_LMRE_D   = 9;
+    public enum PS {
+        SCP_C (es.csic.iiia.dcop.igdl.strategy.scp.SCPcStrategy.class),
+        SCP_CC (es.csic.iiia.dcop.igdl.strategy.scp.SCPccStrategy.class),
+        RANKUP (es.csic.iiia.dcop.igdl.strategy.RankUpStrategy.class),
+        RANKDOWN (es.csic.iiia.dcop.igdl.strategy.RankDownStrategy.class),
+        LRE_D (es.csic.iiia.dcop.igdl.strategy.gd.LREGreedyStrategy.class),
+        LMRE_D (es.csic.iiia.dcop.igdl.strategy.gd.LMREGreedyStrategy.class),
+        ZEROS_D (es.csic.iiia.dcop.igdl.strategy.ZerosDecompositionStrategy.class),
+        LRE_C (es.csic.iiia.dcop.igdl.strategy.cbp.LREcStrategy.class),
+        LRE_CC (es.csic.iiia.dcop.igdl.strategy.cbp.LREccStrategy.class),
+        LMRE_C (es.csic.iiia.dcop.igdl.strategy.cbp.LMREcStrategy.class),
+        LMRE_CC (es.csic.iiia.dcop.igdl.strategy.cbp.LMREccStrategy.class),
+        SUPERSET (es.csic.iiia.dcop.igdl.strategy.scp.SCPSuperSetStrategy.class),
+        ;
+
+        private IGdlPartitionStrategy instance;
+        PS(Class<? extends IGdlPartitionStrategy> c) {
+            try {
+                instance = c.newInstance();
+            } catch (InstantiationException ex) {
+                java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IllegalAccessException ex) {
+                java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        IGdlPartitionStrategy getInstance() {
+            return instance;
+        }
+    }
 
     /**
      * Solution propagation strategies
@@ -174,7 +191,7 @@ public class CliApp {
     private boolean createTraceFile = false;
     private String traceFile = "trace.txt";
     private int IGdlR = 2;
-    private int partitionStrategy = PS_RANKUP;
+    private PS partitionStrategy = PS.RANKUP;
     private int solutionStrategy = SS_OPTIMAL;
 
     public String getCliqueTreeFile() {
@@ -496,39 +513,7 @@ public class CliApp {
                     factory = new GdlFactory();
                     ((GdlFactory)factory).setMode(Modes.TREE_UP);
                 } else {
-                    IGdlPartitionStrategy pStrategy = null;
-                    switch (partitionStrategy) {
-                        case PS_SCP_C:
-                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.scp.SCPcStrategy();
-                            break;
-                        case PS_SCP_CC:
-                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.scp.SCPccStrategy();
-                            break;
-                        case PS_RANKUP:
-                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.RankUpStrategy();
-                            break;
-                        case PS_RANKDOWN:
-                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.RankDownStrategy();
-                            break;
-                        case PS_LRE_D:
-                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.gd.LREGreedyStrategy();
-                            break;
-                        case PS_LMRE_D:
-                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.gd.LMREGreedyStrategy();
-                            break;
-                        case PS_ZEROS_D:
-                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.ZerosDecompositionStrategy();
-                            break;
-                        case PS_LRE_C:
-                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.cbp.LREcStrategy();
-                            break;
-                        case PS_LRE_CC:
-                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.cbp.LREccStrategy();
-                            break;
-                        case PS_LMRE_C:
-                            pStrategy = new es.csic.iiia.dcop.igdl.strategy.cbp.LMREcStrategy();
-                            break;
-                    }
+                    IGdlPartitionStrategy pStrategy = partitionStrategy.getInstance();
                     factory = algorithm == ALGO_IGDL
                         ? new IGdlFactory(this.getIGdlR(), pStrategy)
                         : new FIGdlFactory(this.getIGdlR(), pStrategy);
@@ -682,7 +667,7 @@ public class CliApp {
         }
     }
 
-    void setPartitionStrategy(int partitionStrategy) {
+    void setPartitionStrategy(PS partitionStrategy) {
         this.partitionStrategy = partitionStrategy;
     }
 

@@ -187,14 +187,14 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
     public ArrayList<CostFunction> getBelief() {
 
         /* Re-compute cost functions */
-        costFunctions = new ArrayList<CostFunction>(relations);
+        /*costFunctions = new ArrayList<CostFunction>(relations);
         for (UPEdge<FIGdlNode, IGdlMessage> e : getEdges()) {
             IGdlMessage msg = e.getMessage(this);
             if (msg != null)
                 costFunctions.addAll(msg.getFactors());
-        }
+        }*/
 
-        return costFunctions;
+        return new ArrayList<CostFunction>(costFunctions);
     }
 
     private long sendMessages() {

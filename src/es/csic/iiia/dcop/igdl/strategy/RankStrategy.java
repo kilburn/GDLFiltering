@@ -38,6 +38,7 @@
 
 package es.csic.iiia.dcop.igdl.strategy;
 
+import es.csic.iiia.dcop.igdl.strategy.scp.SCPcStrategy;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
 import es.csic.iiia.dcop.up.IUPNode;
