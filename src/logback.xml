@@ -9,7 +9,7 @@
 -->
 
 <configuration>
-<!--
+
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <layout class="ch.qos.logback.classic.PatternLayout">
             <Pattern>%msg%n</Pattern>
@@ -17,9 +17,8 @@
     </appender>
 
     <root>
-        <level value="DEBUG" />
+        <level value="OFF" />
         <appender-ref ref="STDOUT" />
-        <appender-ref ref="FILE" /> 
     </root>
--->
+
 </configuration>
