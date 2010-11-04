@@ -52,8 +52,6 @@ public class FunctionCounter {
     private static long nDense;
     private static long nTuples;
     private static long nNaNTuples;
-    private static long nNonFilteredTuples;
-    private static long nFilteredTuples;
 
     public static void incSparse() {
         nSparse++;
@@ -64,6 +62,8 @@ public class FunctionCounter {
     }
 
     public static void countFunction(CostFunction f) {
+        nTuples += f.getSize();
+        nNaNTuples += f.getNumberOfNoGoods();
         if (f instanceof HypercubeCostFunction) {
             nDense++;
         } else if (f instanceof SparseCostFunction) {
@@ -76,27 +76,14 @@ public class FunctionCounter {
     public static double getRatio() {
         System.out.println(
                 "nDense: " + nDense + ", nSparse: " + nSparse +
-                ", nFiltered: " + (nNonFilteredTuples - nFilteredTuples) +
-                ", remainingTuples: " + (nNaNTuples/(double)nTuples)
+                ", filteredTuples: " + (nNaNTuples/(double)nTuples)
         );
         double res = nSparse/(double)(nSparse+nDense);
         nSparse = 0;
         nDense = 0;
-        nNonFilteredTuples = 0;
-        nFilteredTuples = 0;
         nTuples = 0;
         nNaNTuples = 0;
         return res;
-    }
-
-    public static void countTuples(CostFunction outf) {
-        nNonFilteredTuples += outf.getSize() - outf.getNumberOfNoGoods();
-    }
-
-    public static void countFilteredTuples(CostFunction outf) {
-        nFilteredTuples += outf.getSize() - outf.getNumberOfNoGoods();
-        nTuples += outf.getSize();
-        nNaNTuples += outf.getNumberOfNoGoods();
     }
 
 }

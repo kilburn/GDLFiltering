@@ -43,6 +43,7 @@ import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.up.UPMessage;
 import es.csic.iiia.dcop.util.Compressor;
 import es.csic.iiia.dcop.util.CostFunctionStats;
+import es.csic.iiia.dcop.util.FunctionCounter;
 import java.util.ArrayList;
 
 /**
@@ -77,6 +78,9 @@ public class IGdlMessage implements UPMessage {
     }
 
     public long getBytes() {
+        for(CostFunction f : factors) {
+            FunctionCounter.countFunction(f);
+        }
         return Compressor.getCompressedSizeFs(factors);
     }
 
