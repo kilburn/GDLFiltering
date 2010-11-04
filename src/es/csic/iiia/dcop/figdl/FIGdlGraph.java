@@ -96,12 +96,13 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMessage>
         double bestCost = Double.NaN, bestBound = Double.NaN;
 
         for (int i=minR; i<=maxR; i++) {
+            System.out.println("Now r=" + i);
 
             // Value propagation
             iteration.setR(i);
             boolean exit = false;
 
-            for (int j=0; j<i; j++) {
+            for (int j=0; j<1; j++) {
 
                 UPResults iterResults = iteration.run(maxIterations);
                 if (iterResults == null) {
@@ -120,7 +121,6 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMessage>
                 for(FIGdlNode n : getNodes()) {
                     if (n.getRelations().size() > 0) {
                         summarize = n.getRelations().get(0).getFactory().getSummarizeOperation();
-                        exit = true;
                         break;
                     }
                 }
