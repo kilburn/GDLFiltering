@@ -106,7 +106,6 @@ public class VPTest {
         MCS mcs = new MCS(f);
         UPFactory fac = new GdlFactory();
         cg = JunctionTreeAlgo.buildGraph(fac, mcs.getFactorDistribution(), mcs.getAdjacency());
-        JunctionTreeAlgo.propagateVariables(cg);
     }
 
     @After

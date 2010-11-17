@@ -49,6 +49,7 @@ import es.csic.iiia.dcop.util.Compressor;
  */
 public class GdlMessage implements UPMessage {
     private CostFunction factor;
+    private boolean direction = UPMessage.DIR_UP;
 
     public GdlMessage(CostFunction factor) {
         this.factor = factor;
@@ -65,5 +66,13 @@ public class GdlMessage implements UPMessage {
     @Override
     public String toString() {
         return factor.toString();
+    }
+
+    public void setDirection(boolean direction) {
+        this.direction = direction;
+    }
+
+    public boolean isUP() {
+        return direction == UPMessage.DIR_UP;
     }
 }

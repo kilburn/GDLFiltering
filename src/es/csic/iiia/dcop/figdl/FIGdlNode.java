@@ -82,6 +82,15 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
     private double bound = Double.NaN;
 
     /**
+     * (Experimental) Number of broken links in received functions as an
+     * heuristic of information accuracy.
+     */
+    private int nBrokenLinks = 0;
+    private int localBrokenLinks = 0;
+    private int maxBrokenLinks = 0;
+    private boolean firstMessageSent = false;
+
+    /**
      * Constructs a new clique with the specified member variable and null
      * potential.
      *
@@ -132,6 +141,8 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
         }
 
         strategy.setFilteringOptions(bound, previousEdges);
+        firstMessageSent = false;
+        localBrokenLinks = 0;
     }
 
     /**
@@ -141,6 +152,8 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
     @Override
     public void initialize() {
         super.initialize();
+        firstMessageSent = false;
+        localBrokenLinks = 0;
 
         // Tree-based operation
         setMode(Modes.TREE_UP);
@@ -165,12 +178,19 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
         for (CostFunction f : relations) {
             costFunctions.add(factory.buildCostFunction(f));
         }
+
         // And the received messages
+        nBrokenLinks = 0; maxBrokenLinks = 0;
         Collection<UPEdge<FIGdlNode, IGdlMessage>> edges = getEdges();
         for (UPEdge<FIGdlNode, IGdlMessage> e : edges) {
             IGdlMessage msg = e.getMessage(this);
-            if (msg != null)
+            if (msg != null) {
                 costFunctions.addAll(msg.getFactors());
+                if (msg.isUP()) {
+                    nBrokenLinks += msg.getnBrokenLinks();
+                    maxBrokenLinks = Math.max(maxBrokenLinks, msg.getMaxBrokenLinks());
+                }
+            }
         }
 
         // Send updated messages
@@ -185,15 +205,6 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
 
     @Override
     public ArrayList<CostFunction> getBelief() {
-
-        /* Re-compute cost functions */
-        /*costFunctions = new ArrayList<CostFunction>(relations);
-        for (UPEdge<FIGdlNode, IGdlMessage> e : getEdges()) {
-            IGdlMessage msg = e.getMessage(this);
-            if (msg != null)
-                costFunctions.addAll(msg.getFactors());
-        }*/
-
         return new ArrayList<CostFunction>(costFunctions);
     }
 
@@ -216,7 +227,16 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
 
             // Remove the factors received through this edge
             if (e.getMessage(this) != null) {
-                fs.removeAll(e.getMessage(this).getFactors());
+                
+                // This is equivalent to doing:
+                // fs.removeAll(e.getMessage(this).getFactors());
+                // ... but removing is an expensive operation, so
+                // we build a new list instead which is faster.
+                fs = new ArrayList<CostFunction>(relations);
+                for (UPEdge<FIGdlNode, IGdlMessage> e2 : getEdges()) {
+                    if (e == e2) continue;
+                    fs.addAll(e2.getMessage(this).getFactors());
+                }
             }
 
             // Obtain the partition
@@ -231,6 +251,12 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
                 msg.setBelief(lb);
             }
             cc += msg.cc;
+
+            if (!firstMessageSent) {
+                localBrokenLinks = msg.getnBrokenLinks();
+                msg.setMaxBrokenLinks(maxBrokenLinks + localBrokenLinks);
+                firstMessageSent = true;
+            }
 
             e.sendMessage(this, msg);
         }
@@ -284,6 +310,14 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
     @Override
     public double getBound() {
         return bound;
+    }
+
+    public int getnBrokenLinks() {
+        return nBrokenLinks;
+    }
+
+    public int getMaxBrokenLinks() {
+        return maxBrokenLinks + localBrokenLinks;
     }
 
 }

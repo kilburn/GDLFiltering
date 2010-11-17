@@ -127,7 +127,6 @@ public class JunctionTreeTest {
 
         GdlFactory gf = new GdlFactory();
         UPGraph result = JunctionTreeAlgo.buildGraph(gf, factors, adjacency);
-        JunctionTreeAlgo.propagateVariables(result);
         //System.out.println(result);
     }
 
@@ -153,7 +152,6 @@ public class JunctionTreeTest {
         MCS mcs = new MCS(factors);
         UPFactory f = new GdlFactory();
         UPGraph result = JunctionTreeAlgo.buildGraph(f, mcs.getFactorDistribution(), mcs.getAdjacency());
-        JunctionTreeAlgo.propagateVariables(result);
         System.out.println(result);
     }
 

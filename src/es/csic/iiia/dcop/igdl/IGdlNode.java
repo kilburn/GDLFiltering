@@ -43,7 +43,6 @@ import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.VariableAssignment;
-import es.csic.iiia.dcop.igdl.strategy.scp.SCPccStrategy;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
@@ -134,22 +133,20 @@ public class IGdlNode extends IUPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
         long cc = 0;
 
         // Rebuild cost function list
-        ArrayList<CostFunction> previousCostFunctions = costFunctions;
         costFunctions = new ArrayList<CostFunction>();
-        // Populate with our assigned relations
+        
+        // ... populating it with our assigned relations
         for (CostFunction f : relations) {
             costFunctions.add(factory.buildCostFunction(f));
         }
-        // And the received messages
+
+        // ... and the received messages
         Collection<UPEdge<IGdlNode, IGdlMessage>> edges = getEdges();
         for (UPEdge<IGdlNode, IGdlMessage> e : edges) {
             IGdlMessage msg = e.getMessage(this);
             if (msg != null)
                 costFunctions.addAll(msg.getFactors());
         }
-
-        // Compute our belief
-        // ?
 
         // Send updated messages
         sendMessages();

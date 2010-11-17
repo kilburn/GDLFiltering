@@ -45,6 +45,7 @@ import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.mp.AbstractNode;
 import es.csic.iiia.dcop.up.UPNode;
 import es.csic.iiia.dcop.vp.strategy.VPStrategy;
+import es.csic.iiia.dcop.vp.strategy.VPStrategy.MappingResults;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.slf4j.Logger;
@@ -61,6 +62,7 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
     
     private ArrayList<VariableAssignment> mappings;
     private VPStrategy strategy;
+    private ArrayList<Integer> upMappings;
 
     private UPNode upnode;
 
@@ -82,11 +84,14 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
             VPMessage msg = e.getMessage(this);
             if (msg != null) {
                 mappings = msg.getMappings();
+                break;
             }
         }
 
         // Take our decision
-        mappings = strategy.getExtendedMappings(mappings, upnode);
+        MappingResults r = strategy.getExtendedMappings(mappings, upnode);
+        mappings = r.getMappings();
+        upMappings = r.getuMap();
 
         // Send messages
         for(VPEdge e : getEdges()) {
@@ -139,7 +144,10 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
         Collection<CostFunction> fs = upnode.getRelations();
 
         for (VariableAssignment map : mappings) {
-            log.trace(map.toString());
+            if (log.isTraceEnabled()) {
+                log.trace(map.toString());
+            }
+            
             double value = 0;
             for (CostFunction f : fs) {
                 final double v = f.getValue(map);
@@ -148,6 +156,10 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
             values.add(value);
         }
         return values;
+    }
+
+    public ArrayList<Integer> getUpMappings() {
+        return upMappings;
     }
 
     public UPNode getUPNode() {

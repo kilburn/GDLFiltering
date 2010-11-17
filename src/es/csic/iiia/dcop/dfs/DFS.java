@@ -45,14 +45,16 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
 public abstract class DFS {
+
+    private static Logger log = LoggerFactory.getLogger(DFS.class);
 
     private CostFunction[] factors;
     private Variable[] variables;
@@ -71,14 +73,101 @@ public abstract class DFS {
         this.factors = factors;
         this.initialize();
         random = new Random(System.nanoTime());
-        try {
-            Thread.sleep(50);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DFS.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
 
     public int getRoot() {
+        char[][] newAdjacency = new char[variables.length][variables.length];
+
+        // We will use the node that minimizes tree height
+        HashMap<Integer, HashSet<Integer>> unvisitedNodeNeighbors =
+                new HashMap<Integer, HashSet<Integer>>();
+        HashMap<Integer, HashSet<Integer>> nodeNeighbors =
+                new HashMap<Integer, HashSet<Integer>>();
+
+        // Initialize nodeNeighbors map
+        for (int i=0; i<variables.length; i++) {
+            nodeNeighbors.put(i, new HashSet<Integer>());
+        }
+
+        // For each variable...
+        for (int i=0; i<variables.length; i++) {
+            // Populate the nodeNeighbors map
+            for (int j=i+1; j<variables.length; j++) {
+                if (adjacency[i][j] > 0 || adjacency[j][i] > 0) {
+                    nodeNeighbors.get(i).add(j);
+                    nodeNeighbors.get(j).add(i);
+                }
+            }
+        }
+
+        // Now initialize the univisitedNodeNeighbors' buckets
+        for (int i=0; i<variables.length; i++) {
+            final int neighs = nodeNeighbors.get(i).size();
+            HashSet<Integer> bucket = unvisitedNodeNeighbors.get(neighs);
+            if (bucket == null) {
+                bucket = new HashSet<Integer>();
+            }
+            bucket.add(i);
+            unvisitedNodeNeighbors.put(neighs, bucket);
+        }
+
+        for (Integer nN : unvisitedNodeNeighbors.keySet()) {
+            log.trace("Bucket " + nN);
+        }
+
+        // Now iteratively eliminate nodes from bucket (current iteration leaves)
+        HashSet<Integer> bucket = unvisitedNodeNeighbors.remove(1);
+
+        while (!bucket.isEmpty()) {
+
+            if (log.isTraceEnabled())
+                log.trace("chosen bucket: " + bucket);
+            
+            unvisitedNodeNeighbors.put(1, new HashSet<Integer>());
+            // For each leaf...
+            for (Integer i : bucket) {
+                log.trace("Removing var " + i);
+
+                // FALSE! When the selected node has no neighbors, it means that every-
+                // one else has been eliminated and it is the root!
+                HashSet<Integer> neighbors = nodeNeighbors.get(i);
+                if (neighbors.isEmpty()) {
+                    rootIndex = i;
+                    root = variables[i];
+                    if (log.isTraceEnabled()) {
+                        log.trace("RootIndex: " + i);
+                        log.trace("Root: " + root);
+                    }
+                    return rootIndex;
+                }
+
+                // Remove it from its neighbors list, and decrease the neighbors
+                // bucket assignment.
+                for (Integer j : neighbors) {
+
+                    int neighs = nodeNeighbors.get(j).size();
+                    nodeNeighbors.get(j).remove(i);
+                    unvisitedNodeNeighbors.get(neighs).remove(j);
+                    if (log.isTraceEnabled())
+                        log.trace("updating neigh " + j + ", rem: " + (neighs-1) +
+                            ", unvisited: " + nodeNeighbors.get(j));
+
+                    HashSet<Integer> newBucket = unvisitedNodeNeighbors.get(neighs-1);
+                    if (newBucket == null) {
+                        newBucket = new HashSet<Integer>();
+                        unvisitedNodeNeighbors.put(neighs-1, newBucket);
+                    }
+                    newBucket.add(j);
+                }
+
+            }
+
+            bucket = unvisitedNodeNeighbors.remove(1);
+            if (bucket == null || bucket.isEmpty()) {
+                bucket = unvisitedNodeNeighbors.remove(0);
+            }
+        }
+        
         return rootIndex;
     }
 
@@ -142,22 +231,33 @@ public abstract class DFS {
         rootIndex = variableIndices.get(root);
 
         // Now build the tree
-        buildTree(adjacency, root, 0);
+        int nNodes = buildTree(adjacency, root, 0);
 
         // On some strange cases, the problem is effectively split in two
         // separate subproblems, so the built tree may not contain all variables.
         // In this cases, we keep building new "trees" and merging them
         // to the root (with an empty separator) so we are able to solve all
         // subproblems at once.
+        int subtrees = 1;
+        ArrayList<Integer> subtreeNodes = new ArrayList<Integer>();
+        subtreeNodes.add(nNodes);
         while(remainingVariables.size() > 0) {
+            subtrees++;
             next = getMostConnectedNodes(remainingVariables);
             Variable n = this.pickRandomly(next);
             System.err.print("Warning: disconnected primal graph, next var: ");
             System.err.println(n);
-            buildTree(adjacency, n, 1);
+            nNodes = buildTree(adjacency, n, 1);
+            subtreeNodes.add(nNodes);
             // Connect n to the root
             adjacency[variableIndices.get(root)][variableIndices.get(n)] = 1;
         }
+
+        StringBuilder buf = new StringBuilder("Subtrees: [");
+        for(Integer i : subtreeNodes) {
+            buf.append(i).append(", ");
+        }
+        System.out.println(buf.append("]").toString());
     }
 
     private void chosenVariable(Variable variable) {
@@ -172,7 +272,15 @@ public abstract class DFS {
         }
     }
 
-    private void buildTree(char[][] adjacency, Variable currentNode, int depth) {
+    /**
+     *
+     * @param adjacency
+     * @param currentNode
+     * @param depth
+     * @return number of nodes in the tree.
+     */
+    private int buildTree(char[][] adjacency, Variable currentNode, int depth) {
+        int res = 1;
         
         // Store the depth of this variable
         if (currentNode == null) {
@@ -182,7 +290,7 @@ public abstract class DFS {
 
         // Ending condition
         if (remainingVariables.isEmpty()) {
-            return;
+            return res;
         }
 
         HashSet<Variable> next = neighboors.get(currentNode);
@@ -198,11 +306,13 @@ public abstract class DFS {
             adjacency[variableIndices.get(v)][variableIndices.get(currentNode)] = 1;
              
             // Recurse
-            buildTree(adjacency, v, depth+1);
+            res += buildTree(adjacency, v, depth+1);
 
             // Update the lits because some childs may have been placed.
             next.retainAll(remainingVariables);
         }
+
+        return res;
     }
 
     public HashMap<Variable, CostFunction[]> getFactorAssignments() {

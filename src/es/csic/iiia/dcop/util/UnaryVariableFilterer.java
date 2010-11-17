@@ -36,31 +36,44 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.vp;
+package es.csic.iiia.dcop.util;
 
-import es.csic.iiia.dcop.mp.AbstractEdge;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import es.csic.iiia.dcop.CostFunction;
+import es.csic.iiia.dcop.Variable;
+import es.csic.iiia.dcop.VariableAssignment;
+import java.util.HashSet;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class VPEdge extends AbstractEdge<VPNode, VPMessage> {
+public class UnaryVariableFilterer {
 
-    private static Logger log = LoggerFactory.getLogger(VPGraph.class);
+    public static VariableAssignment filterVariables(CostFunction[] factors) {
 
-    public VPEdge(VPNode c1, VPNode c2) {
-        super(c1,c2);
-    }
+        VariableAssignment assignment = new VariableAssignment();
 
-    @Override public boolean sendMessage(VPNode sender, VPMessage message) {
-        VPNode recipient = getDestination(sender);
-        message.filter(recipient.getUPNode().getVariables());
-        boolean res = super.sendMessage(sender, message);
-        if (res && log.isTraceEnabled())
-            log.trace(sender.getName() + " -> " + getDestination(sender).getName() + " : " + message);
-        return res;
+        for (int i=0, len=factors.length; i<len; i++) {
+            final CostFunction f = factors[i];
+
+            // Remove the unary variables from the variable set
+            boolean changed = false;
+            HashSet<Variable> remainingVars = new HashSet<Variable>(f.getVariableSet());
+            for (Variable v : f.getVariableSet()) {
+                if (v.getDomain() == 1) {
+                    remainingVars.remove(v);
+                    assignment.put(v, 0);
+                    changed = true;
+                }
+            }
+
+            // Summarize to the remaining variables
+            if (changed) {
+                factors[i] = f.summarize(remainingVars.toArray(new Variable[0]));
+            }
+        }
+
+        return assignment;
     }
 
 }

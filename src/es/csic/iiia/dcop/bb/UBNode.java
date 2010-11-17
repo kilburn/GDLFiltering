@@ -85,6 +85,7 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
 
         // Calculate the local optimum acording to the agreed solution
         localUBs = vpnode.getGlobalValues();
+        
         if (getEdges().size() == 1) {
             // TODO: Change this abomination
             ArrayList<CostFunction> belief = vpnode.getUPNode().getBelief();
@@ -108,11 +109,15 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
 
         // Collect received values
         ubs = new ValuesArray(localUBs);
+        ArrayList<Integer> upMappings = vpnode.getUpMappings();
+        
         lb = localLB;
         for (UBEdge e : getEdges()) {
             UBMessage msg = e.getMessage(this);
             if (msg != null) {
-                ubs = ubs.combine(msg.getUBs(), combine);
+                ValuesArray inValues = msg.getUBs();
+                inValues = inValues.extend(upMappings);
+                ubs = ubs.combine(inValues, combine);
                 if (!summarize.isBetter(msg.getLB(), lb)) {
                     lb = msg.getLB();
                 }
@@ -144,6 +149,9 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
             UBMessage inMsg = e.getMessage(this);
             if (inMsg != null) {
                 mub = mub.combine(inMsg.getUBs().invert(combine), combine);
+            } else {
+                ArrayList<Integer> upMappings = vpnode.getUpMappings();
+                mub = mub.reduce(upMappings, summarize);
             }
             UBMessage msg = new UBMessage();
             msg.setUBs(mub);

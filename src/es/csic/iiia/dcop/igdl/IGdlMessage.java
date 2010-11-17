@@ -56,6 +56,9 @@ public class IGdlMessage implements UPMessage {
     private ArrayList<CostFunction> factors;
     private CostFunction belief = null;
     public long cc = 0;
+    private int nBrokenLinks = 0;
+    private int maxBrokenLinks = 0;
+    private boolean direction = UPMessage.DIR_UP;
 
     public IGdlMessage(ArrayList<CostFunction> factors) {
         this.factors = factors;
@@ -83,12 +86,6 @@ public class IGdlMessage implements UPMessage {
         }
         return Compressor.getCompressedSizeFs(factors);
     }
-
-//    public long getCompressedSize() {
-//        for(CostFunction f : getFactors()) {
-//            f.getValues()
-//        }
-//    }
 
     @Override
     public String toString() {
@@ -121,4 +118,29 @@ public class IGdlMessage implements UPMessage {
         }
         return buf.toString();
     }
+
+    public int getnBrokenLinks() {
+        return nBrokenLinks;
+    }
+
+    public void setnBrokenLinks(int nBrokenLinks) {
+        this.nBrokenLinks = nBrokenLinks;
+    }
+
+    public int getMaxBrokenLinks() {
+        return maxBrokenLinks;
+    }
+
+    public void setMaxBrokenLinks(int maxBrokenLinks) {
+        this.maxBrokenLinks = maxBrokenLinks;
+    }
+
+    public boolean isUP() {
+        return direction == UPMessage.DIR_UP;
+    }
+
+    public void setDirection(boolean direction) {
+        this.direction = direction;
+    }
+
 }

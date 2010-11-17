@@ -41,6 +41,7 @@ package es.csic.iiia.dcop;
 import es.csic.iiia.dcop.CostFunction.Combine;
 import es.csic.iiia.dcop.CostFunction.Summarize;
 import java.util.ArrayList;
+import java.util.TreeSet;
 
 /**
  *
@@ -58,6 +59,51 @@ public class ValuesArray extends ArrayList<Double> {
 
     public ValuesArray(ValuesArray other) {
         super(other);
+    }
+
+    public ValuesArray extend(ArrayList<Integer> upMappings) {
+        if (this.size() == upMappings.size())
+            return this;
+
+        if (this.size() > upMappings.size())
+            throw new ArrayIndexOutOfBoundsException("Can not extend to a lower number of elements");
+
+        final int len = upMappings.size();
+        ValuesArray result = new ValuesArray(len);
+        for(int i=0; i<len; i++) {
+            result.add(this.get(upMappings.get(i)));
+        }
+
+        return result;
+    }
+
+    public ValuesArray reduce(ArrayList<Integer> upMappings,
+            Summarize sum) {
+        if (this.size() != upMappings.size())
+            throw new ArrayIndexOutOfBoundsException("Can not reduce to a higher number of elements");
+
+        TreeSet<Integer> reduced = new TreeSet<Integer>(upMappings);
+        
+        final int len = reduced.size();
+        ValuesArray result = new ValuesArray(len);
+        for(int i=0; i<len; i++) {
+            // Fetch the best value that maps to i
+            double bestValue = sum.getNoGood();
+
+            for (int j=0, len2 = size(); j<len2; j++) {
+                // Skip it if it doesn't map to i
+                if (upMappings.get(j) != i) continue;
+
+                final double value = get(j);
+                if (sum.isBetter(value, bestValue))
+                    bestValue = value;
+            }
+
+            // Set the result
+            result.add(bestValue);
+        }
+
+        return result;
     }
 
     public double getBest(Summarize sum) {

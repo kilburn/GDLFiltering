@@ -45,6 +45,7 @@ import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.up.UPNode;
 import es.csic.iiia.dcop.vp.strategy.VPStrategy;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Random;
@@ -69,10 +70,10 @@ public class VPGraph extends DefaultGraph<VPNode,VPEdge,VPResults> {
         super();
         this.strategy = strategy;
         setMode(Modes.TREE_DOWN);
-        buildRandomSpanningTree(cg);
+        buildSpanningTree(cg);
     }
 
-    private void buildRandomSpanningTree(UPGraph cg) {
+    private void buildSpanningTree(UPGraph cg) {
         // Get the list of nodes and setup the visited node list
         ArrayList<UPNode> remainingNodes = new ArrayList<UPNode>(cg.getNodes());
         HashSet<UPNode> visitedNodes = new HashSet<UPNode>();
@@ -92,17 +93,42 @@ public class VPGraph extends DefaultGraph<VPNode,VPEdge,VPResults> {
             // It's not a tree, so we just choose a random node as root and the
             // tree will be automatically built.
             root = random.nextInt(remainingNodes.size());
+
+            // Now construct the VPTree from the UPGraph
+            visitedNodes.add(remainingNodes.remove(root));
+
+            // Now recursively make random walks until all nodes are in the tree
+            walkGraph(visitedNodes, remainingNodes);
+        } else {
+            // It is already a tree and we have a root node, so walk the graph
+            walkTree(remainingNodes.get(root), visitedNodes);
+            //System.out.println("Root:" + root + ", node: " + remainingNodes.get(root));
         }
         setRoot(root);
-        
-        // Now construct the VPTree from the UPGraph
-        visitedNodes.add(remainingNodes.remove(root));
-
-        // Now recursively make random walks until all nodes are in the tree
-        walkTree(visitedNodes, remainingNodes);
     }
 
-    private void walkTree(HashSet<UPNode> visitedNodes, ArrayList<UPNode> remainingNodes) {
+    private void walkTree(UPNode node, HashSet<UPNode> visitedNodes) {
+
+        visitedNodes.add(node);
+        
+        Collection<UPEdge> destinations = node.getEdges();
+        for (UPEdge edge : destinations) {
+            // Check that this edge leads to a child (unvisited node)
+            UPNode other = edge.getDestination(node);
+            if (visitedNodes.contains(other)) {
+                continue;
+            }
+
+            // If so, add the edge and walk to the child
+            VPNode n1 = nodes.get(node);
+            VPNode n2 = nodes.get(other);
+            addEdge(new VPEdge(n1,n2));
+            walkTree(other, visitedNodes);
+        }
+
+    }
+
+    private void walkGraph(HashSet<UPNode> visitedNodes, ArrayList<UPNode> remainingNodes) {
 
         // Ending condition
         if (remainingNodes.isEmpty()) {
@@ -158,7 +184,7 @@ public class VPGraph extends DefaultGraph<VPNode,VPEdge,VPResults> {
         VPNode n2 = nodes.get(node);
         addEdge(new VPEdge(n1,n2));
 
-        walkTree(visitedNodes, remainingNodes);
+        walkGraph(visitedNodes, remainingNodes);
     }
 
     @Override

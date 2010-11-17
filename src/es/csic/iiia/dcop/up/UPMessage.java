@@ -45,5 +45,10 @@ import es.csic.iiia.dcop.mp.Message;
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
 public interface UPMessage extends Message {
+    public static boolean DIR_UP   = true;
+    public static boolean DIR_DOWN = false;
+
     public long getBytes();
+    public void setDirection(boolean direction);
+    public boolean isUP();
 }

@@ -45,6 +45,7 @@ import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.mp.AbstractNode;
 import es.csic.iiia.dcop.mp.Edge;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +55,7 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public abstract class UPNode<E extends Edge, R extends UPResult> extends
+public abstract class UPNode<E extends UPEdge, R extends UPResult> extends
         AbstractNode<E, R> {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
@@ -248,5 +249,10 @@ public abstract class UPNode<E extends Edge, R extends UPResult> extends
         }
         return res;
     }
+
+    /**
+     * Boilerplate code. The compiler is stupid.
+     */
+    @Override public Collection<E> getEdges() { return super.getEdges(); }
 
 }

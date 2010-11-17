@@ -48,6 +48,7 @@ import es.csic.iiia.dcop.up.UPGraph;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.TreeMap;
 import org.slf4j.Logger;
@@ -72,6 +73,9 @@ public class SCPccStrategy extends IGdlPartitionStrategy {
         
         // Message to be sent
         IGdlMessage msg = new IGdlMessage();
+
+        // Tracking of broken variable links
+        int nBrokenLinks = 0;
         
         // Partitions is a list of functions that will be sent through the edge
         // (after summarizing to the edge's variables)
@@ -107,6 +111,8 @@ public class SCPccStrategy extends IGdlPartitionStrategy {
                 if (log.isTraceEnabled()) {
                     log.trace("\t-> " + inFunction);
                 }
+
+                nBrokenLinks++;
             }
 
             // Check if there's a suitable existing part where we can merge
@@ -119,6 +125,7 @@ public class SCPccStrategy extends IGdlPartitionStrategy {
                 // Tmp is to avoid editing the original set
                 Collection<Variable> tmp = new HashSet<Variable>(partitionVariables);
                 tmp.addAll(variableSet);
+                
                 //log.trace("\t\t(" + i + ") tmp size: " + tmp.size());
                 if (tmp.size() <= r) {
 
@@ -130,6 +137,10 @@ public class SCPccStrategy extends IGdlPartitionStrategy {
                     partitionsVariables.set(i, tmp);
                     merged = true;
                     break;
+                } else {
+                    tmp = new HashSet<Variable>(partitionVariables);
+                    tmp.retainAll(variableSet);
+                    nBrokenLinks += tmp.size();
                 }
 
             }
@@ -158,7 +169,12 @@ public class SCPccStrategy extends IGdlPartitionStrategy {
             partitionsVariables.get(i).retainAll(edgeVariables);
             final Variable[] vars = partitionsVariables.get(i).toArray(new Variable[0]);
             final ArrayList<CostFunction> partition = partitions.get(i);
+            //long time = System.currentTimeMillis();
             final CostFunction f = partition.remove(partition.size()-1).combine(partition).summarize(vars);
+            //time = System.currentTimeMillis() - time;
+            //if (time > 100) {
+            //    System.out.println("Time spent combining: " + time);
+            //}
             msg.addFactor(f);
             msg.cc += f.getSize();
             if (log.isTraceEnabled()) {
@@ -167,6 +183,7 @@ public class SCPccStrategy extends IGdlPartitionStrategy {
         }
 
         msg = this.filterMessage(e, msg);
+        msg.setnBrokenLinks(nBrokenLinks);
 
         return msg;
     }

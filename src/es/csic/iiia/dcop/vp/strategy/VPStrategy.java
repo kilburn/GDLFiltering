@@ -48,6 +48,26 @@ import java.util.ArrayList;
  */
 public abstract class VPStrategy {
 
-    public abstract ArrayList<VariableAssignment> getExtendedMappings(ArrayList<VariableAssignment> mappings, UPNode upnode);
+    public abstract MappingResults getExtendedMappings(ArrayList<VariableAssignment> mappings, UPNode upnode);
+
+    public class MappingResults {
+        
+        private ArrayList<VariableAssignment> mappings;
+        private ArrayList<Integer> uMap;
+
+        public MappingResults(ArrayList<VariableAssignment> mappings,
+                ArrayList<Integer> uMap) {
+            this.mappings = mappings;
+            this.uMap = uMap;
+        }
+
+        public ArrayList<VariableAssignment> getMappings() {
+            return mappings;
+        }
+
+        public ArrayList<Integer> getuMap() {
+            return uMap;
+        }
+    }
 
 }

@@ -68,6 +68,7 @@ import es.csic.iiia.dcop.mp.AbstractNode.Modes;
 import es.csic.iiia.dcop.up.UPFactory;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.util.Compressor;
+import es.csic.iiia.dcop.util.UnaryVariableFilterer;
 import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.VPResults;
 import es.csic.iiia.dcop.vp.strategy.OptimalStrategy;
@@ -380,6 +381,12 @@ public class CliApp {
         factory.setSummarizeOperation(summarizeOperation);
         CostFunction[] factors = r.read(input, factory);
 
+        // Filter out unary variables
+        VariableAssignment unaries = UnaryVariableFilterer.filterVariables(factors);
+        if (unaries.size() > 0) {
+            System.out.println(unaries.size() + " unary variables found.");
+        }
+
         // Output factor graph
         createFactorGraphFile(new FactorGraph(factors));
 
@@ -416,6 +423,7 @@ public class CliApp {
         VPResults res = st.run(10000);
         ArrayList<VariableAssignment> maps = res.getMappings();
         VariableAssignment map = maps.get(0);
+        map.putAll(unaries);
 
         // Compute UB for IGdl
         if (algorithm == ALGO_IGDL || algorithm == ALGO_FIGDL) {

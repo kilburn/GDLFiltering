@@ -40,9 +40,14 @@ package es.csic.iiia.dcop.vp.strategy;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.VariableAssignment;
+import es.csic.iiia.dcop.figdl.FIGdlNode;
 import es.csic.iiia.dcop.up.UPNode;
 import es.csic.iiia.dcop.vp.VPGraph;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,85 +62,169 @@ public class OptimalStrategy extends VPStrategy {
     public static int nMappings = 1;
 
     @Override
-    public ArrayList<VariableAssignment> getExtendedMappings(ArrayList<VariableAssignment> mappings, UPNode upnode) {
+    public MappingResults getExtendedMappings(
+            ArrayList<VariableAssignment> mappings,
+            UPNode upnode
+    ){
         final double ng = upnode.getFactory().getSummarizeOperation().getNoGood();
+        final CostFunction.Summarize sum = upnode.getFactory().getSummarizeOperation();
 
-        ArrayList<VariableAssignment> nm;
-        if (mappings.isEmpty()) {
-            // The root node chooses by himself
-            nm = new ArrayList<VariableAssignment>(nMappings);
-            CostFunction belief = getCombinedBelief(upnode);
-            for (int i=0; i<nMappings; i++) {
-                final VariableAssignment map = belief.getOptimalConfiguration(null);
-                nm.add(map);
-                belief.setValue(belief.getIndex(map), ng);
+        int solutionsToTry = 1;
+        if (upnode instanceof FIGdlNode) {
+            FIGdlNode finode = (FIGdlNode)upnode;
+            int nBrokenLinks = finode.getnBrokenLinks();
+            int maxBrokenLinks = finode.getMaxBrokenLinks();
+            int remainingSlots = nMappings - mappings.size();
+
+            if (nBrokenLinks == maxBrokenLinks) {
+                
+                // Leaf node!
+                solutionsToTry = remainingSlots;
+
+            } else {
+
+                double ns = nBrokenLinks/((double)maxBrokenLinks)*remainingSlots;
+                solutionsToTry = (int)ns;
+                ns -= (double)solutionsToTry;
+                if (log.isTraceEnabled()) {
+                    log.trace("bl: " + nBrokenLinks + ", cb: " + maxBrokenLinks
+                            + ", rs: " + remainingSlots + ", ns: " + ns);
+                }
+                if (Math.random() <= ns) {
+                    solutionsToTry++;
+                }
             }
-        } else {
-            // Others must reduce the belief first
-            nm = new ArrayList<VariableAssignment>(mappings.size());
-            VariableAssignment lastMap = null, lastMapResult = null;
-            CostFunction reducedBelief = null;
-            for (VariableAssignment mapping : mappings) {
-                if (mapping.equals(lastMap)) {
-                    try {
-                        int idx = reducedBelief.getIndex(lastMapResult);
-                        //log.trace("RRB: " + reducedBelief);
-                        reducedBelief.setValue(idx, ng);
-                    } catch(Exception e) {}
-                } else {
-                    //log.trace("Map: " + mapping);
-                    ArrayList<CostFunction> rb = mapping.isEmpty()
-                        ? upnode.getBelief()
-                        : upnode.getReducedBelief(mapping);
-
-                    if (rb.isEmpty()) {
-                        System.err.println("Empty belief?!");
-                        upnode.getBelief();
-                        System.exit(0);
-                    }
-                    reducedBelief = rb.remove(rb.size()-1).combine(rb);
-                    //log.trace("FRB: " + reducedBelief);
-                    lastMap = mapping;
-                }
-                lastMapResult = reducedBelief.getOptimalConfiguration(null);
-                //log.trace("Res: " + lastMapResult);
-                if (lastMapResult.isEmpty() && !nm.isEmpty()) {
-                    lastMapResult = new VariableAssignment(nm.get(nm.size()-1));
-                }
-                lastMapResult.putAll(lastMap);
-                //log.trace("Add: " + lastMapResult);
-                nm.add(lastMapResult);
+            if (log.isTraceEnabled()) {
+                log.trace("Solutions to expand: " + solutionsToTry);
             }
         }
 
-        return nm;
+        if (mappings.isEmpty()) {
+            mappings.add(new VariableAssignment());
+        }
+
+        AltCalculator c = new AltCalculator(upnode, mappings, solutionsToTry);
+        if (log.isTraceEnabled()) {
+            log.trace(c.toString());
+        }
+
+        return new MappingResults(c.maps, c.upper);
     }
 
-    private CostFunction getCombinedBelief(UPNode upnode) {
-        ArrayList<CostFunction> belief = upnode.getBelief();
-        CostFunction combi = belief.remove(belief.size()-1).combine(belief);
-        return combi;
+    private class Alt {
+        private double cost;
+        private VariableAssignment parentAssignment;
+        private VariableAssignment assignment;
+        private int parentIndex;
+        private CostFunction belief;
+
+        public Alt(CostFunction belief, int parentIndex, VariableAssignment parentAssignment) {
+            this.parentAssignment = parentAssignment;
+            this.parentIndex = parentIndex;
+            this.belief = belief;
+            this.assignment = belief.getOptimalConfiguration(null);
+            this.assignment.putAll(parentAssignment);
+            this.cost = belief.getValue(assignment);
+        }
+
+        public Alt next() {
+            final int idx = belief.getIndex(assignment);
+            final double ng = belief.getFactory().getSummarizeOperation().getNoGood();
+            belief.setValue(idx, ng);
+            return new Alt(belief, parentIndex, parentAssignment);
+        }
+
+        public double getCost() {
+            return cost;
+        }
+
+        public VariableAssignment getAssignment() {
+            return assignment;
+        }
+
+        public int getParent() {
+            return parentIndex;
+        }
     }
 
-    private VariableAssignment getOptimalConfiguration(VariableAssignment map, UPNode upnode) {
-        ArrayList<CostFunction> belief = upnode.getReducedBelief(map);
-        CostFunction combi = belief.remove(belief.size()-1).combine(belief);
-        return combi.getOptimalConfiguration(map);
-    }
+    private class AltCalculator {
+        private TreeSet<Alt> alts = null;
+        private ArrayList<VariableAssignment> maps;
+        private ArrayList<Integer> upper;
 
-    /*private VariableAssignment getOptimalConfigurationByGDL(ArrayList<CostFunction> costFunctions, UPNode upnode) {
-        GdlFactory gdlFactory = new GdlFactory();
-        gdlFactory.setMode(Modes.TREE_UP);
-        DFS dfs = dfs = new MCN(costFunctions.toArray(new CostFunction[0]));
-        UPGraph cg = JunctionTreeAlgo.buildGraph(gdlFactory, dfs.getFactorDistribution(), dfs.getAdjacency());
-        cg.setRoot(dfs.getRoot());
-        JunctionTree jt = new JunctionTree(cg);
-        cg.setFactory(upnode.getFactory());
-        cg.run(1000);
-        VPGraph st = new VPGraph(cg);
-        VPResults res = st.run(10000);
-        VariableAssignment map = res.getMappings().get(0);
-        return map;
-    }*/
+        public AltCalculator(UPNode node,
+                ArrayList<VariableAssignment> upMaps, int expand)
+        {
+            maps = new ArrayList<VariableAssignment>();
+            upper = new ArrayList<Integer>();
+
+            // Firstly, we need to expand the initial mappings
+            int parent=0;
+            for (VariableAssignment map : upMaps) {
+
+                // Fetch the belief associated to this mapping
+                ArrayList<CostFunction> rb = node.getReducedBelief(map);
+                if (rb.isEmpty()) {
+                    System.err.println("Empty belief?!");
+                    System.exit(0);
+                }
+                CostFunction belief = rb.remove(rb.size()-1).combine(rb);
+
+                // Compute this alternative
+                Alt alt = new Alt(belief, parent, map);
+                maps.add(alt.getAssignment());
+                upper.add(parent);
+                if (alts == null) {
+                    alts = new TreeSet<Alt>(new AltComparator(belief.getFactory().getSummarizeOperation()));
+                }
+                alts.add(alt.next());
+
+                parent++;
+            }
+
+            // And then we need to open new solutions
+            for (int j=0; j<expand; j++) {
+
+                // Fetch the best alternative
+                Alt alt = alts.first();
+                alts.remove(alt);
+
+                // Add the corresponding mapping
+                maps.add(alt.getAssignment());
+                upper.add(alt.getParent());
+
+                // Re-introduce the subsequent alternative
+                alts.add(alt.next());
+            }
+
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder buf = new StringBuilder("Mappings:\n");
+            for(VariableAssignment map : maps) {
+                buf.append(map).append("\n");
+            }
+            return buf.toString();
+        }
+
+        private class AltComparator implements Comparator<Alt> {
+            private CostFunction.Summarize sum;
+            public AltComparator(CostFunction.Summarize sum) {
+                this.sum = sum;
+            }
+            public int compare(Alt t, Alt t1) {
+                final double c1 = t.getCost();
+                final double c2 = t1.getCost();
+                if (sum.isBetter(c1, c2)) {
+                    return -1;
+                }
+                if (sum.isBetter(c2, c1)) {
+                    return 1;
+                }
+                return 0;
+            }
+        }
+    }
 
 }
