@@ -530,9 +530,9 @@ public abstract class AbstractCostFunction implements CostFunction {
 
         // If it's a single (or none) function, just fallback to normal combine.
         if (fs.isEmpty()) {
-            return combine((CostFunction)null);
+            return factory.buildCostFunction(this);
         } else if (fs.size() == 1) {
-            return combine(fs.iterator().next());
+            return combine(fs.get(0));
         }
 
         Combine operation = factory.getCombineOperation();
@@ -655,6 +655,9 @@ public abstract class AbstractCostFunction implements CostFunction {
 
     /** {@inheritDoc} */
     public CostFunction reduce(VariableAssignment mapping) {
+        if (mapping == null || mapping.isEmpty())
+            return factory.buildCostFunction(this);
+
         // Calculate the new factor's variables
         LinkedHashSet<Variable> newVariables = new LinkedHashSet<Variable>(variableSet);
         newVariables.removeAll(mapping.keySet());

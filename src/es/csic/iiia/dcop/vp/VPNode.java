@@ -89,7 +89,13 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
         }
 
         // Take our decision
+        long time = System.currentTimeMillis();
         MappingResults r = strategy.getExtendedMappings(mappings, upnode);
+        time = System.currentTimeMillis() - time;
+        if (time > 100) {
+            System.out.println("Node " + this);
+            System.out.println("Solution expansion time: " + time);
+        }
         mappings = r.getMappings();
         upMappings = r.getuMap();
 

@@ -45,8 +45,6 @@ import es.csic.iiia.dcop.up.UPNode;
 import es.csic.iiia.dcop.vp.VPGraph;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,8 +64,6 @@ public class OptimalStrategy extends VPStrategy {
             ArrayList<VariableAssignment> mappings,
             UPNode upnode
     ){
-        final double ng = upnode.getFactory().getSummarizeOperation().getNoGood();
-        final CostFunction.Summarize sum = upnode.getFactory().getSummarizeOperation();
 
         int solutionsToTry = 1;
         if (upnode instanceof FIGdlNode) {
@@ -86,7 +82,7 @@ public class OptimalStrategy extends VPStrategy {
                 double ns = nBrokenLinks/((double)maxBrokenLinks)*remainingSlots;
                 solutionsToTry = (int)ns;
                 ns -= (double)solutionsToTry;
-                if (log.isTraceEnabled()) {
+                if (log.isDebugEnabled()) {
                     log.trace("bl: " + nBrokenLinks + ", cb: " + maxBrokenLinks
                             + ", rs: " + remainingSlots + ", ns: " + ns);
                 }
@@ -94,8 +90,8 @@ public class OptimalStrategy extends VPStrategy {
                     solutionsToTry++;
                 }
             }
-            if (log.isTraceEnabled()) {
-                log.trace("Solutions to expand: " + solutionsToTry);
+            if (log.isDebugEnabled()) {
+                log.debug("Solutions to expand: " + solutionsToTry);
             }
         }
 
@@ -103,7 +99,11 @@ public class OptimalStrategy extends VPStrategy {
             mappings.add(new VariableAssignment());
         }
 
+//        long time = System.currentTimeMillis();
         AltCalculator c = new AltCalculator(upnode, mappings, solutionsToTry);
+//        time = System.currentTimeMillis() - time;
+//        System.out.println("End alt calculator: " + time);
+
         if (log.isTraceEnabled()) {
             log.trace(c.toString());
         }
@@ -163,25 +163,49 @@ public class OptimalStrategy extends VPStrategy {
             for (VariableAssignment map : upMaps) {
 
                 // Fetch the belief associated to this mapping
+                long time = System.currentTimeMillis(), time2 = time;
                 ArrayList<CostFunction> rb = node.getReducedBelief(map);
+//                time2 = System.currentTimeMillis() - time2;
                 if (rb.isEmpty()) {
                     System.err.println("Empty belief?!");
                     System.exit(0);
                 }
                 CostFunction belief = rb.remove(rb.size()-1).combine(rb);
+//                time = System.currentTimeMillis() - time;
+//                if (time > 80) {
+//                    System.out.println("Map: " + map);
+//                    rb = node.getReducedBelief(map);
+//                    for (CostFunction f : rb) {
+//                        System.out.println(f);
+//                    }
+//                    System.out.println("End calculating reduced belief: " + time + ", " + time2);
+//                }
 
                 // Compute this alternative
+                time = System.currentTimeMillis();
                 Alt alt = new Alt(belief, parent, map);
                 maps.add(alt.getAssignment());
                 upper.add(parent);
-                if (alts == null) {
-                    alts = new TreeSet<Alt>(new AltComparator(belief.getFactory().getSummarizeOperation()));
+
+                if (expand > 0) {
+                    if (alts == null) {
+                        alts = new TreeSet<Alt>(new AltComparator(belief.getFactory().getSummarizeOperation()));
+                    }
+                    alts.add(alt.next());
+//                    time = System.currentTimeMillis() - time;
+//                    if (time > 80) {
+//                        System.out.println("End calculating alternative: " + time);
+//                    }
                 }
-                alts.add(alt.next());
 
                 parent++;
             }
 
+//            if (expand > 0) {
+//                System.out.println("Solutions to expand: " + expand);
+//            }
+//
+//            long time = System.currentTimeMillis();
             // And then we need to open new solutions
             for (int j=0; j<expand; j++) {
 
@@ -196,6 +220,11 @@ public class OptimalStrategy extends VPStrategy {
                 // Re-introduce the subsequent alternative
                 alts.add(alt.next());
             }
+
+//            if (expand > 0) {
+//                time = System.currentTimeMillis() - time;
+//                System.out.println("End expanding phase: " + time);
+//            }
 
         }
 
