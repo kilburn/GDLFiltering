@@ -167,6 +167,7 @@ public class CliApp {
     public static final int CO_ARITH    = 0;
     public static final int CO_BZIP2    = 1;
     public static final int CO_NONE     = 2;
+    public static final int CO_SPARSE   = 3;
 
     private int algorithm = ALGO_GDL;
     private int heuristic = JT_HEURISTIC_MCS;

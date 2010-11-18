@@ -63,6 +63,13 @@ public class Compressor {
             case CliApp.CO_BZIP2:
             case CliApp.CO_ARITH:
                 return arithmeticCompress(f);
+            case CliApp.CO_SPARSE:
+                final int size = f.getSize();
+                final int nGoods = size - f.getNumberOfNoGoods();
+                if (12*nGoods < 8*size) {
+                    return 12*nGoods;
+                }
+                return 8*size;
             default:
                 return f.getSize() * 8;
         }
@@ -76,6 +83,15 @@ public class Compressor {
                 case CliApp.CO_ARITH:
                     sum += arithmeticCompressWithHeader(f);
                     break;
+                case CliApp.CO_SPARSE:
+                    final int size = f.getSize();
+                    final int nGoods = size - f.getNumberOfNoGoods();
+                    if (12*nGoods < 8*size) {
+                        sum += f.getVariableSet().size()*4 + 12*nGoods;
+                    } else {
+                        sum += f.getVariableSet().size()*4 + 8*size;
+                    }
+                    break;
                 default:
                     sum += f.getVariableSet().size()*4 + f.getSize()*8;
                     break;
@@ -83,70 +99,6 @@ public class Compressor {
         }
 
         return sum;
-    }
-
-    private static long manualCompressWithHeader(CostFunction f) {
-
-        long bytes = 0;
-        bytes += f.getVariableSet().size() * 4;
-
-        // State machine to count the number of elements that must be
-        // captured.
-
-        long els = 0; boolean hasZeros = false;
-        final Iterator<Integer> it = f.iterator();
-        int i = 0, n = 0, state = 0;
-        while(it.hasNext()) {
-            n = it.next();
-            double v = f.getValue(n);
-            if (i != n) {els++; state=2;}
-
-            switch(state) {
-                case 0:
-                    els++;
-
-                    if (v == 0)
-                        state = 1;
-                    else if (Double.isInfinite(v))
-                        state = 2;
-
-                    break;
-
-                case 1:
-                    hasZeros = true;
-                    if (v == 0)
-                        break;
-
-                    els++;
-
-                    if (Double.isInfinite(v))
-                        state = 2;
-                    else
-                        state = 0;
-
-                    break;
-
-                case 2:
-                    if (Double.isInfinite(v))
-                        break;
-
-                    els++;
-
-                    if (v == 0)
-                        state = 1;
-                    else
-                        state = 0;
-                    break;
-            }
-
-            i = n+1;
-        }
-        if (i != n) {els++; state=2;}
-
-        final long overheadBits = els * (hasZeros ? 2 : 1);
-        bytes += els*8 + overheadBits/8;
-
-        return bytes;
     }
 
 //    public static long getCompressedSizeFs(Collection<CostFunction> fs) {

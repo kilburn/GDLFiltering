@@ -80,9 +80,10 @@ public class Cli {
         System.err.println("      - prod : combine using product.");
         System.err.println("  --compress=method (arith)");
         System.err.println("    Uses the specified compression method for sent messages, method iis one of: ");
-        System.err.println("      - arith : compress using an arithmetic compressor with a 8-byte PPM model.");
-        System.err.println("      - bz2   : compress using a bzip2 compressor.");
-        System.err.println("      - none  : do not perform any compression of sent messages.");
+        System.err.println("      - arith  : compress using an arithmetic compressor with a 8-byte PPM model.");
+        System.err.println("      - bz2    : compress using a bzip2 compressor.");
+        System.err.println("      - sparse : compress by sending sparse functions when possible (<idx,value> tuples).");
+        System.err.println("      - none   : do not perform any compression of sent messages.");
         System.err.println("  -e heuristic, --heuristic=heuristic (mcs)");
         System.err.println("    Uses the specified heuristic function to build the Junction Tree,");
         System.err.println("    where heuristic is one of: ");
@@ -181,11 +182,13 @@ public class Cli {
                     arg = g.getOptarg().toLowerCase();
                     if (arg.equals("arith"))
                         cli.setCompressionMethod(CliApp.CO_ARITH);
-                    else if (arg.equals("bz2")) {
+                    else if (arg.equals("bz2"))
                         cli.setCompressionMethod(CliApp.CO_BZIP2);
-                    } else if (arg.equals("none")) {
+                    else if (arg.equals("sparse"))
+                        cli.setCompressionMethod(CliApp.CO_SPARSE);
+                    else if (arg.equals("none"))
                         cli.setCompressionMethod(CliApp.CO_NONE);
-                    } else {
+                    else {
                         System.err.println("Error: invalid compression method \"" + arg + "\"");
                         System.exit(0);
                     }

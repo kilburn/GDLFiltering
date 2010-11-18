@@ -670,7 +670,9 @@ public abstract class AbstractCostFunction implements CostFunction {
         }
 
         // Instantiate it
-        CostFunction result = factory.buildCostFunction(newVariables.toArray(new Variable[0]));
+        CostFunction result = this.getNumberOfNoGoods() / this.getSize() > 0.8
+                ? factory.buildSparseCostFunction(newVariables.toArray(new Variable[0]))
+                : factory.buildCostFunction(newVariables.toArray(new Variable[0]));
         VariableAssignment map = null;
         Iterator<Integer> it = result.iterator();
         for (int i = 0, len = result.getSize(); i < len; i++) {
