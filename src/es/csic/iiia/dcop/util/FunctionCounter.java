@@ -42,6 +42,8 @@ import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.HypercubeCostFunction;
 import es.csic.iiia.dcop.MapCostFunction;
 import es.csic.iiia.dcop.SparseCostFunction;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 
 /**
  *
@@ -53,30 +55,27 @@ public class FunctionCounter {
     private static long nTuples;
     private static long nNaNTuples;
 
-    public static void incSparse() {
-        nSparse++;
-    }
-
-    public static void incDense() {
-        nDense++;
-    }
+    private static DecimalFormat df = new DecimalFormat("##.##%");
 
     public static void countFunction(CostFunction f) {
         nTuples += f.getSize();
         nNaNTuples += f.getNumberOfNoGoods();
         if (f instanceof HypercubeCostFunction) {
-            nDense++;
+            nDense += f.getSize();
         } else if (f instanceof SparseCostFunction) {
-            nSparse++;
+            nSparse += f.getSize();
         } else if (f instanceof MapCostFunction) {
-            nSparse++;
+            nSparse += f.getSize();
         }
     }
 
     public static double getRatio() {
+        DecimalFormatSymbols s = df.getDecimalFormatSymbols();
+        s.setDecimalSeparator('.');
+        df.setDecimalFormatSymbols(s);
         System.out.println(
-                "nDense: " + nDense + ", nSparse: " + nSparse +
-                ", filteredTuples: " + (nNaNTuples/(double)nTuples)
+                "sparseTuples: " + df.format(nSparse/(double)(nSparse+nDense)) +
+                ", filteredTuples: " + df.format(nNaNTuples/(double)nTuples)
         );
         double res = nSparse/(double)(nSparse+nDense);
         nSparse = 0;
