@@ -55,6 +55,8 @@ import es.csic.iiia.dcop.up.UPResults;
 import es.csic.iiia.dcop.dfs.DFS;
 import es.csic.iiia.dcop.dfs.MCN;
 import es.csic.iiia.dcop.dfs.MCS;
+import es.csic.iiia.dcop.dsa.DSA;
+import es.csic.iiia.dcop.dsa.DSAResults;
 import es.csic.iiia.dcop.figdl.FIGdlFactory;
 import es.csic.iiia.dcop.gdl.GdlFactory;
 import es.csic.iiia.dcop.igdl.IGdlFactory;
@@ -115,6 +117,10 @@ public class CliApp {
      * Use Filtered-IGDL as solving algorithm.
      */
     public static final int ALGO_FIGDL = 3;
+    /**
+     * Use Filtered-IGDL as solving algorithm.
+     */
+    public static final int ALGO_DSA = 4;
 
     /**
      * MCS junction tree building heuristic.
@@ -389,50 +395,65 @@ public class CliApp {
         }
 
         // Output factor graph
-        createFactorGraphFile(new FactorGraph(factors));
+        FactorGraph fg = new FactorGraph(factors);
+        createFactorGraphFile(fg);
 
-        // Output total number of variables and min/avg/max domain
-        outputVariableStatistics(factors);
+        // DSA Can solve from here
+        VariableAssignment map = null;
 
-        // Create the clique graph, using the specified algorithm
-        UPGraph cg = createCliqueGraph(factors);
+        if (algorithm == ALGO_DSA) {
 
-        // Add noise if requested
-        if (randomVariance != 0) {
-            RandomNoiseAdder rna = new RandomNoiseAdder(randomVariance);
-            rna.addNoise(cg);
-        }
-
-        // Run the solving algorithm
-        cg.setFactory(factory);
-        UPResults results = cg.run(1000);
+            DSA dsa = new DSA(fg);
+            DSAResults res = dsa.run(10000);
+            map = res.getGlobalAssignment();
+            System.out.println("ITERATIONS " + res.getIterations());
             
-        System.out.println("ITERATIONS " + results.getIterations());
-        System.out.println("CBR " + results.getCBR(communicationCost));
-        System.out.println("BYTES " + results.getSentBytes());
-        System.out.println("LOAD_FACTOR " + results.getLoadFactor());
+        } else {
 
-        // Extract a solution
-        VPStrategy sStrategy = null;
-        switch (solutionStrategy) {
-            case SS_OPTIMAL:
-                sStrategy = new OptimalStrategy();
-                break;
+            // Output total number of variables and min/avg/max domain
+            outputVariableStatistics(factors);
+
+            // Create the clique graph, using the specified algorithm
+            UPGraph cg = createCliqueGraph(factors);
+
+            // Add noise if requested
+            if (randomVariance != 0) {
+                RandomNoiseAdder rna = new RandomNoiseAdder(randomVariance);
+                rna.addNoise(cg);
+            }
+
+            // Run the solving algorithm
+            cg.setFactory(factory);
+            UPResults results = cg.run(1000);
+
+            System.out.println("ITERATIONS " + results.getIterations());
+            System.out.println("CBR " + results.getCBR(communicationCost));
+            System.out.println("BYTES " + results.getSentBytes());
+            System.out.println("LOAD_FACTOR " + results.getLoadFactor());
+
+            // Extract a solution
+            VPStrategy sStrategy = null;
+            switch (solutionStrategy) {
+                case SS_OPTIMAL:
+                    sStrategy = new OptimalStrategy();
+                    break;
+
+            }
+            VPGraph st = new VPGraph(cg, sStrategy);
+            VPResults res = st.run(10000);
+            ArrayList<VariableAssignment> maps = res.getMappings();
+            map = maps.get(0);
+
+            // Compute UB for IGdl
+            if (algorithm == ALGO_IGDL || algorithm == ALGO_FIGDL) {
+                UBGraph ub = new UBGraph(st);
+                UBResults ubres = ub.run(1000);
+                System.out.println("BOUND " + ubres.getBound());
+            }
 
         }
-        VPGraph st = new VPGraph(cg, sStrategy);
-        VPResults res = st.run(10000);
-        ArrayList<VariableAssignment> maps = res.getMappings();
-        VariableAssignment map = maps.get(0);
+
         map.putAll(unaries);
-
-        // Compute UB for IGdl
-        if (algorithm == ALGO_IGDL || algorithm == ALGO_FIGDL) {
-            UBGraph ub = new UBGraph(st);
-            UBResults ubres = ub.run(1000);
-            System.out.println("BOUND " + ubres.getBound());
-        }
-
         SortedMap<Variable, Integer> foo = new TreeMap<Variable, Integer>(map);
         System.out.print("SOLUTION");
         for(Variable v : foo.keySet()) {

@@ -74,6 +74,7 @@ public class Cli {
         System.err.println("      - igdl : Iterative GDL over junction tree solver.");
         System.err.println("      - figdl : Filtered IGDL over junction tree solver.");
         System.err.println("      - maxsum : max-sum approximation.");
+        System.err.println("      - dsa : dsa approximation (p=0.9).");
         System.err.println("  -c operation, --combine=operation (sum)");
         System.err.println("    Uses the specified combining operator, where operator is one of: ");
         System.err.println("      - sum : combine using addition.");
@@ -230,9 +231,11 @@ public class Cli {
                         cli.setAlgorithm(CliApp.ALGO_MAX_SUM);
                     else if (arg.equals("figdl"))
                         cli.setAlgorithm(CliApp.ALGO_FIGDL);
-                    else if (arg.equals("igdl")) {
+                    else if (arg.equals("igdl"))
                         cli.setAlgorithm(CliApp.ALGO_IGDL);
-                    } else {
+                    else if (arg.equals("dsa"))
+                        cli.setAlgorithm(CliApp.ALGO_DSA);
+                    else {
                         System.err.println("Error: invalid algorithm \"" + arg + "\"");
                         System.exit(0);
                     }
