@@ -58,7 +58,6 @@ public class IGdlMessage implements UPMessage {
     public long cc = 0;
     private int nBrokenLinks = 0;
     private int maxBrokenLinks = 0;
-    private boolean direction = UPMessage.DIR_UP;
 
     public IGdlMessage(ArrayList<CostFunction> factors) {
         this.factors = factors;
@@ -133,14 +132,6 @@ public class IGdlMessage implements UPMessage {
 
     public void setMaxBrokenLinks(int maxBrokenLinks) {
         this.maxBrokenLinks = maxBrokenLinks;
-    }
-
-    public boolean isUP() {
-        return direction == UPMessage.DIR_UP;
-    }
-
-    public void setDirection(boolean direction) {
-        this.direction = direction;
     }
 
 }

@@ -571,7 +571,7 @@ public abstract class AbstractCostFunction implements CostFunction {
                 public int compare(CostFunction t, CostFunction t1) {
                     final float r1 = t.getNumberOfNoGoods()/(float)t.getSize();
                     final float r2 = t1.getNumberOfNoGoods()/(float)t1.getSize();
-                    return r1 > r2 ? 1 : (r1 == r2 ? 0 : 0);
+                    return r1 > r2 ? 1 : (r1 == r2 ? 0 : -1);
                 }
             });
 
@@ -589,8 +589,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         // Unoptimized base implementation:
         // Iterate over the result positions, fetching the values from ourselves
         // and all the other factors.
-        CostFunction result = factory.buildCostFunction(vars.toArray(new Variable[0]),
-                nogood);
+        CostFunction result = factory.buildCostFunction(vars.toArray(new Variable[0]));
 
         fs.remove(fs.size()-1);
         VariableAssignment map = null;
@@ -598,15 +597,15 @@ public abstract class AbstractCostFunction implements CostFunction {
             map = result.getMapping(i, map);
 
             double v = getValue(map);
-            Iterator<CostFunction> it = fs.iterator();
-            while (v != nogood && it.hasNext()) {
-                v = operation.eval(v, it.next().getValue(map));
+            for (CostFunction f : fs) {
+                v = operation.eval(v, f.getValue(map));
+                if (v == nogood) break;
             }
-            if (v == nogood) continue;
 
             if (Double.isNaN(v)) {
                 throw new RuntimeException("Combination generated a NaN value. Halting.");
             }
+            
             result.setValue(i, v);
         }
 
@@ -674,7 +673,6 @@ public abstract class AbstractCostFunction implements CostFunction {
                 ? factory.buildSparseCostFunction(newVariables.toArray(new Variable[0]))
                 : factory.buildCostFunction(newVariables.toArray(new Variable[0]));
         VariableAssignment map = null;
-        Iterator<Integer> it = result.iterator();
         for (int i = 0, len = result.getSize(); i < len; i++) {
             map = result.getMapping(i, map);
             map.putAll(mapping);

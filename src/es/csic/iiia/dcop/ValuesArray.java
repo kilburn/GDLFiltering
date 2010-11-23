@@ -71,7 +71,11 @@ public class ValuesArray extends ArrayList<Double> {
         final int len = upMappings.size();
         ValuesArray result = new ValuesArray(len);
         for(int i=0; i<len; i++) {
-            result.add(this.get(upMappings.get(i)));
+            final int j = upMappings.get(i);
+            if (j >= this.size()) {
+                System.out.println("hugh?");
+            }
+            result.add(this.get(j));
         }
 
         return result;

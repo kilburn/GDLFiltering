@@ -88,7 +88,6 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
     private int nBrokenLinks = 0;
     private int localBrokenLinks = 0;
     private int maxBrokenLinks = 0;
-    private boolean firstMessageSent = false;
 
     /**
      * Constructs a new clique with the specified member variable and null
@@ -141,7 +140,6 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
         }
 
         strategy.setFilteringOptions(bound, previousEdges);
-        firstMessageSent = false;
         localBrokenLinks = 0;
     }
 
@@ -152,7 +150,6 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
     @Override
     public void initialize() {
         super.initialize();
-        firstMessageSent = false;
         localBrokenLinks = 0;
 
         // Tree-based operation
@@ -186,7 +183,7 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
             IGdlMessage msg = e.getMessage(this);
             if (msg != null) {
                 costFunctions.addAll(msg.getFactors());
-                if (msg.isUP()) {
+                if (isParent(e)) {
                     nBrokenLinks += msg.getnBrokenLinks();
                     maxBrokenLinks = Math.max(maxBrokenLinks, msg.getMaxBrokenLinks());
                 }
@@ -252,10 +249,9 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
             }
             cc += msg.cc;
 
-            if (!firstMessageSent) {
+            if (isParent(e)) {
                 localBrokenLinks = msg.getnBrokenLinks();
                 msg.setMaxBrokenLinks(maxBrokenLinks + localBrokenLinks);
-                firstMessageSent = true;
             }
 
             e.sendMessage(this, msg);
@@ -287,20 +283,15 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
     @Override
     public ArrayList<CostFunction> getReducedBelief(VariableAssignment map) {
         ArrayList<CostFunction> fs = new ArrayList<CostFunction>();
-        for (CostFunction f : relations) {
-            fs.add(f.reduce(map));
-        }
-
-        for (UPEdge<FIGdlNode, IGdlMessage> e : getEdges()) {
-            IGdlMessage msg = e.getMessage(this);
-            if (msg != null) {
-                for (CostFunction f : msg.getFactors()) {
-                    // Constants do not change the optimal configuration
-                    if (f.getSize() == 1) {
-                        continue;
-                    }
-                    fs.add(f.reduce(map));
-                }
+        for (CostFunction f : costFunctions) {
+            long time = System.currentTimeMillis();
+            final CostFunction f2 = f.reduce(map);
+            fs.add(f2);
+            time = System.currentTimeMillis() - time;
+            if (time > 10) {
+                log.info("Reduce f time: " + time +
+                        ", vars: " + f.getVariableSet().size() +
+                        " -> " + f2.getVariableSet().size());
             }
         }
 

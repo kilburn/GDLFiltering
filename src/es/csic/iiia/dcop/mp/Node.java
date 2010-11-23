@@ -66,4 +66,8 @@ public interface Node<E extends Edge, R extends Result> {
 
     public String getName();
 
+    public void setRoot();
+
+    public boolean isRoot();
+
 }

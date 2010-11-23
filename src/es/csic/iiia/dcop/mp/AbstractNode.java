@@ -96,6 +96,11 @@ public abstract class AbstractNode<E extends Edge, R extends Result> implements 
     private boolean finished;
 
     /**
+     * Flag to indicate that this is the root node in a tree
+     */
+    private boolean root = false;
+
+    /**
      * Returns true if the node has converged or false otherwise (only valid
      * for nodes operating in graph mode).
      */
@@ -169,8 +174,12 @@ public abstract class AbstractNode<E extends Edge, R extends Result> implements 
                     // We have not yet sent a message to it
                     if (e == edge && e.haveSentMessage(this))
                         return false;
-                    // We have received messages from all other neighbors (edges)
-                    if (e != edge && e.getMessage(this) == null)
+                    // We are *not* root and have received messages from all
+                    // other neighbors (edges)
+                    if (!root && e != edge && e.getMessage(this) == null)
+                        return false;
+                    // We are root and have received messages from all neighs
+                    if (root && e.getMessage(this) == null)
                         return false;
                 }
                 return true;
@@ -232,5 +241,46 @@ public abstract class AbstractNode<E extends Edge, R extends Result> implements 
         return true;
     }
 
+    protected boolean isChild(Edge edge) {
+        switch(mode) {
+            case TREE_UP:
+                // In tree up mode, an edge goes to a child only if we have
+                // already received a message though it when operating.
+                if (receivedFromAllEdges()) {
+                    return !edge.haveSentMessage(this);
+                } else {
+                    return edge.getMessage(this) != null;
+                }
+            case TREE_DOWN:
+                // In tree down mode, we have never sent a message to our
+                // childs when operating.
+                return edge.getMessage(this) == null;
+        }
+        throw new RuntimeException("Unsupported operational mode");
+    }
+
+    protected boolean receivedFromAllEdges() {
+        for (E e : getEdges()) {
+            if (e.getMessage(this) == null)
+                return false;
+        }
+
+        return true;
+    }
+
+    protected boolean isParent(Edge edge) {
+        return !isChild(edge);
+    }
+
     public void initialize() {}
+
+    public boolean isRoot() {
+        return root;
+    }
+
+    public void setRoot() {
+        this.root = true;
+    }
+
+
 }

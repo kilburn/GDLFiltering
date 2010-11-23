@@ -39,12 +39,17 @@
 package es.csic.iiia.dcop.vp.strategy;
 
 import es.csic.iiia.dcop.CostFunction;
+import es.csic.iiia.dcop.FactorGraph;
+import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.VariableAssignment;
+import es.csic.iiia.dcop.dsa.DSA;
+import es.csic.iiia.dcop.dsa.DSAResults;
 import es.csic.iiia.dcop.figdl.FIGdlNode;
 import es.csic.iiia.dcop.up.UPNode;
 import es.csic.iiia.dcop.vp.VPGraph;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.TreeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,33 +70,44 @@ public class OptimalStrategy extends VPStrategy {
             UPNode upnode
     ){
 
+
         int solutionsToTry = 1;
-        if (upnode instanceof FIGdlNode) {
-            FIGdlNode finode = (FIGdlNode)upnode;
-            int nBrokenLinks = finode.getnBrokenLinks();
-            int maxBrokenLinks = finode.getMaxBrokenLinks();
-            int remainingSlots = nMappings - mappings.size();
+        if (false) {
+            if (upnode instanceof FIGdlNode) {
+                FIGdlNode finode = (FIGdlNode)upnode;
+                int nBrokenLinks = finode.getnBrokenLinks();
+                int maxBrokenLinks = finode.getMaxBrokenLinks();
+                int remainingSlots = nMappings - mappings.size();
 
-            if (nBrokenLinks == maxBrokenLinks) {
-                
-                // Leaf node!
-                solutionsToTry = remainingSlots;
+                if (nBrokenLinks == maxBrokenLinks) {
 
-            } else {
+                    // Leaf node!
+                    solutionsToTry = remainingSlots;
 
-                double ns = nBrokenLinks/((double)maxBrokenLinks)*remainingSlots;
-                solutionsToTry = (int)ns;
-                ns -= (double)solutionsToTry;
-                if (log.isDebugEnabled()) {
-                    log.trace("bl: " + nBrokenLinks + ", cb: " + maxBrokenLinks
-                            + ", rs: " + remainingSlots + ", ns: " + ns);
+                } else {
+
+                    double ns = nBrokenLinks/((double)maxBrokenLinks)*remainingSlots;
+                    solutionsToTry = (int)ns;
+                    ns -= (double)solutionsToTry;
+                    if (log.isTraceEnabled()) {
+                        log.trace("bl: " + nBrokenLinks + ", cb: " + maxBrokenLinks
+                                + ", rs: " + remainingSlots + ", ns: " + ns);
+                    }
+                    if (Math.random() <= ns) {
+                        solutionsToTry++;
+                    }
                 }
-                if (Math.random() <= ns) {
-                    solutionsToTry++;
+                if (log.isDebugEnabled()) {
+                    log.debug("Solutions to expand: " + solutionsToTry);
                 }
             }
-            if (log.isDebugEnabled()) {
-                log.debug("Solutions to expand: " + solutionsToTry);
+        } else {
+            int remainingSlots = nMappings - mappings.size();
+            double p = 1;
+            for(int i=0; i<remainingSlots; i++) {
+                if (Math.random() < p) {
+                    solutionsToTry++;
+                }
             }
         }
 
@@ -99,10 +115,12 @@ public class OptimalStrategy extends VPStrategy {
             mappings.add(new VariableAssignment());
         }
 
-//        long time = System.currentTimeMillis();
+        long time = System.currentTimeMillis();
         AltCalculator c = new AltCalculator(upnode, mappings, solutionsToTry);
-//        time = System.currentTimeMillis() - time;
-//        System.out.println("End alt calculator: " + time);
+        time = System.currentTimeMillis() - time;
+        if (time > 100) {
+            log.info("End alt calculator: " + time);
+        }
 
         if (log.isTraceEnabled()) {
             log.trace(c.toString());
@@ -117,21 +135,47 @@ public class OptimalStrategy extends VPStrategy {
         private VariableAssignment assignment;
         private int parentIndex;
         private CostFunction belief;
+        private FactorGraph fg;
 
         public Alt(CostFunction belief, int parentIndex, VariableAssignment parentAssignment) {
             this.parentAssignment = parentAssignment;
             this.parentIndex = parentIndex;
             this.belief = belief;
+            this.fg = null;
+            this.assignment = null;
+
             this.assignment = belief.getOptimalConfiguration(null);
             this.assignment.putAll(parentAssignment);
             this.cost = belief.getValue(assignment);
         }
 
+        public Alt(FactorGraph fg, int parentIndex, VariableAssignment parentAssignment) {
+            this.parentAssignment = parentAssignment;
+            this.parentIndex = parentIndex;
+            this.belief = null;
+            this.fg = fg;
+            this.assignment = null;
+
+            this.runDSA();
+        }
+
+        private void runDSA() {
+            DSA dsa = new DSA(fg);
+            DSAResults res = dsa.run(1000);
+            this.assignment = res.getGlobalAssignment();
+            this.assignment.putAll(parentAssignment);
+            this.cost = fg.getValue(assignment);
+        }
+
         public Alt next() {
-            final int idx = belief.getIndex(assignment);
-            final double ng = belief.getFactory().getSummarizeOperation().getNoGood();
-            belief.setValue(idx, ng);
-            return new Alt(belief, parentIndex, parentAssignment);
+            if (fg == null) {
+                final int idx = belief.getIndex(assignment);
+                final double ng = belief.getFactory().getSummarizeOperation().getNoGood();
+                belief.setValue(idx, ng);
+                return new Alt(belief, parentIndex, parentAssignment);
+            } else {
+                return new Alt(fg, parentIndex, parentAssignment);
+            }
         }
 
         public double getCost() {
@@ -142,7 +186,7 @@ public class OptimalStrategy extends VPStrategy {
             return assignment;
         }
 
-        public int getParent() {
+        public int getParentIndex() {
             return parentIndex;
         }
     }
@@ -155,75 +199,114 @@ public class OptimalStrategy extends VPStrategy {
         public AltCalculator(UPNode node,
                 ArrayList<VariableAssignment> upMaps, int expand)
         {
+            CostFunction.Summarize sum = node.getFactory().getSummarizeOperation();
+
             maps = new ArrayList<VariableAssignment>();
             upper = new ArrayList<Integer>();
 
             // Firstly, we need to expand the initial mappings
+            long time2 = System.currentTimeMillis();
             int parent=0;
             for (VariableAssignment map : upMaps) {
 
-                // Fetch the belief associated to this mapping
-                long time = System.currentTimeMillis(), time2 = time;
+                long time = System.currentTimeMillis();
                 ArrayList<CostFunction> rb = node.getReducedBelief(map);
-//                time2 = System.currentTimeMillis() - time2;
-                if (rb.isEmpty()) {
-                    System.err.println("Empty belief?!");
-                    System.exit(0);
-                }
-                CostFunction belief = rb.remove(rb.size()-1).combine(rb);
-//                time = System.currentTimeMillis() - time;
-//                if (time > 80) {
-//                    System.out.println("Map: " + map);
-//                    rb = node.getReducedBelief(map);
-//                    for (CostFunction f : rb) {
-//                        System.out.println(f);
-//                    }
-//                    System.out.println("End calculating reduced belief: " + time + ", " + time2);
-//                }
+                time = System.currentTimeMillis() - time;
+                Alt alt = null;
 
-                // Compute this alternative
-                time = System.currentTimeMillis();
-                Alt alt = new Alt(belief, parent, map);
+                // Sparsity check!
+                double sparsity = 0;
+                HashSet<Variable> totalVars = new HashSet<Variable>();
+                for (CostFunction f : rb) {
+                    sparsity = Math.max(sparsity, f.getNumberOfNoGoods()/(double)f.getSize());
+                    totalVars.addAll(f.getVariableSet());
+                }
+                if (time>100) {
+                    log.info("Reduce time: " + time + ", " +
+                            node.getVariables().size() + " to " + totalVars.size());
+                }
+
+                double size = 1; sparsity = 1 - sparsity;
+                for (Variable v : totalVars) {
+                    size *= v.getDomain();
+                }
+
+                if (size * sparsity > 1e4) {
+                    
+                    log.info("Goodtuples: " + (size*sparsity));
+                    CostFunction[] factors = rb.toArray(new CostFunction[0]);
+                    FactorGraph fg = new FactorGraph(factors);
+                    alt = new Alt(fg, parent, map);
+
+                } else {
+
+                    // Fetch the belief associated to this mapping
+                    if (rb.isEmpty()) {
+                        System.err.println("Empty belief?!");
+                        System.exit(0);
+                    }
+                    CostFunction belief = rb.remove(rb.size()-1).combine(rb);
+
+                    // Compute this alternative
+                    alt = new Alt(belief, parent, map);
+                }
                 maps.add(alt.getAssignment());
                 upper.add(parent);
 
                 if (expand > 0) {
                     if (alts == null) {
-                        alts = new TreeSet<Alt>(new AltComparator(belief.getFactory().getSummarizeOperation()));
+                        alts = new TreeSet<Alt>(new AltComparator(sum));
                     }
                     alts.add(alt.next());
-//                    time = System.currentTimeMillis() - time;
-//                    if (time > 80) {
-//                        System.out.println("End calculating alternative: " + time);
-//                    }
                 }
 
                 parent++;
             }
+            time2 = System.currentTimeMillis() - time2;
+            if (time2>10) {
+                log.info("Completing time: " + time2 + ", " + expand + " exp. "
+                        + (alts != null ? alts.size() + " alts." : ""));
+            }
 
-//            if (expand > 0) {
-//                System.out.println("Solutions to expand: " + expand);
-//            }
-//
-//            long time = System.currentTimeMillis();
             // And then we need to open new solutions
+            time2 = System.currentTimeMillis();
             for (int j=0; j<expand; j++) {
-
                 // Fetch the best alternative
+                long time = System.currentTimeMillis();
                 Alt alt = alts.first();
                 alts.remove(alt);
+                time = System.currentTimeMillis() - time;
+                if (time>10) {
+                    log.info("Fetch-remove time: " + time);
+                }
 
                 // Add the corresponding mapping
-                maps.add(alt.getAssignment());
-                upper.add(alt.getParent());
+                time = System.currentTimeMillis();
+                if (!maps.contains(alt.getAssignment())) {
+                    maps.add(alt.getAssignment());
+                    upper.add(alt.getParentIndex());
+                }
+                time = System.currentTimeMillis() - time;
+                if (time>10) {
+                    log.info("Check time: " + time);
+                }
 
                 // Re-introduce the subsequent alternative
+                time = System.currentTimeMillis();
                 alts.add(alt.next());
+                time = System.currentTimeMillis() - time;
+                if (time>10) {
+                    log.info("New alt time: " + time);
+                }
+            }
+            time2 = System.currentTimeMillis() - time2;
+            if (time2>10) {
+                log.info("Expansion time: " + time2);
             }
 
 //            if (expand > 0) {
 //                time = System.currentTimeMillis() - time;
-//                System.out.println("End expanding phase: " + time);
+//                log.info("End expanding phase: " + time);
 //            }
 
         }

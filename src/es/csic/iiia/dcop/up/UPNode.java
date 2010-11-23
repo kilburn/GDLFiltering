@@ -43,7 +43,6 @@ import es.csic.iiia.dcop.CostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.mp.AbstractNode;
-import es.csic.iiia.dcop.mp.Edge;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -217,13 +216,13 @@ public abstract class UPNode<E extends UPEdge, R extends UPResult> extends
 
         buf.append(getName());
 
-        buf.append("[");
+        /*buf.append("[");
         int i=0;
         for (CostFunction f : relations){
             if (i++>0) buf.append(",");
             buf.append(f.getName());
         }
-        buf.append("]");
+        buf.append("]");*/
         return buf.toString();
     }
 

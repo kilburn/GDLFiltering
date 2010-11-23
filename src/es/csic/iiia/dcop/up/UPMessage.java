@@ -49,6 +49,4 @@ public interface UPMessage extends Message {
     public static boolean DIR_DOWN = false;
 
     public long getBytes();
-    public void setDirection(boolean direction);
-    public boolean isUP();
 }

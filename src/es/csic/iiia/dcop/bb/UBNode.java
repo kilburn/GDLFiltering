@@ -86,13 +86,12 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
         // Calculate the local optimum acording to the agreed solution
         localUBs = vpnode.getGlobalValues();
         
-        if (getEdges().size() == 1) {
+        if (vpnode.getUPNode().getVariables().size() < 5) {
             // TODO: Change this abomination
             ArrayList<CostFunction> belief = vpnode.getUPNode().getBelief();
-            CostFunction b = belief.remove(belief.size()-1);
-            b = b.combine(belief);
+            CostFunction b = belief.remove(belief.size()-1).combine(belief);
             localLB = b.getValue(b.getOptimalConfiguration(null));
-            //log.debug(vpnode.getName() + " LB: " + localLB);
+            b = null;
         } else {
             localLB = -summarize.getNoGood();
         }
@@ -116,7 +115,9 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
             UBMessage msg = e.getMessage(this);
             if (msg != null) {
                 ValuesArray inValues = msg.getUBs();
-                inValues = inValues.extend(upMappings);
+                if (this.isParent(e)) {
+                    inValues = inValues.extend(upMappings);
+                }
                 ubs = ubs.combine(inValues, combine);
                 if (!summarize.isBetter(msg.getLB(), lb)) {
                     lb = msg.getLB();
@@ -149,7 +150,9 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
             UBMessage inMsg = e.getMessage(this);
             if (inMsg != null) {
                 mub = mub.combine(inMsg.getUBs().invert(combine), combine);
-            } else {
+            }
+            // If sending to our parent...
+            if (this.isParent(e)) {
                 ArrayList<Integer> upMappings = vpnode.getUpMappings();
                 mub = mub.reduce(upMappings, summarize);
             }

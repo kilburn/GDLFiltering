@@ -42,7 +42,6 @@ import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.mp.AbstractEdge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.applet.resources.MsgAppletViewer;
 
 /**
  * Utility Propagation edge.
@@ -114,11 +113,6 @@ public class UPEdge<N extends UPNode, M extends UPMessage> extends AbstractEdge<
     @Override public N getDestination(N node) {return super.getDestination(node);}
 
     @Override public boolean sendMessage(N sender, M message) {
-        N recipient = sender == getNode1() ? getNode2() : getNode1();
-        message.setDirection(
-            haveSentMessage(recipient) ? UPMessage.DIR_DOWN : UPMessage.DIR_UP
-        );
-
         boolean res = super.sendMessage(sender, message);
         if (res) {
             sender.addSentBytes(message.getBytes());

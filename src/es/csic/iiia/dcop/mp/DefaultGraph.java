@@ -63,9 +63,11 @@ public abstract class DefaultGraph<N extends Node, E extends Edge, R extends Res
         initialize();
         R results = getResults();
 
-
         if (getMode() == Modes.TREE_DOWN) {
             getNodes().get(getRoot()).run();
+        }
+        if (getMode() == Modes.TREE_UP) {
+            getNodes().get(getRoot()).setRoot();
         }
 
         // Now for the "real meat":

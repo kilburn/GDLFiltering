@@ -38,6 +38,7 @@
 
 package es.csic.iiia.dcop;
 
+import java.util.HashSet;
 import java.util.Iterator;
 
 /**
@@ -47,9 +48,25 @@ import java.util.Iterator;
 public class FactorGraph {
 
     private CostFunction[] factors;
+    private Variable[] variables;
 
     public FactorGraph(CostFunction[] factors) {
         this.factors = factors;
+
+        HashSet<Variable> vars = new HashSet<Variable>();
+        for(CostFunction f : factors) {
+            vars.addAll(f.getVariableSet());
+        }
+
+        this.variables = vars.toArray(new Variable[0]);
+    }
+
+    public CostFunction[] getFactors() {
+        return factors;
+    }
+
+    public Variable[] getVariables() {
+        return variables;
     }
 
     @Override
@@ -71,6 +88,15 @@ public class FactorGraph {
 
         buf.append("}\n");
         return buf.toString();
+    }
+
+    public double getValue(VariableAssignment assignment) {
+        CostFunction.Combine combi = factors[0].getFactory().getCombineOperation();
+        double res = combi.getNeutralValue();
+        for (CostFunction f : factors) {
+            res = combi.eval(res, f.getValue(assignment));
+        }
+        return res;
     }
 
 }
