@@ -193,7 +193,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         }
 
         int i = getOptimalConfiguration();
-        if (i < 0) {return mapping;}
+        if (i < 0) {i = new Random().nextInt(size);}
         mapping.putAll(getMapping(i, null));
         return mapping;
     }
@@ -578,8 +578,14 @@ public abstract class AbstractCostFunction implements CostFunction {
             // Perform the actual combination in decreasing sparsity order
             CostFunction result = fs.remove(fs.size()-1);
             for (int i=fs.size()-1; i>=0; i--) {
+                if (result.getNumberOfNoGoods() == result.getSize()) {
+                    break;
+                }
                 final CostFunction f = fs.remove(i);
                 result = result.combine(f);
+            }
+            if (result.getNumberOfNoGoods() == result.getSize()) {
+                return factory.buildSparseCostFunction(vars.toArray(new Variable[0]));
             }
 
             return result;

@@ -122,7 +122,7 @@ public class ValuesArray extends ArrayList<Double> {
 
     public int getBestIndex(Summarize sum) {
         double best = sum.getNoGood();
-        int idx = -1;
+        int idx = 0;
         for (int i=0; i<size(); i++) {
             final double v = get(i);
             if (sum.isBetter(v, best)) {

@@ -72,7 +72,7 @@ public class OptimalStrategy extends VPStrategy {
 
 
         int solutionsToTry = 1;
-        if (false) {
+        if (true) {
             if (upnode instanceof FIGdlNode) {
                 FIGdlNode finode = (FIGdlNode)upnode;
                 int nBrokenLinks = finode.getnBrokenLinks();
@@ -245,10 +245,26 @@ public class OptimalStrategy extends VPStrategy {
                         System.err.println("Empty belief?!");
                         System.exit(0);
                     }
+                    
+                    ArrayList<CostFunction> rb2 = new ArrayList<CostFunction>(rb);
+                    time = System.currentTimeMillis();
                     CostFunction belief = rb.remove(rb.size()-1).combine(rb);
+                    time = System.currentTimeMillis() - time;
+                    if (time>100) {
+                        log.info("Combine time: " + time);
+                        log.info("Thas was merging: ");
+                        for(CostFunction f : rb2) {
+                            log.info("\t" + f);
+                        }
+                    }
 
                     // Compute this alternative
+                    time = System.currentTimeMillis();
                     alt = new Alt(belief, parent, map);
+                    time = System.currentTimeMillis() - time;
+                    if (time>100) {
+                        log.info("Optimum extraction time: " + time);
+                    }
                 }
                 maps.add(alt.getAssignment());
                 upper.add(parent);
@@ -264,7 +280,9 @@ public class OptimalStrategy extends VPStrategy {
             }
             time2 = System.currentTimeMillis() - time2;
             if (time2>10) {
-                log.info("Completing time: " + time2 + ", " + expand + " exp. "
+                log.info("Completing time: " + time2 + ", "
+                        + upMaps.size() + " com., "
+                        + expand + " exp. "
                         + (alts != null ? alts.size() + " alts." : ""));
             }
 

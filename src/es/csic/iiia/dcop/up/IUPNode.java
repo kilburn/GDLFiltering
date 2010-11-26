@@ -48,6 +48,10 @@ import es.csic.iiia.dcop.Variable;
 public abstract class IUPNode <E extends UPEdge, R extends UPResult> extends
         UPNode<E, R>
 {
+    /**
+     * Maximum (in-memory) function size (in number of elements)
+     */
+    private int s;
 
     public IUPNode(Variable variable) {
         super(variable);
@@ -72,6 +76,14 @@ public abstract class IUPNode <E extends UPEdge, R extends UPResult> extends
 
     public int getR() {
         return r;
+    }
+
+    public void setS(int s) {
+        this.s = s;
+    }
+
+    public int getS() {
+        return this.s;
     }
 
     public double getBound() {return Double.NaN;};

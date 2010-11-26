@@ -58,6 +58,7 @@ import es.csic.iiia.dcop.dfs.MCS;
 import es.csic.iiia.dcop.dsa.DSA;
 import es.csic.iiia.dcop.dsa.DSAResults;
 import es.csic.iiia.dcop.figdl.FIGdlFactory;
+import es.csic.iiia.dcop.figdl.FIGdlGraph;
 import es.csic.iiia.dcop.gdl.GdlFactory;
 import es.csic.iiia.dcop.igdl.IGdlFactory;
 import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
@@ -425,32 +426,39 @@ public class CliApp {
             // Run the solving algorithm
             cg.setFactory(factory);
             UPResults results = cg.run(1000);
+            UBResults ubres = null;
 
-            System.out.println("ITERATIONS " + results.getIterations());
-            System.out.println("CBR " + results.getCBR(communicationCost));
-            System.out.println("BYTES " + results.getSentBytes());
-            System.out.println("LOAD_FACTOR " + results.getLoadFactor());
+            if (algorithm == ALGO_FIGDL && cg instanceof FIGdlGraph) {
 
-            // Extract a solution
-            VPStrategy sStrategy = null;
-            switch (solutionStrategy) {
-                case SS_OPTIMAL:
-                    sStrategy = new OptimalStrategy();
-                    break;
+                ubres = ((FIGdlGraph)cg).getUBResults();
+                System.out.println("ITERATIONS " + results.getIterations());
+                System.out.println("CBR " + results.getCBR(communicationCost));
+                System.out.println("BYTES " + results.getSentBytes());
+                System.out.println("LOAD_FACTOR " + results.getLoadFactor());
 
-            }
-            VPGraph st = new VPGraph(cg, sStrategy);
-            VPResults res = st.run(10000);
-            ArrayList<VariableAssignment> maps = res.getMappings();
-            map = maps.get(0);
+            } else {
 
-            // Compute UB for IGdl
-            if (algorithm == ALGO_IGDL || algorithm == ALGO_FIGDL) {
+                System.out.println("ITERATIONS " + results.getIterations());
+                System.out.println("CBR " + results.getCBR(communicationCost));
+                System.out.println("BYTES " + results.getSentBytes());
+                System.out.println("LOAD_FACTOR " + results.getLoadFactor());
+
+                // Extract a solution
+                VPStrategy sStrategy = null;
+                switch (solutionStrategy) {
+                    case SS_OPTIMAL:
+                        sStrategy = new OptimalStrategy();
+                        break;
+
+                }
+                VPGraph st = new VPGraph(cg, sStrategy);
+                VPResults res = st.run(10000);
                 UBGraph ub = new UBGraph(st);
-                UBResults ubres = ub.run(1000);
-                System.out.println("BOUND " + ubres.getBound());
+                ubres = ub.run(1000);
             }
 
+            map = ubres.getMap();
+            System.out.println("BOUND " + ubres.getBound());
         }
 
         map.putAll(unaries);

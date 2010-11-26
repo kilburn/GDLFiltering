@@ -48,7 +48,6 @@ import es.csic.iiia.dcop.up.UPGraph;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.TreeMap;
 import org.slf4j.Logger;

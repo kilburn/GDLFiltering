@@ -63,6 +63,8 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMessage>
 
     private static int minR = 2;
 
+    private UBResults ubResults;
+
     public static void setMinR(int min_r) {
         minR = min_r;
     }
@@ -132,22 +134,15 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMessage>
 
                 // Bound calculation
                 UBGraph ub = new UBGraph(st);
-                UBResults ubres = ub.run(1000);
-                System.out.println("THIS_ITER_LB " + ubres.getBound());
-                System.out.println("THIS_ITER_UB " + ubres.getCost());
+                ubResults = ub.run(1000);
+                System.out.println("THIS_ITER_LB " + ubResults.getBound());
+                System.out.println("THIS_ITER_UB " + ubResults.getCost());
 
-    /*            if (Double.isInfinite(ubres.getCost()) || Double.isInfinite(ubres.getBound())) {
-                    fallbackLastIteration();
-                    break;
-                }
-     *
-     */
-
-                final double newCost = ubres.getCost();
+                final double newCost = ubResults.getCost();
                 if (Double.isNaN(bestCost) || summarize.isBetter(newCost, bestCost)) {
                     bestCost = newCost;
                 }
-                final double newBound = ubres.getBound();
+                final double newBound = ubResults.getBound();
                 if (Double.isNaN(bestBound) || !summarize.isBetter(newBound, bestBound)) {
                     bestBound = newBound;
                 }
@@ -155,6 +150,11 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMessage>
                 System.out.println("ITER_UB " + bestCost);
 
                 if (Math.abs(newCost - bestBound) < 0.0005) {
+                    exit = true;
+                    break;
+                }
+
+                if (summarize.isBetter(bestCost, bestBound)) {
                     exit = true;
                     break;
                 }
@@ -176,6 +176,10 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMessage>
     @Override
     protected UPResults buildResults() {
         return new UPResults();
+    }
+
+    public UBResults getUBResults() {
+        return ubResults;
     }
 
 }

@@ -38,6 +38,7 @@
 
 package es.csic.iiia.dcop.bb;
 
+import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.mp.DefaultResults;
 
 /**
@@ -52,6 +53,15 @@ public class UBResults extends DefaultResults<UBResult> {
 
     public double getCost() {
         return getResults().get(1).getUB();
+    }
+
+    public VariableAssignment getMap() {
+        VariableAssignment map = new VariableAssignment();
+        for(UBResult r : getResults()) {
+            map.putAll(r.getMap());
+        }
+
+        return map;
     }
 
 }

@@ -134,7 +134,7 @@ public class TreeReader {
             for(int j=0; j<n.fns.size(); j++) {
                 HashSet<String> foo = n.fns.get(j);
                 if (functions.get(foo) == null) {
-                    System.err.println("Function not found?");
+                    System.err.println("Function not found: " + foo);
                 }
                 factorDistribution[i][j] = functions.remove(foo);
             }
@@ -249,6 +249,8 @@ public class TreeReader {
             for (int i=1; i<parts.length; i++) {
                 fn.add(parts[i]);
             }
+            if (fn == null)
+                System.err.println("Null function! F: " + f);
             fns.add(fn);
         }
     }

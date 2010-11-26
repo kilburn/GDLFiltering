@@ -61,7 +61,7 @@ public class VPResult implements Result {
 
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder("A:");
+        StringBuilder buf = new StringBuilder("Maps:");
         if (mappings != null) {
             for (VariableAssignment map : mappings) {
                 buf.append("\n\t").append(map);
@@ -69,6 +69,7 @@ public class VPResult implements Result {
         } else {
             buf.append("null");
         }
+        buf.append("\n");
         return buf.toString();
     }
 

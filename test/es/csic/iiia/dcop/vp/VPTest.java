@@ -43,6 +43,8 @@ import es.csic.iiia.dcop.CostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.algo.JunctionTreeAlgo;
+import es.csic.iiia.dcop.bb.UBGraph;
+import es.csic.iiia.dcop.bb.UBResults;
 import es.csic.iiia.dcop.dfs.MCS;
 import es.csic.iiia.dcop.gdl.GdlFactory;
 import es.csic.iiia.dcop.up.UPFactory;
@@ -148,8 +150,11 @@ public class VPTest {
         for (int i=0; i<5; i++) {
             expResult.put(v[i], 0);
         }
-        VPResults result = instance.run(100);
-        assertEquals(result.getMappings().get(0), expResult);
+        VPResults vp = instance.run(100);
+        UBGraph ub = new UBGraph(instance);
+        UBResults ubres = ub.run(100);
+        VariableAssignment map = ubres.getMap();
+        assertEquals(map, expResult);
     }
 
     /**
@@ -170,7 +175,10 @@ public class VPTest {
             expResult.put(v[i], 1);
         }
         VPResults result = instance.run(100);
-        assertEquals(result.getMappings().get(0), expResult);
+        UBGraph ub = new UBGraph(instance);
+        UBResults ubres = ub.run(100);
+        VariableAssignment map = ubres.getMap();
+        assertEquals(map, expResult);
     }
 
 }

@@ -38,6 +38,7 @@
 
 package es.csic.iiia.dcop.bb;
 
+import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.mp.Result;
 
 /**
@@ -48,8 +49,10 @@ public class UBResult implements Result {
 
     private double ub;
     private double lb;
+    private VariableAssignment map;
 
-    public UBResult(double ub, double lb) {
+    public UBResult(VariableAssignment map, double ub, double lb) {
+        this.map = map;
         this.ub = ub;
         this.lb = lb;
     }
@@ -70,6 +73,10 @@ public class UBResult implements Result {
      */
     public double getLB() {
         return lb;
+    }
+
+    public VariableAssignment getMap() {
+        return map;
     }
 
     @Override

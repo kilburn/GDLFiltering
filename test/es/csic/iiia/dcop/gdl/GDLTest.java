@@ -143,7 +143,9 @@ public class GDLTest {
         // Extract a solution
         VPGraph vp = new VPGraph(g, new OptimalStrategy());
         VPResults res = vp.run(100);
-        VariableAssignment map = res.getMappings().get(0);
+        UBGraph ub = new UBGraph(vp);
+        UBResults ubres = ub.run(100);
+        VariableAssignment map = ubres.getMap();
 
         // The solution should be 0 0 1
         assertEquals((int)map.get(a), 0);
@@ -233,7 +235,9 @@ public class GDLTest {
         // Extract a solution
         VPGraph vp = new VPGraph(g, new OptimalStrategy());
         VPResults res = vp.run(100);
-        VariableAssignment map = res.getMappings().get(0);
+        UBGraph ub = new UBGraph(vp);
+        UBResults ubres = ub.run(100);
+        VariableAssignment map = ubres.getMap();
 
         // The solution should be 0 0 1
         assertEquals(1, (int)map.get(x));
@@ -252,7 +256,7 @@ public class GDLTest {
         assertEquals(cost, 20, 0.0001);
 
         // Extract the UB
-        UBGraph ub = new UBGraph(vp);
+        ub = new UBGraph(vp);
         UBResults rs = ub.run(100);
         System.out.println(rs);
 
@@ -313,7 +317,9 @@ public class GDLTest {
         // Extract a solution
         VPGraph vp = new VPGraph(g, new OptimalStrategy());
         VPResults res = vp.run(100);
-        VariableAssignment map = res.getMappings().get(0);
+        UBGraph ub = new UBGraph(vp);
+        UBResults ubres = ub.run(100);
+        VariableAssignment map = ubres.getMap();
 
         // The solution should be 0 0 1
         assertEquals((int)map.get(x), 1);

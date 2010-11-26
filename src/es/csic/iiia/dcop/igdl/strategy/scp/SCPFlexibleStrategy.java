@@ -79,7 +79,8 @@ public class SCPFlexibleStrategy extends IGdlPartitionStrategy {
 
         // PartitionsVariables is a list containing the sets of variables present
         // in the corresponding partition.
-        ArrayList<Collection<Variable>> partitionsVariables = new ArrayList<Collection<Variable>>();
+        ArrayList<Collection<Variable>> partitionsAllVariables = new ArrayList<Collection<Variable>>();
+        ArrayList<Collection<Variable>> partitionsEdgeVariables = new ArrayList<Collection<Variable>>();
 
         // Sort the input functions by decreasing arity, randomizing the order
         // of functions with the same arity.
@@ -88,22 +89,23 @@ public class SCPFlexibleStrategy extends IGdlPartitionStrategy {
         // Iterate over the functions, merging them whenever it's possible
         // or creating a new function when it's not.
         final int r = node.getR();
+        final int s = node.getS();
         log.trace("-- Calculating partitions (r=" + r + ")");
         for (CostFunction inFunction : fs) {
             // Obtain a set of variables in inFunction
-            Collection<Variable> variableSet = new HashSet<Variable>(inFunction.getVariableSet());
+            Collection<Variable> functionAllVariables = new HashSet<Variable>(inFunction.getVariableSet());
 
             // Check if the source function is already bigger than what we
             // can manage.
-            while (variableSet.size() > r) {
+            while (functionAllVariables.size() > r) {
                 // Remove one variable
-                Variable v = variableSet.iterator().next();
-                variableSet.remove(v);
+                Variable v = functionAllVariables.iterator().next();
+                functionAllVariables.remove(v);
 
                 if (log.isTraceEnabled()) {
                     log.trace("\tRemoving " + v.getName() + " from " + inFunction);
                 }
-                inFunction = inFunction.summarize(variableSet.toArray(new Variable[0]));
+                inFunction = inFunction.summarize(functionAllVariables.toArray(new Variable[0]));
                 if (log.isTraceEnabled()) {
                     log.trace("\t-> " + inFunction);
                 }
@@ -112,22 +114,30 @@ public class SCPFlexibleStrategy extends IGdlPartitionStrategy {
             // Check if there's a suitable existing part where we can merge
             // inFunction
             boolean merged = false;
+
+            final Collection<Variable> functionEdgeVariables = new HashSet<Variable>(Arrays.asList(e.getVariables()));
+            functionEdgeVariables.retainAll(functionAllVariables);
             
             for (int i=0, len=partitions.size(); i<len; i++) {
-                final Collection<Variable> partitionVariables = partitionsVariables.get(i);
+                final Collection<Variable> partitionAllVariables  = partitionsAllVariables.get(i);
+                final Collection<Variable> partitionEdgeVariables = partitionsAllVariables.get(i);
 
-                // Tmp is to avoid editing the original set
-                Collection<Variable> tmp = new HashSet<Variable>(partitionVariables);
-                tmp.addAll(variableSet);
+                // Tmp/tmp2 is to avoid editing the original set
+                Collection<Variable> tmp = new HashSet<Variable>(partitionAllVariables);
+                tmp.addAll(functionAllVariables);
+                Collection<Variable> tmp2 = new HashSet<Variable>(partitionEdgeVariables);
+                tmp2.addAll(functionEdgeVariables);
+
                 //log.trace("\t\t(" + i + ") tmp size: " + tmp.size());
-                if (tmp.size() <= r) {
+                if (tmp.size() <= r && tmp2.size() < s) {
 
                     if (log.isTraceEnabled()) {
                         log.trace("\tP(" + i + ") += " + inFunction);
                     }
 
                     partitions.get(i).add(inFunction);
-                    partitionsVariables.set(i, tmp);
+                    partitionsAllVariables.set(i, tmp);
+                    partitionsEdgeVariables.set(i, tmp2);
                     merged = true;
                     break;
                 }
@@ -144,7 +154,8 @@ public class SCPFlexibleStrategy extends IGdlPartitionStrategy {
                 ArrayList<CostFunction> newPartition = new ArrayList<CostFunction>();
                 newPartition.add(inFunction);
                 partitions.add(newPartition);
-                partitionsVariables.add(variableSet);
+                partitionsAllVariables.add(functionAllVariables);
+                partitionsEdgeVariables.add(functionEdgeVariables);
             }
         }
 
@@ -155,8 +166,8 @@ public class SCPFlexibleStrategy extends IGdlPartitionStrategy {
             if (log.isTraceEnabled()) {
                 log.trace("\t" + partitions.get(i));
             }
-            partitionsVariables.get(i).retainAll(edgeVariables);
-            final Variable[] vars = partitionsVariables.get(i).toArray(new Variable[0]);
+            partitionsAllVariables.get(i).retainAll(edgeVariables);
+            final Variable[] vars = partitionsAllVariables.get(i).toArray(new Variable[0]);
             final ArrayList<CostFunction> partition = partitions.get(i);
             final CostFunction f = partition.remove(partition.size()-1).combine(partition).summarize(vars);
             msg.addFactor(f);

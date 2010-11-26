@@ -41,6 +41,7 @@ package es.csic.iiia.dcop.vp;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunctionFactory;
 import es.csic.iiia.dcop.ValuesArray;
+import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.mp.AbstractNode;
 import es.csic.iiia.dcop.up.UPNode;
@@ -48,6 +49,7 @@ import es.csic.iiia.dcop.vp.strategy.VPStrategy;
 import es.csic.iiia.dcop.vp.strategy.VPStrategy.MappingResults;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,6 +124,25 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
         if (log.isTraceEnabled()) {
             log.trace("B:" + upnode.getBelief());
         }
+        if (log.isDebugEnabled()) {
+            boolean fail = false;
+            Set<Variable> vars = upnode.getVariables();
+            for (VariableAssignment a : mappings) {
+                for (Variable v : vars) {
+                    if (!a.containsKey(v)) {
+                        fail = true;
+                        break;
+                    }
+                }
+                if (fail) {
+                    System.out.println("Failed completess! " + a);
+                    System.out.println("Variables: " + vars);
+                }
+            }
+            if (!fail) {
+                System.out.println("Checking map completeness: ok");
+            }
+        }
         return new VPResult(mappings);
     }
 
@@ -161,6 +182,10 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
             values.add(value);
         }
         return values;
+    }
+
+    public VariableAssignment getMapping(int index) {
+        return mappings.get(index);
     }
 
     public ArrayList<Integer> getUpMappings() {

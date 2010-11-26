@@ -40,6 +40,7 @@ package es.csic.iiia.dcop.bb;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.ValuesArray;
+import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.mp.AbstractNode;
 import es.csic.iiia.dcop.vp.VPNode;
 import java.util.ArrayList;
@@ -137,8 +138,10 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
         if (log.isDebugEnabled()) {
             log.debug(ubs.toString());
         }
-        final double ub = ubs.getBest(summarize);
-        return new UBResult(ub,lb);
+        final int index = ubs.getBestIndex(summarize);
+        final double ub = ubs.get(index);
+        final VariableAssignment map = vpnode.getMapping(index);
+        return new UBResult(map,ub,lb);
     }
 
     private void sendMessages() {
