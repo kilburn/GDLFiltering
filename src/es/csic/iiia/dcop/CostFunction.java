@@ -358,6 +358,12 @@ public interface CostFunction {
     int getNumberOfNoGoods();
 
     /**
+     * Get the number of zeros inside this cost function.
+     * @return number of zeros.
+     */
+    int getNumberOfZeros();
+
+    /**
      * Gets the value of this factor for the given variable states.
      *
      * @param index list of variable states.

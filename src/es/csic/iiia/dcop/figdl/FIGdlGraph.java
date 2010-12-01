@@ -62,6 +62,11 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMessage>
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
 
     private static int minR = 2;
+    private static int maxS = Integer.MAX_VALUE;
+
+    public static void setMaxS(int max_s) {
+        maxS = max_s;
+    }
 
     private UBResults ubResults;
 
@@ -96,11 +101,15 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMessage>
 
         UPResults globalResults = (UPResults)getResults();
         double bestCost = Double.NaN, bestBound = Double.NaN;
+        iteration.setS(maxS);
 
         for (int i=minR; i<=maxR; i++) {
             System.out.println("Now r=" + i);
 
             // Value propagation
+            if (i > maxS) {
+                iteration.setS(i);
+            }
             iteration.setR(i);
             boolean exit = false;
 

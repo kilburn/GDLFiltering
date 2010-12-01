@@ -135,11 +135,13 @@ public class CliApp {
     public enum PS {
         SCP_C (es.csic.iiia.dcop.igdl.strategy.scp.SCPcStrategy.class),
         SCP_CC (es.csic.iiia.dcop.igdl.strategy.scp.SCPccStrategy.class),
+        SCP_FLEX (es.csic.iiia.dcop.igdl.strategy.scp.SCPFlexibleStrategy.class),
         RANKUP (es.csic.iiia.dcop.igdl.strategy.RankUpStrategy.class),
         RANKDOWN (es.csic.iiia.dcop.igdl.strategy.RankDownStrategy.class),
         LRE_D (es.csic.iiia.dcop.igdl.strategy.gd.LREGreedyStrategy.class),
         LMRE_D (es.csic.iiia.dcop.igdl.strategy.gd.LMREGreedyStrategy.class),
         ZEROS_D (es.csic.iiia.dcop.igdl.strategy.ZerosDecompositionStrategy.class),
+        ZEROS_FLEX (es.csic.iiia.dcop.igdl.strategy.FlexibleZerosDecompositionStrategy.class),
         LRE_C (es.csic.iiia.dcop.igdl.strategy.cbp.LREcStrategy.class),
         LRE_CC (es.csic.iiia.dcop.igdl.strategy.cbp.LREccStrategy.class),
         LMRE_C (es.csic.iiia.dcop.igdl.strategy.cbp.LMREcStrategy.class),

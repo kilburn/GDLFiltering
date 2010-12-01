@@ -48,12 +48,9 @@ import es.csic.iiia.dcop.util.metrics.Norm1;
 import es.csic.iiia.dcop.util.metrics.Norm2;
 import es.csic.iiia.dcop.util.metrics.NormInf;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 /**
  *

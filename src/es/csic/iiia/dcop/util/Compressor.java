@@ -85,9 +85,11 @@ public class Compressor {
                     break;
                 case CliApp.CO_SPARSE:
                     final int size = f.getSize();
+                    final int zeros = f.getNumberOfZeros();
                     final int nGoods = size - f.getNumberOfNoGoods();
-                    if (12*nGoods < 8*size) {
-                        sum += f.getVariableSet().size()*4 + 12*nGoods;
+                    final int nValues = nGoods - zeros;
+                    if (12*nValues + 4*f.getNumberOfZeros() < 8*size) {
+                        sum += f.getVariableSet().size()*4 + 12*nValues + 4*f.getNumberOfZeros();
                     } else {
                         sum += f.getVariableSet().size()*4 + 8*size;
                     }

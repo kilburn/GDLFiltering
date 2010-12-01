@@ -118,19 +118,23 @@ public class Cli {
         System.err.println("    Sets figdl to test <number> number of possible solutions at each iteration");
         System.err.println("  --min-r=<number> (2)");
         System.err.println("    Sets figdl's minimum r to <number>.");
+        System.err.println("  --max-s=<number> (inf)");
+        System.err.println("    Sets figdl to operate with s_max = number >= r.");
         System.err.println("  -p strategy, --partition-strategy=strategy (rank)");
         System.err.println("    Uses the specified approximation strategy, where strategy is one of: ");
-        System.err.println("      - scp-cc   : scope-based partitioning communication & computation bounded");
-        System.err.println("      - scp-c    : scope-based partitioning communication bounded");
-        System.err.println("      - lre-cc   : content-based local relative error strategy (communication and computation bounded).");
-        System.err.println("      - lre-c    : content-based local relative error strategy (just communication bounded).");
-        System.err.println("      - lmre-c   : content-based local max relative error strategy (just communication bounded).");
-        System.err.println("      - lmre-cc  : content-based local max relative error strategy (communication and computation bounded).");
+        System.err.println("      - scp-cc     : scope-based partitioning communication & computation bounded");
+        System.err.println("      - scp-c      : scope-based partitioning communication bounded");
+        System.err.println("      - scp-flex   : scope-based partitioning flexible computation");
+        System.err.println("      - lre-cc     : content-based local relative error strategy (communication and computation bounded).");
+        System.err.println("      - lre-c      : content-based local relative error strategy (just communication bounded).");
+        System.err.println("      - lmre-c     : content-based local max relative error strategy (just communication bounded).");
+        System.err.println("      - lmre-cc    : content-based local max relative error strategy (communication and computation bounded).");
         //System.err.println("      - rankdown : merges functions from highest ranked (max-min value) to lowest.");
-        System.err.println("      - lre-d    : greedy decomposition using LRE.");
-        System.err.println("      - lmre-d   : greedy decomposition using LMRE.");
-        System.err.println("      - superset : superset scope-based partitioning.");
-        System.err.println("      - zeros-d  : zero-avoiding decomposition.");
+        System.err.println("      - lre-d      : greedy decomposition using LRE.");
+        System.err.println("      - lmre-d     : greedy decomposition using LMRE.");
+        System.err.println("      - superset   : superset scope-based partitioning.");
+        System.err.println("      - zeros-d    : zero-avoiding decomposition.");
+        System.err.println("      - zeros-flex : zero-avoiding flexible decomposition.");
         System.err.println("  -r [variance], --random-noise[=variance]");
         System.err.println("    Adds random noise with <variance> variance, or 0.001 if unspecified.");
         System.err.println("  -s operation, --summarize=operation (min)");
@@ -158,13 +162,14 @@ public class Cli {
             new LongOpt("heuristic", LongOpt.REQUIRED_ARGUMENT, null, 'e'),
             new LongOpt("factor-graph", LongOpt.OPTIONAL_ARGUMENT, null, 'f'),
             new LongOpt("clique-graph", LongOpt.OPTIONAL_ARGUMENT, null, 'g'),
-            new LongOpt("export-tree", LongOpt.OPTIONAL_ARGUMENT, null, 3),
+            new LongOpt("export-tree", LongOpt.OPTIONAL_ARGUMENT, null, 4),
             new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
             new LongOpt("igdl-r", LongOpt.REQUIRED_ARGUMENT, null, 'i'),
             new LongOpt("jt-tries", LongOpt.REQUIRED_ARGUMENT, null, 'j'),
             new LongOpt("load-tree", LongOpt.REQUIRED_ARGUMENT, null, 'l'),
             new LongOpt("max-clique-size", LongOpt.REQUIRED_ARGUMENT, null, 'm'),
             new LongOpt("min-r", LongOpt.REQUIRED_ARGUMENT, null, 2),
+            new LongOpt("max-s", LongOpt.REQUIRED_ARGUMENT, null, 3),
             new LongOpt("normalize", LongOpt.REQUIRED_ARGUMENT, null, 'n'),
             new LongOpt("nsols", LongOpt.REQUIRED_ARGUMENT, null, 1),
             new LongOpt("partition-strategy", LongOpt.REQUIRED_ARGUMENT, null, 'p'),
@@ -216,6 +221,16 @@ public class Cli {
                     break;
 
                 case 3:
+                    arg = g.getOptarg();
+                    int max_s = Integer.parseInt(arg);
+                    if (max_s < 1) {
+                        System.err.println("Error: the minimum 's' value must be greater than 0.");
+                        System.exit(0);
+                    }
+                    FIGdlGraph.setMaxS(max_s);
+                    break;
+
+                case 4:
                     cli.setCreateCliqueTree(true);
                     arg = g.getOptarg();
                     if (arg != null) {
@@ -347,6 +362,8 @@ public class Cli {
                         cli.setPartitionStrategy(CliApp.PS.SCP_C);
                     else if (arg.equals("scp-cc"))
                         cli.setPartitionStrategy(CliApp.PS.SCP_CC);
+                    else if (arg.equals("scp-flex"))
+                        cli.setPartitionStrategy(CliApp.PS.SCP_FLEX);
                     else if (arg.equals("rankup"))
                         cli.setPartitionStrategy(CliApp.PS.RANKUP);
                     else if (arg.equals("rankdown"))
@@ -357,6 +374,8 @@ public class Cli {
                         cli.setPartitionStrategy(CliApp.PS.LMRE_D);
                     else if (arg.equals("zeros-d"))
                         cli.setPartitionStrategy(CliApp.PS.ZEROS_D);
+                    else if (arg.equals("zeros-flex"))
+                        cli.setPartitionStrategy(CliApp.PS.ZEROS_FLEX);
                     else if (arg.equals("lre-cc"))
                         cli.setPartitionStrategy(CliApp.PS.LRE_CC);
                     else if (arg.equals("lmre-cc"))

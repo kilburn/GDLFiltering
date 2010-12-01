@@ -275,6 +275,10 @@ public final class SparseCostFunction extends AbstractCostFunction implements Se
         used = to;
     }
 
+    public int getNumberOfZeros() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     /**
      * Implements the Iterator interface for an hypercube, allowing to iterate
      * over its elements using the common java conventions.

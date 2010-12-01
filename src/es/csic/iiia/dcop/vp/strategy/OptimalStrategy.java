@@ -205,13 +205,13 @@ public class OptimalStrategy extends VPStrategy {
             upper = new ArrayList<Integer>();
 
             // Firstly, we need to expand the initial mappings
-            long time2 = System.currentTimeMillis();
+//            long time2 = System.currentTimeMillis();
             int parent=0;
             for (VariableAssignment map : upMaps) {
 
-                long time = System.currentTimeMillis();
+//                long time = System.currentTimeMillis();
                 ArrayList<CostFunction> rb = node.getReducedBelief(map);
-                time = System.currentTimeMillis() - time;
+//                time = System.currentTimeMillis() - time;
                 Alt alt = null;
 
                 // Sparsity check!
@@ -221,10 +221,10 @@ public class OptimalStrategy extends VPStrategy {
                     sparsity = Math.max(sparsity, f.getNumberOfNoGoods()/(double)f.getSize());
                     totalVars.addAll(f.getVariableSet());
                 }
-                if (time>100) {
-                    log.info("Reduce time: " + time + ", " +
-                            node.getVariables().size() + " to " + totalVars.size());
-                }
+//                if (time>100) {
+//                    log.info("Reduce time: " + time + ", " +
+//                            node.getVariables().size() + " to " + totalVars.size());
+//                }
 
                 double size = 1; sparsity = 1 - sparsity;
                 for (Variable v : totalVars) {
@@ -241,30 +241,30 @@ public class OptimalStrategy extends VPStrategy {
                 } else {
 
                     // Fetch the belief associated to this mapping
-                    if (rb.isEmpty()) {
-                        System.err.println("Empty belief?!");
-                        System.exit(0);
-                    }
+//                    if (rb.isEmpty()) {
+//                        System.err.println("Empty belief?!");
+//                        System.exit(0);
+//                    }
                     
                     ArrayList<CostFunction> rb2 = new ArrayList<CostFunction>(rb);
-                    time = System.currentTimeMillis();
+//                    time = System.currentTimeMillis();
                     CostFunction belief = rb.remove(rb.size()-1).combine(rb);
-                    time = System.currentTimeMillis() - time;
-                    if (time>100) {
-                        log.info("Combine time: " + time);
-                        log.info("Thas was merging: ");
-                        for(CostFunction f : rb2) {
-                            log.info("\t" + f);
-                        }
-                    }
+//                    time = System.currentTimeMillis() - time;
+//                    if (time>100) {
+//                        log.info("Combine time: " + time);
+//                        log.info("Thas was merging: ");
+//                        for(CostFunction f : rb2) {
+//                            log.info("\t" + f);
+//                        }
+//                    }
 
                     // Compute this alternative
-                    time = System.currentTimeMillis();
+//                    time = System.currentTimeMillis();
                     alt = new Alt(belief, parent, map);
-                    time = System.currentTimeMillis() - time;
-                    if (time>100) {
-                        log.info("Optimum extraction time: " + time);
-                    }
+//                    time = System.currentTimeMillis() - time;
+//                    if (time>100) {
+//                        log.info("Optimum extraction time: " + time);
+//                    }
                 }
                 maps.add(alt.getAssignment());
                 upper.add(parent);
@@ -278,49 +278,49 @@ public class OptimalStrategy extends VPStrategy {
 
                 parent++;
             }
-            time2 = System.currentTimeMillis() - time2;
-            if (time2>10) {
-                log.info("Completing time: " + time2 + ", "
-                        + upMaps.size() + " com., "
-                        + expand + " exp. "
-                        + (alts != null ? alts.size() + " alts." : ""));
-            }
+//            time2 = System.currentTimeMillis() - time2;
+//            if (time2>10) {
+//                log.info("Completing time: " + time2 + ", "
+//                        + upMaps.size() + " com., "
+//                        + expand + " exp. "
+//                        + (alts != null ? alts.size() + " alts." : ""));
+//            }
 
             // And then we need to open new solutions
-            time2 = System.currentTimeMillis();
+//            time2 = System.currentTimeMillis();
             for (int j=0; j<expand; j++) {
                 // Fetch the best alternative
                 long time = System.currentTimeMillis();
                 Alt alt = alts.first();
                 alts.remove(alt);
-                time = System.currentTimeMillis() - time;
-                if (time>10) {
-                    log.info("Fetch-remove time: " + time);
-                }
+//                time = System.currentTimeMillis() - time;
+//                if (time>10) {
+//                    log.info("Fetch-remove time: " + time);
+//                }
 
                 // Add the corresponding mapping
-                time = System.currentTimeMillis();
+//                time = System.currentTimeMillis();
                 if (!maps.contains(alt.getAssignment())) {
                     maps.add(alt.getAssignment());
                     upper.add(alt.getParentIndex());
                 }
-                time = System.currentTimeMillis() - time;
-                if (time>10) {
-                    log.info("Check time: " + time);
-                }
+//                time = System.currentTimeMillis() - time;
+//                if (time>10) {
+//                    log.info("Check time: " + time);
+//                }
 
                 // Re-introduce the subsequent alternative
-                time = System.currentTimeMillis();
+//                time = System.currentTimeMillis();
                 alts.add(alt.next());
-                time = System.currentTimeMillis() - time;
-                if (time>10) {
-                    log.info("New alt time: " + time);
-                }
+//                time = System.currentTimeMillis() - time;
+//                if (time>10) {
+//                    log.info("New alt time: " + time);
+//                }
             }
-            time2 = System.currentTimeMillis() - time2;
-            if (time2>10) {
-                log.info("Expansion time: " + time2);
-            }
+//            time2 = System.currentTimeMillis() - time2;
+//            if (time2>10) {
+//                log.info("Expansion time: " + time2);
+//            }
 
 //            if (expand > 0) {
 //                time = System.currentTimeMillis() - time;

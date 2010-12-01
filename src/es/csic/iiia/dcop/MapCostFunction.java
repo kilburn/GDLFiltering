@@ -65,6 +65,11 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
     private double zero;
 
     /**
+     * Counter of zeros
+     */
+    private int nZeros;
+
+    /**
      * Creates a new CostFunction, initialized to the zero value.
      *
      * @param variables involved in this factor.
@@ -74,6 +79,7 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
         
         map = new HashMap<Integer,Double>();
         zero = zeroValue;
+        nZeros = 0;
     }
 
     /**
@@ -93,13 +99,15 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
             zero = getFactory().getSummarizeOperation().getNoGood();
             setValues(factor.getValues());
         }
+        nZeros = factor.getNumberOfZeros();
     }
 
     /**
-     * Resets the costFunction to zero values
+     * Resets the costFunction to "zero" values
      */
     private void reset() {
         map = new HashMap<Integer, Double>();
+        nZeros = 0;
     }
 
     /** {@inheritDoc} */
@@ -143,19 +151,39 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
         if (index < 0 || index >= size)
             throw new IndexOutOfBoundsException(Integer.toString(index));
 
-        if (value == zero) {
-            if (map.containsKey(index)) {
+        final double prev = map.containsKey(index) ? map.get(index) : zero;
+
+        if (prev == 0) {
+            if (value == 0) {
+                return;
+            } else if (value == zero) {
                 map.remove(index);
+                nZeros--;
+            } else {
+                map.put(index, value);
+                nZeros--;
             }
-            return;
+        } else {
+            if (value == 0) {
+                map.put(index, value);
+                nZeros++;
+            } else if (value == zero) {
+                map.remove(index);
+            } else {
+                map.put(index, value);
+            }
         }
 
-        map.put(index, value);
     }
 
     /** {@inheritDoc} */
     public int getNumberOfNoGoods() {
         return size - map.size();
+    }
+
+    /** {@inheritDoc} */
+    public int getNumberOfZeros() {
+        return nZeros;
     }
 
     /** {@inheritDoc} */

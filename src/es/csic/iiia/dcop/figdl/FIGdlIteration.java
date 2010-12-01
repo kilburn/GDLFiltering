@@ -56,6 +56,7 @@ public class FIGdlIteration extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMess
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
 
     private int r = 2;
+    private int s = 9;
 
     /**
      * Constructs a clique graph that uses the specified {@code EdgeFactory} to
@@ -87,6 +88,13 @@ public class FIGdlIteration extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMess
         }
     }
 
+    public void setS(int s) {
+        this.s = s;
+        for(FIGdlNode n : getNodes()) {
+            n.setS(s);
+        }
+    }
+
     @Override
     public void reportIteration(int i) {
         log.trace("------- Iter " + i);
@@ -94,7 +102,7 @@ public class FIGdlIteration extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMess
 
     @Override
     public void reportStart() {
-        log.debug("\n======= RUNNING FIGDL ITERATION r=" + this.r);
+        log.debug("\n======= RUNNING FIGDL ITERATION r=" + this.r + ", s=" + this.s);
     }
 
     @Override

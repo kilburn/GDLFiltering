@@ -187,29 +187,29 @@ public class SCPccStrategy extends IGdlPartitionStrategy {
         return msg;
     }
 
-    private ArrayList<CostFunction> sortByArityWithRandomness(ArrayList<CostFunction> fs) {
-        TreeMap<Integer, ArrayList<CostFunction>> arityMap = new TreeMap<Integer, ArrayList<CostFunction>>();
-
-        for(CostFunction f : fs) {
-            final Integer arity = f.getSize();
-            ArrayList<CostFunction> fsOfArity = null;
-            if (arityMap.containsKey(arity)) {
-                fsOfArity = arityMap.get(arity);
-            } else {
-                fsOfArity = new ArrayList<CostFunction>();
-            }
-            fsOfArity.add(f);
-            arityMap.put(arity, fsOfArity);
-        }
-
-        ArrayList<CostFunction> result = new ArrayList<CostFunction>();
-        for(Integer key : arityMap.keySet()) {
-            ArrayList<CostFunction> fsOfArity = arityMap.get(key);
-            //Collections.shuffle(fsOfArity);
-            result.addAll(fsOfArity);
-        }
-
-        return result;
-    }
+//    private ArrayList<CostFunction> sortByArityWithRandomness(ArrayList<CostFunction> fs) {
+//        TreeMap<Integer, ArrayList<CostFunction>> arityMap = new TreeMap<Integer, ArrayList<CostFunction>>();
+//
+//        for(CostFunction f : fs) {
+//            final Integer arity = f.getSize();
+//            ArrayList<CostFunction> fsOfArity = null;
+//            if (arityMap.containsKey(arity)) {
+//                fsOfArity = arityMap.get(arity);
+//            } else {
+//                fsOfArity = new ArrayList<CostFunction>();
+//            }
+//            fsOfArity.add(f);
+//            arityMap.put(arity, fsOfArity);
+//        }
+//
+//        ArrayList<CostFunction> result = new ArrayList<CostFunction>();
+//        for(Integer key : arityMap.keySet()) {
+//            ArrayList<CostFunction> fsOfArity = arityMap.get(key);
+//            //Collections.shuffle(fsOfArity);
+//            result.addAll(fsOfArity);
+//        }
+//
+//        return result;
+//    }
 
 }

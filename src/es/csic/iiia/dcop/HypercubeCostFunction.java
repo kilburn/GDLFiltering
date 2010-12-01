@@ -63,6 +63,11 @@ public final class HypercubeCostFunction extends AbstractCostFunction implements
     private int nNoGoods;
 
     /**
+     * Counter of zeros
+     */
+    private int nZeros;
+
+    /**
      * Creates a new CostFunction, initialized to zeros.
      *
      * @param variables involved in this factor.
@@ -71,6 +76,7 @@ public final class HypercubeCostFunction extends AbstractCostFunction implements
         super(variables);
         values = new double[size];
         nNoGoods = 0;
+        nZeros = size;
     }
 
     /**
@@ -82,6 +88,7 @@ public final class HypercubeCostFunction extends AbstractCostFunction implements
         super(factor);
         values = factor.getValues().clone();
         nNoGoods = factor.getNumberOfNoGoods();
+        nZeros = factor.getNumberOfZeros();
     }
 
     /** {@inheritDoc} */
@@ -98,6 +105,7 @@ public final class HypercubeCostFunction extends AbstractCostFunction implements
 
         this.values = new double[values.length];
         nNoGoods = 0;
+        nZeros = 0;
         for (int i=0; i<values.length; i++) {
             setValue(i, values[i]);
         }
@@ -120,8 +128,14 @@ public final class HypercubeCostFunction extends AbstractCostFunction implements
         if (value != ng && prev == ng) {
             nNoGoods--;
         }
+        if (value != 0 && prev == 0) {
+            nZeros--;
+        }
         if (value == ng && prev != ng) {
             nNoGoods++;
+        }
+        if (value == 0 && prev != 0) {
+            nZeros++;
         }
         values[index] = value;
     }
@@ -129,6 +143,11 @@ public final class HypercubeCostFunction extends AbstractCostFunction implements
     /** {@inheritDoc} */
     public int getNumberOfNoGoods() {
         return nNoGoods;
+    }
+
+    /** {@inheritDoc} */
+    public int getNumberOfZeros() {
+        return nZeros;
     }
 
     /** {@inheritDoc} */
