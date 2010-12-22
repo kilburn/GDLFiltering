@@ -38,7 +38,7 @@
 
 package es.csic.iiia.dcop.jt;
 
-import es.csic.iiia.dcop.mp.Result;
+import es.csic.iiia.dcop.mp.DefaultResult;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPNode;
 
@@ -46,11 +46,12 @@ import es.csic.iiia.dcop.up.UPNode;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class JTResult implements Result {
+public class JTResult extends DefaultResult {
 
     private UPNode clique;
 
     public JTResult(UPNode clique) {
+        super(clique);
         this.clique = clique;
     }
 

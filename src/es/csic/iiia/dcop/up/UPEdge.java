@@ -114,9 +114,6 @@ public class UPEdge<N extends UPNode, M extends UPMessage> extends AbstractEdge<
 
     @Override public boolean sendMessage(N sender, M message) {
         boolean res = super.sendMessage(sender, message);
-        if (res) {
-            sender.addSentBytes(message.getBytes());
-        }
 
         if (res && log.isTraceEnabled()) {
             log.trace(sender.getName() + " -> " + getDestination(sender).getName() + " : " + message);

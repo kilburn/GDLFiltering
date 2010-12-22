@@ -158,7 +158,7 @@ public class FlexibleZerosDecompositionStrategy extends IGdlPartitionStrategy {
                 partitionsVariables.add(variableSet);
             }
         }
-        msg.setnBrokenLinks(nBrokenLinks);
+        msg.setInformationLoss(nBrokenLinks);
 
         // Now that we have all the parts, summarize, decompose and add them
         log.trace("-- Resulting partitions");

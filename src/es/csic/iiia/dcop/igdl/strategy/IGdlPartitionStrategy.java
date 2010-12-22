@@ -45,10 +45,7 @@ import es.csic.iiia.dcop.igdl.IGdlMessage;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
-import es.csic.iiia.dcop.util.FunctionCounter;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,12 +60,25 @@ public abstract class IGdlPartitionStrategy {
     protected IUPNode node;
     
     private double bound;
+    
+    /**
+     * For testing purpose, the optimal bound may be set from "outside"
+     * and it will be used instead of the real one calculated by the algorithm.
+     */
+    private double optimalBound;
+
+
     private ArrayList<UPEdge<FIGdlNode, IGdlMessage>> previousEdges;
 
 
     public IGdlPartitionStrategy() {
         bound = Double.NaN;
+        optimalBound = Double.NaN;
         previousEdges = null;
+    }
+
+    public void setOptimumValue(double optimum) {
+        optimalBound = optimum;
     }
     
     public void initialize(IUPNode node) {
@@ -106,7 +116,10 @@ public abstract class IGdlPartitionStrategy {
     public void setFilteringOptions(double bound,
             ArrayList<UPEdge<FIGdlNode, IGdlMessage>> previousEdges)
     {
-        this.bound = bound;
+        if (Double.isNaN(optimalBound))
+            this.bound = bound;
+        else
+            this.bound = optimalBound;
         this.previousEdges = previousEdges;
     }
 

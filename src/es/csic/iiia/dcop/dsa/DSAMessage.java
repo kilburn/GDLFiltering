@@ -83,4 +83,8 @@ public class DSAMessage implements Message {
         hash = 71 * hash + (this.assignment != null ? this.assignment.hashCode() : 0);
         return hash;
     }
+
+    public long getBytes() {
+        return assignment.size()*4;
+    }
 }

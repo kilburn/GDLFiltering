@@ -38,39 +38,26 @@
 
 package es.csic.iiia.dcop.mp;
 
-import java.util.Collection;
-
 /**
+ * Cycle Based Runtime result collector.
  *
- * @param <E> 
  * @param <R>
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public interface Node<E extends Edge, R extends Result> {
+public class DefaultResult implements Result {
 
-    public void initialize();
+    private long sentBytes;
 
-    public boolean isUpdated();
+    public DefaultResult(Node n) {
+        sentBytes += n.getSentBytes();
+    }
 
-    public long run();
+    public void addSentBytes(long bytes) {
+        sentBytes += bytes;
+    }
 
-    public boolean isFinished();
-
-    public R end();
-
-    public void setUpdated(boolean updated);
-
-    public void addEdge(E edge);
-
-    public Collection<E> getEdges();
-
-    public String getName();
-
-    public void setRoot();
-
-    public boolean isRoot();
-
-    public void addSentBytes(long bytes);
-    public long getSentBytes();
+    public long getSentBytes() {
+        return sentBytes;
+    }
 
 }

@@ -40,7 +40,6 @@ package es.csic.iiia.dcop.cli;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.figdl.FIGdlGraph;
-import es.csic.iiia.dcop.igdl.strategy.cbp.CBPartitioningStrategy;
 import es.csic.iiia.dcop.vp.strategy.OptimalStrategy;
 import gnu.getopt.Getopt;
 import gnu.getopt.LongOpt;
@@ -120,6 +119,8 @@ public class Cli {
         System.err.println("    Sets figdl's minimum r to <number>.");
         System.err.println("  --max-s=<number> (inf)");
         System.err.println("    Sets figdl to operate with s_max = number >= r.");
+        System.err.println("  --optimal-file=<file>");
+        System.err.println("    Uses the value stored in <file> as a previously-known optimal (for testing).");
         System.err.println("  -p strategy, --partition-strategy=strategy (rank)");
         System.err.println("    Uses the specified approximation strategy, where strategy is one of: ");
         System.err.println("      - scp-cc     : scope-based partitioning communication & computation bounded");
@@ -172,6 +173,7 @@ public class Cli {
             new LongOpt("max-s", LongOpt.REQUIRED_ARGUMENT, null, 3),
             new LongOpt("normalize", LongOpt.REQUIRED_ARGUMENT, null, 'n'),
             new LongOpt("nsols", LongOpt.REQUIRED_ARGUMENT, null, 1),
+            new LongOpt("optimal-file", LongOpt.REQUIRED_ARGUMENT, null, 5),
             new LongOpt("partition-strategy", LongOpt.REQUIRED_ARGUMENT, null, 'p'),
             new LongOpt("random-noise", LongOpt.OPTIONAL_ARGUMENT, null, 'r'),
             new LongOpt("summarize", LongOpt.REQUIRED_ARGUMENT, null, 's'),
@@ -235,6 +237,13 @@ public class Cli {
                     arg = g.getOptarg();
                     if (arg != null) {
                         cli.setCliqueTreeFile(arg);
+                    }
+                    break;
+
+                case 5:
+                    arg = g.getOptarg();
+                    if (arg != null) {
+                        cli.setOptimalFile(arg);
                     }
                     break;
 

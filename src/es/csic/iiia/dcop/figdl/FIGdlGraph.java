@@ -42,6 +42,7 @@ import es.csic.iiia.dcop.CostFunction.Summarize;
 import es.csic.iiia.dcop.bb.UBGraph;
 import es.csic.iiia.dcop.bb.UBResults;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
+import es.csic.iiia.dcop.mp.Result;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.up.UPResult;
@@ -50,6 +51,7 @@ import es.csic.iiia.dcop.util.FunctionCounter;
 import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.VPResults;
 import es.csic.iiia.dcop.vp.strategy.OptimalStrategy;
+import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,9 +65,14 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMessage>
 
     private static int minR = 2;
     private static int maxS = Integer.MAX_VALUE;
+    private static double optimumValue = Double.NaN;
 
     public static void setMaxS(int max_s) {
         maxS = max_s;
+    }
+
+    public static void setOptimalValue(double optimum) {
+        optimumValue = optimum;
     }
 
     private UBResults ubResults;
@@ -99,6 +106,10 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMessage>
     public UPResults run(int maxIterations) {
         reportStart();
 
+        if (!Double.isNaN(optimumValue)) {
+            iteration.setOptimumValue(optimumValue);
+        }
+
         UPResults globalResults = (UPResults)getResults();
         double bestCost = Double.NaN, bestBound = Double.NaN;
         iteration.setS(maxS);
@@ -122,11 +133,7 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMessage>
                     break;
                 }
                 globalResults.addCycle(iterResults.getMaximalCcc(), iterResults.getTotalCcc());
-                for (Object result : iterResults.getResults()) {
-                    globalResults.add((UPResult)result);
-                }
-                System.out.println("ITERBYTES " + iterResults.getSentBytes());
-                System.out.println("ITERSPARSITY " + FunctionCounter.getRatio());
+
 
                 Summarize summarize = null;
                 for(FIGdlNode n : getNodes()) {
@@ -138,12 +145,22 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMessage>
 
 
                 // Solution extraction
-                VPGraph st = new VPGraph(this, new OptimalStrategy());
-                VPResults res = st.run(1000);
+                VPGraph vp = new VPGraph(this, new OptimalStrategy());
+                VPResults res = vp.run(1000);
+                ArrayList<Result> rs = iterResults.getResults();
+                rs.get(0).addSentBytes(res.getSentBytes());
+                System.out.println(res.getSentBytes());
 
                 // Bound calculation
-                UBGraph ub = new UBGraph(st);
+                UBGraph ub = new UBGraph(vp);
                 ubResults = ub.run(1000);
+                rs.get(0).addSentBytes(ubResults.getSentBytes());
+                for (Object result : iterResults.getResults()) {
+                    globalResults.add((UPResult)result);
+                }
+                System.out.println("ITERBYTES " + iterResults.getSentBytes());
+                System.out.println("ITERSPARSITY " + FunctionCounter.getRatio());
+
                 System.out.println("THIS_ITER_LB " + ubResults.getBound());
                 System.out.println("THIS_ITER_UB " + ubResults.getCost());
 

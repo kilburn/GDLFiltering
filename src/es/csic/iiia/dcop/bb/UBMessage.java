@@ -83,5 +83,10 @@ public class UBMessage implements Message {
         return "[" + this.lb + " - " + this.ubs + "]";
     }
 
+    public long getBytes() {
+        // 8 = lb,
+        return 8 + this.ubs.size()*8;
+    }
+
 
 }

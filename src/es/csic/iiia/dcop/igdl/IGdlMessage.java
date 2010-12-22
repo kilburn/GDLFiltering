@@ -118,19 +118,19 @@ public class IGdlMessage implements UPMessage {
         return buf.toString();
     }
 
-    public int getnBrokenLinks() {
+    public int getInformationLoss() {
         return nBrokenLinks;
     }
 
-    public void setnBrokenLinks(int nBrokenLinks) {
+    public void setInformationLoss(int nBrokenLinks) {
         this.nBrokenLinks = nBrokenLinks;
     }
 
-    public int getMaxBrokenLinks() {
+    public int getMaxInformationLoss() {
         return maxBrokenLinks;
     }
 
-    public void setMaxBrokenLinks(int maxBrokenLinks) {
+    public void setMaxInformationLoss(int maxBrokenLinks) {
         this.maxBrokenLinks = maxBrokenLinks;
     }
 

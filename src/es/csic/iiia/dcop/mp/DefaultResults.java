@@ -75,6 +75,11 @@ public class DefaultResults<R extends Result> implements Results<R> {
     private ArrayList<Double> loadFactor;
 
     /**
+     * Total number of sent bytes
+     */
+    private long sentBytes;
+
+    /**
      * Cumulative maximal cycle checks.
      */
     private long maximalCcc;
@@ -107,6 +112,18 @@ public class DefaultResults<R extends Result> implements Results<R> {
         this.results   = new ArrayList<R>();
         this.totalCc   = new ArrayList<Long>();
         this.maximalCc = new ArrayList<Long>();
+    }
+
+    /**
+     * Returns the total number of sent bytes.
+     * @return number of bytes sent during the algorithm's execution.
+     */
+    public long getSentBytes() {
+        long bytes = 0;
+        for (R r : getResults()) {
+            bytes += r.getSentBytes();
+        }
+        return bytes;
     }
 
     /**

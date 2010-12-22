@@ -40,7 +40,7 @@ package es.csic.iiia.dcop.up;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.mp.Result;
+import es.csic.iiia.dcop.mp.DefaultResult;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -49,18 +49,16 @@ import java.util.HashSet;
  * 
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class UPResult implements Result {
+public class UPResult extends DefaultResult {
     private CostFunction factor;
     private UPNode node;
     private int cliqueVariables;
     private int cliqueSize;
-    private long sentBytes;
 
-    public long getSentBytes() {
-        return sentBytes;
-    }
+    
 
     public UPResult(UPNode node) {
+        super(node);
         this.node = node;
         cliqueVariables = node.getVariables().size();
         cliqueSize = 1;
@@ -69,7 +67,6 @@ public class UPResult implements Result {
         for (Variable v : nv) {
             cliqueSize *= v.getDomain();
         }
-        sentBytes = node.getSentBytes();
     }
 
     public CostFunction getFactor() {

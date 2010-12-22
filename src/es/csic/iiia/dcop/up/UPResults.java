@@ -47,14 +47,6 @@ import es.csic.iiia.dcop.mp.DefaultResults;
  */
 public class UPResults<T extends UPResult> extends DefaultResults<T> {
 
-    public long getSentBytes() {
-        long bytes = 0;
-        for (UPResult r : getResults()) {
-            bytes += r.getSentBytes();
-        }
-        return bytes;
-    }
-
     public int getMaxSize() {
         int max = Integer.MIN_VALUE;
         for (UPResult r : getResults()) {

@@ -141,7 +141,7 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
         final int index = ubs.getBestIndex(summarize);
         final double ub = ubs.get(index);
         final VariableAssignment map = vpnode.getMapping(index);
-        return new UBResult(map,ub,lb);
+        return new UBResult(this,map,ub,lb);
     }
 
     private void sendMessages() {

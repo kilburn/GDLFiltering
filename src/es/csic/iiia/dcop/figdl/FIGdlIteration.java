@@ -121,4 +121,11 @@ public class FIGdlIteration extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMess
         }
     }
 
+    void setOptimumValue(double optimum) {
+        log.warn("Using an externally-fed (optimal?) value: " + optimum);
+        for (FIGdlNode n : getNodes()) {
+            n.setOptimumValue(optimum);
+        }
+    }
+
 }

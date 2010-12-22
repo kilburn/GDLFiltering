@@ -82,12 +82,12 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
     private double bound = Double.NaN;
 
     /**
-     * (Experimental) Number of broken links in received functions as an
-     * heuristic of information accuracy.
+     * (Experimental) Amount of information loss in received functions as an
+     * heuristic of received cost functions' accuracy.
      */
-    private int nBrokenLinks = 0;
-    private int localBrokenLinks = 0;
-    private int maxBrokenLinks = 0;
+    private int informationLoss = 0;
+    private int localInformationLoss = 0;
+    private int maxInformationLoss = 0;
 
     /**
      * Constructs a new clique with the specified member variable and null
@@ -140,7 +140,7 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
         }
 
         strategy.setFilteringOptions(bound, previousEdges);
-        localBrokenLinks = 0;
+        localInformationLoss = 0;
     }
 
     /**
@@ -150,7 +150,7 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
     @Override
     public void initialize() {
         super.initialize();
-        localBrokenLinks = 0;
+        localInformationLoss = 0;
 
         // Tree-based operation
         setMode(Modes.TREE_UP);
@@ -177,15 +177,15 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
         }
 
         // And the received messages
-        nBrokenLinks = 0; maxBrokenLinks = 0;
+        informationLoss = 0; maxInformationLoss = 0;
         Collection<UPEdge<FIGdlNode, IGdlMessage>> edges = getEdges();
         for (UPEdge<FIGdlNode, IGdlMessage> e : edges) {
             IGdlMessage msg = e.getMessage(this);
             if (msg != null) {
                 costFunctions.addAll(msg.getFactors());
                 if (isParent(e)) {
-                    nBrokenLinks += msg.getnBrokenLinks();
-                    maxBrokenLinks = Math.max(maxBrokenLinks, msg.getMaxBrokenLinks());
+                    informationLoss += msg.getInformationLoss();
+                    maxInformationLoss = Math.max(maxInformationLoss, msg.getMaxInformationLoss());
                 }
             }
         }
@@ -250,8 +250,8 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
             cc += msg.cc;
 
             if (isParent(e)) {
-                localBrokenLinks = msg.getnBrokenLinks();
-                msg.setMaxBrokenLinks(maxBrokenLinks + localBrokenLinks);
+                localInformationLoss = msg.getInformationLoss();
+                msg.setMaxInformationLoss(maxInformationLoss + localInformationLoss);
             }
 
             e.sendMessage(this, msg);
@@ -303,12 +303,16 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
         return bound;
     }
 
-    public int getnBrokenLinks() {
-        return nBrokenLinks;
+    public int getInformationLoss() {
+        return informationLoss;
     }
 
-    public int getMaxBrokenLinks() {
-        return maxBrokenLinks + localBrokenLinks;
+    public int getMaxInformationLoss() {
+        return maxInformationLoss + localInformationLoss;
+    }
+
+    void setOptimumValue(double optimum) {
+        strategy.setOptimumValue(optimum);
     }
 
 }

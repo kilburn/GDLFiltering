@@ -149,7 +149,8 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
     /** {@inheritDoc} */
     public void setValue(int index, double value) {
         if (index < 0 || index >= size)
-            throw new IndexOutOfBoundsException(Integer.toString(index));
+            throw new IndexOutOfBoundsException(Integer.toString(index) + " out of "
+                    + size);
 
         final double prev = map.containsKey(index) ? map.get(index) : zero;
 

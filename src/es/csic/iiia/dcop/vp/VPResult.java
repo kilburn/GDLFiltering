@@ -39,6 +39,7 @@
 package es.csic.iiia.dcop.vp;
 
 import es.csic.iiia.dcop.VariableAssignment;
+import es.csic.iiia.dcop.mp.DefaultResult;
 import es.csic.iiia.dcop.mp.Result;
 import java.util.ArrayList;
 
@@ -47,12 +48,13 @@ import java.util.ArrayList;
  * 
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class VPResult implements Result {
+public class VPResult extends DefaultResult {
 
     private ArrayList<VariableAssignment> mappings;
 
-    VPResult(ArrayList<VariableAssignment> mappings) {
-        this.mappings = mappings;
+    VPResult(VPNode node) {
+        super(node);
+        this.mappings = node.getMappings();
     }
 
     public ArrayList<VariableAssignment> getMappings() {

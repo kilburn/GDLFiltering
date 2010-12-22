@@ -75,8 +75,8 @@ public class OptimalStrategy extends VPStrategy {
         if (true) {
             if (upnode instanceof FIGdlNode) {
                 FIGdlNode finode = (FIGdlNode)upnode;
-                int nBrokenLinks = finode.getnBrokenLinks();
-                int maxBrokenLinks = finode.getMaxBrokenLinks();
+                int nBrokenLinks = finode.getInformationLoss();
+                int maxBrokenLinks = finode.getMaxInformationLoss();
                 int remainingSlots = nMappings - mappings.size();
 
                 if (nBrokenLinks == maxBrokenLinks) {

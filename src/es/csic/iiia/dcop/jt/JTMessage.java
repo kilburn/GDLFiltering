@@ -93,4 +93,8 @@ public class JTMessage implements Message {
         hash = 71 * hash + (this.variables != null ? this.variables.hashCode() : 0);
         return hash;
     }
+
+    public long getBytes() {
+        return 0;
+    }
 }

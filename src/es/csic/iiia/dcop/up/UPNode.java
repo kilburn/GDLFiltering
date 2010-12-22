@@ -58,7 +58,6 @@ public abstract class UPNode<E extends UPEdge, R extends UPResult> extends
         AbstractNode<E, R> {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
-    private long sentBytes = 0;
 
     /**
      * Clique's member variables.
@@ -115,8 +114,6 @@ public abstract class UPNode<E extends UPEdge, R extends UPResult> extends
     @Override
     public void initialize() {
         super.initialize();
-
-        sentBytes = 0;
     }
 
     /**
@@ -174,14 +171,6 @@ public abstract class UPNode<E extends UPEdge, R extends UPResult> extends
             size *= v.getDomain();
         }
         return size;
-    }
-
-    public long getSentBytes() {
-        return sentBytes;
-    }
-
-    protected void addSentBytes(long bytes) {
-        sentBytes += bytes;
     }
 
     /**

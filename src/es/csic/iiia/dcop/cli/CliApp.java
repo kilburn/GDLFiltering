@@ -68,6 +68,7 @@ import es.csic.iiia.dcop.io.TreeReader;
 import es.csic.iiia.dcop.jt.JTResults;
 import es.csic.iiia.dcop.jt.JunctionTree;
 import es.csic.iiia.dcop.mp.AbstractNode.Modes;
+import es.csic.iiia.dcop.mp.Result;
 import es.csic.iiia.dcop.up.UPFactory;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.util.Compressor;
@@ -76,12 +77,15 @@ import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.VPResults;
 import es.csic.iiia.dcop.vp.strategy.OptimalStrategy;
 import es.csic.iiia.dcop.vp.strategy.VPStrategy;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.URL;
 import java.util.ArrayList;
@@ -204,6 +208,16 @@ public class CliApp {
     private int IGdlR = 2;
     private PS partitionStrategy = PS.RANKUP;
     private int solutionStrategy = SS_OPTIMAL;
+
+    private String optimalFile = null;
+
+    public String getOptimalFile() {
+        return optimalFile;
+    }
+
+    public void setOptimalFile(String optimalFile) {
+        this.optimalFile = optimalFile;
+    }
 
     public String getCliqueTreeFile() {
         return cliqueTreeFile;
@@ -400,6 +414,8 @@ public class CliApp {
         // Output factor graph
         FactorGraph fg = new FactorGraph(factors);
         createFactorGraphFile(fg);
+        // Output total number of variables and min/avg/max domain
+        outputVariableStatistics(factors);
 
         // DSA Can solve from here
         VariableAssignment map = null;
@@ -413,9 +429,6 @@ public class CliApp {
             
         } else {
 
-            // Output total number of variables and min/avg/max domain
-            outputVariableStatistics(factors);
-
             // Create the clique graph, using the specified algorithm
             UPGraph cg = createCliqueGraph(factors);
 
@@ -423,6 +436,19 @@ public class CliApp {
             if (randomVariance != 0) {
                 RandomNoiseAdder rna = new RandomNoiseAdder(randomVariance);
                 rna.addNoise(cg);
+            }
+
+            if (optimalFile != null) {
+                try {
+                    BufferedReader br = new BufferedReader(new InputStreamReader(
+                            new FileInputStream(new File(optimalFile))
+                    ));
+                    double optimal = Double.parseDouble(br.readLine());
+                    FIGdlGraph.setOptimalValue(optimal);
+                } catch (IOException ex) {
+                    java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
             }
 
             // Run the solving algorithm
@@ -440,10 +466,7 @@ public class CliApp {
 
             } else {
 
-                System.out.println("ITERATIONS " + results.getIterations());
-                System.out.println("CBR " + results.getCBR(communicationCost));
-                System.out.println("BYTES " + results.getSentBytes());
-                System.out.println("LOAD_FACTOR " + results.getLoadFactor());
+                
 
                 // Extract a solution
                 VPStrategy sStrategy = null;
@@ -455,8 +478,16 @@ public class CliApp {
                 }
                 VPGraph st = new VPGraph(cg, sStrategy);
                 VPResults res = st.run(10000);
+                ArrayList<Result> rs = results.getResults();
+                rs.get(0).addSentBytes(res.getSentBytes());
                 UBGraph ub = new UBGraph(st);
                 ubres = ub.run(1000);
+                rs.get(0).addSentBytes(ubres.getSentBytes());
+
+                System.out.println("ITERATIONS " + results.getIterations());
+                System.out.println("CBR " + results.getCBR(communicationCost));
+                System.out.println("BYTES " + results.getSentBytes());
+                System.out.println("LOAD_FACTOR " + results.getLoadFactor());
             }
 
             map = ubres.getMap();

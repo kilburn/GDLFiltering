@@ -49,6 +49,8 @@ import java.util.Collection;
  */
 public abstract class AbstractNode<E extends Edge, R extends Result> implements Node<E,R> {
 
+    private long sentBytes;
+
     /**
      * @return the mode
      */
@@ -272,14 +274,29 @@ public abstract class AbstractNode<E extends Edge, R extends Result> implements 
         return !isChild(edge);
     }
 
-    public void initialize() {}
+    /** {@inheritDoc} */
+    public void initialize() {
+        sentBytes = 0;
+    }
 
+    /** {@inheritDoc} */
     public boolean isRoot() {
         return root;
     }
 
+    /** {@inheritDoc} */
     public void setRoot() {
         this.root = true;
+    }
+
+    /** {@inheritDoc} */
+    public void addSentBytes(long bytes) {
+        this.sentBytes += bytes;
+    }
+
+    /** {@inheritDoc} */
+    public long getSentBytes() {
+        return this.sentBytes;
     }
 
 

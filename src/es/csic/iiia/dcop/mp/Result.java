@@ -43,5 +43,6 @@ package es.csic.iiia.dcop.mp;
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
 public interface Result {
-
+    public void addSentBytes(long bytes);
+    public long getSentBytes();
 }

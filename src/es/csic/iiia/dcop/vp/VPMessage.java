@@ -88,4 +88,12 @@ public class VPMessage implements Message {
         return buf.toString();
     }
 
+    public long getBytes() {
+        long sum = 0;
+        for(VariableAssignment m : mappings) {
+            if (m != null) sum += m.size()*4;
+        }
+        return sum;
+    }
+
 }

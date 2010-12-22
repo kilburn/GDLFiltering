@@ -182,7 +182,7 @@ public class SCPccStrategy extends IGdlPartitionStrategy {
         }
 
         msg = this.filterMessage(e, msg);
-        msg.setnBrokenLinks(nBrokenLinks);
+        msg.setInformationLoss(nBrokenLinks);
 
         return msg;
     }

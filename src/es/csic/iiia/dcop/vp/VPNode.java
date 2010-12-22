@@ -143,7 +143,7 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
                 System.out.println("Checking map completeness: ok");
             }
         }
-        return new VPResult(mappings);
+        return new VPResult(this);
     }
 
     public String getName() {
@@ -205,6 +205,10 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
      */
     public void setStrategy(VPStrategy strategy) {
         this.strategy = strategy;
+    }
+
+    ArrayList<VariableAssignment> getMappings() {
+        return mappings;
     }
 
 }

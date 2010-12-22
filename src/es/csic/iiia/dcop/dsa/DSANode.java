@@ -166,7 +166,7 @@ public class DSANode extends AbstractNode<DSAEdge, DSAResult> {
     }
 
     public DSAResult end() {
-        return new DSAResult(myAssignment);
+        return new DSAResult(this);
     }
 
     public String getName() {
@@ -191,6 +191,10 @@ public class DSANode extends AbstractNode<DSAEdge, DSAResult> {
         }
 
         super.setUpdated(updated);
+    }
+
+    VariableAssignment getAssignment() {
+        return myAssignment;
     }
 
 }
