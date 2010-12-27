@@ -75,22 +75,22 @@ public class OptimalStrategy extends VPStrategy {
         if (true) {
             if (upnode instanceof FIGdlNode) {
                 FIGdlNode finode = (FIGdlNode)upnode;
-                int nBrokenLinks = finode.getInformationLoss();
-                int maxBrokenLinks = finode.getMaxInformationLoss();
+                double informationLoss = finode.getInformationLoss();
+                double maxInformationLoss = finode.getMaxInformationLoss();
                 int remainingSlots = nMappings - mappings.size();
 
-                if (nBrokenLinks == maxBrokenLinks) {
+                if (informationLoss == maxInformationLoss) {
 
                     // Leaf node!
                     solutionsToTry = remainingSlots;
 
                 } else {
 
-                    double ns = nBrokenLinks/((double)maxBrokenLinks)*remainingSlots;
+                    double ns = informationLoss/((double)maxInformationLoss)*remainingSlots;
                     solutionsToTry = (int)ns;
                     ns -= (double)solutionsToTry;
                     if (log.isTraceEnabled()) {
-                        log.trace("bl: " + nBrokenLinks + ", cb: " + maxBrokenLinks
+                        log.trace("bl: " + informationLoss + ", cb: " + maxInformationLoss
                                 + ", rs: " + remainingSlots + ", ns: " + ns);
                     }
                     if (Math.random() <= ns) {

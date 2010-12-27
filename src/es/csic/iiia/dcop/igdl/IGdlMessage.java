@@ -56,8 +56,8 @@ public class IGdlMessage implements UPMessage {
     private ArrayList<CostFunction> factors;
     private CostFunction belief = null;
     public long cc = 0;
-    private int nBrokenLinks = 0;
-    private int maxBrokenLinks = 0;
+    private double informationLoss = 0;
+    private double maxInformationLoss = 0;
 
     public IGdlMessage(ArrayList<CostFunction> factors) {
         this.factors = factors;
@@ -118,20 +118,20 @@ public class IGdlMessage implements UPMessage {
         return buf.toString();
     }
 
-    public int getInformationLoss() {
-        return nBrokenLinks;
+    public double getInformationLoss() {
+        return informationLoss;
     }
 
-    public void setInformationLoss(int nBrokenLinks) {
-        this.nBrokenLinks = nBrokenLinks;
+    public void setInformationLoss(double loss) {
+        this.informationLoss = loss;
     }
 
-    public int getMaxInformationLoss() {
-        return maxBrokenLinks;
+    public double getMaxInformationLoss() {
+        return maxInformationLoss;
     }
 
-    public void setMaxInformationLoss(int maxBrokenLinks) {
-        this.maxBrokenLinks = maxBrokenLinks;
+    public void setMaxInformationLoss(double maxInformationLoss) {
+        this.maxInformationLoss = maxInformationLoss;
     }
 
 }

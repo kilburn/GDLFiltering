@@ -45,6 +45,8 @@ import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.util.CostFunctionStats;
+import es.csic.iiia.dcop.util.metrics.Metric;
+import es.csic.iiia.dcop.util.metrics.Norm0;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -59,6 +61,7 @@ import org.slf4j.LoggerFactory;
 public class FlexibleZerosDecompositionStrategy extends IGdlPartitionStrategy {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
+    private Metric informationLossNorm = new Norm0();
 
     @Override
     public void initialize(IUPNode node) {
@@ -162,6 +165,7 @@ public class FlexibleZerosDecompositionStrategy extends IGdlPartitionStrategy {
 
         // Now that we have all the parts, summarize, decompose and add them
         log.trace("-- Resulting partitions");
+        double informationLoss = 0;
         Collection<Variable> edgeVariables = Arrays.asList(e.getVariables());
         for (int i=0, len=partitions.size(); i<len; i++) {
 
@@ -191,17 +195,22 @@ public class FlexibleZerosDecompositionStrategy extends IGdlPartitionStrategy {
             msg.cc += f.getSize();
 
             // Obtain the projection approximation
-            for (CostFunction f2 : CostFunctionStats.getApproximation2(f, node.getR())) {
-                msg.addFactor(f2);
-                msg.cc += f.getSize();
+            CostFunction[] res =
+                    CostFunctionStats.getZeroDecompositionApproximation(f, node.getR());
+            for (int j=0; j<res.length-1; j++) {
+                msg.addFactor(res[j]);
             }
+            informationLoss += informationLossNorm.getValue(res[res.length-1]);
 
             if (log.isTraceEnabled()) {
                 log.trace("\tSummarizes to : " + f);
             }
         }
-
         msg = filterMessage(e, msg);
+
+        // And the total information lost
+        msg.setInformationLoss(informationLoss);
+
         return msg;
     }
 

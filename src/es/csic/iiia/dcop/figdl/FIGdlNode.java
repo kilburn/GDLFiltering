@@ -85,9 +85,9 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
      * (Experimental) Amount of information loss in received functions as an
      * heuristic of received cost functions' accuracy.
      */
-    private int informationLoss = 0;
-    private int localInformationLoss = 0;
-    private int maxInformationLoss = 0;
+    private double informationLoss = 0;
+    private double localInformationLoss = 0;
+    private double maxInformationLoss = 0;
 
     /**
      * Constructs a new clique with the specified member variable and null
@@ -303,11 +303,11 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
         return bound;
     }
 
-    public int getInformationLoss() {
+    public double getInformationLoss() {
         return informationLoss;
     }
 
-    public int getMaxInformationLoss() {
+    public double getMaxInformationLoss() {
         return maxInformationLoss + localInformationLoss;
     }
 

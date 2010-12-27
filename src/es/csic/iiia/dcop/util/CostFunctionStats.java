@@ -356,7 +356,7 @@ public class CostFunctionStats {
         return res.toArray(new CostFunction[0]);
     }
 
-    public static CostFunction[] getApproximation2(CostFunction f, int r) {
+    public static CostFunction[] getZeroDecompositionApproximation(CostFunction f, int r) {
         ArrayList<CostFunction> res = new ArrayList<CostFunction>();
 
         CombinationGenerator c = new CombinationGenerator(f.getVariableSet().toArray(new Variable[0]), r);
@@ -376,7 +376,7 @@ public class CostFunctionStats {
         }
 
         int ncfs = 0;
-        while(!cfs.isEmpty() && ncfs < 10) {
+        while(!cfs.isEmpty()) {
             VariableAssignment map = null;
             for(Iterator<Integer> i = f.iterator(); i.hasNext();) {
                 final int idx = i.next();
@@ -435,6 +435,7 @@ public class CostFunctionStats {
             }
         }
 
+        res.add(f);
         return res.toArray(new CostFunction[0]);
     }
 

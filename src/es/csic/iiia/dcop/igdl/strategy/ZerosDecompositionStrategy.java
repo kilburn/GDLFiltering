@@ -45,6 +45,8 @@ import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.util.CostFunctionStats;
+import es.csic.iiia.dcop.util.metrics.Metric;
+import es.csic.iiia.dcop.util.metrics.Norm0;
 import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +58,7 @@ import org.slf4j.LoggerFactory;
 public class ZerosDecompositionStrategy extends IGdlPartitionStrategy {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
+    private Metric informationLossNorm = new Norm0();
 
     @Override
     public void initialize(IUPNode node) {
@@ -105,10 +108,17 @@ public class ZerosDecompositionStrategy extends IGdlPartitionStrategy {
         msg.cc += remaining.getSize();
 
         // Obtain the projection approximation
-        for (CostFunction f : CostFunctionStats.getApproximation2(remaining, node.getR())) {
-            msg.addFactor(f);
+        CostFunction[] res =
+                CostFunctionStats.getZeroDecompositionApproximation(remaining, node.getR());
+        for (int i=0; i<res.length-1; i++) {
+            msg.addFactor(res[i]);
             msg.cc += remaining.getSize();
         }
+
+        // And the total information lost
+        msg.setInformationLoss(
+                informationLossNorm.getValue(res[res.length-1])
+        );
 
         return msg;
     }
