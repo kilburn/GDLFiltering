@@ -56,12 +56,16 @@ public class NormInf implements Metric {
     }
 
     public double getValue(CostFunction f, double boundValue) {
-        final double ng = f.getFactory().getSummarizeOperation().getNoGood();
+        // When there are nogoods, the normInf of this function
+        // is exactly the boundValue.
+        if (f.getNumberOfNoGoods() > 0) {
+            return boundValue;
+        }
 
+        // Otherwise we have to actually find it.
         double s = Double.NEGATIVE_INFINITY;
         for (Iterator<Integer> i = f.iterator(); i.hasNext();) {
             double v = f.getValue(i.next());
-            if (v == ng) v = 0;
             s = Math.max(s, v);
         }
         return s;

@@ -435,6 +435,35 @@ public class CostFunctionStats {
             }
         }
 
+        // F is the remainder, but it may contain nogood elements that
+        // *HAVE* been extracted. Hence, we now remove these nogoods.
+//        for (CostFunction rf : res) {
+//            Iterator<Integer> it = rf.noGoodIterator();
+//            VariableAssignment map = null;
+//            while (it.hasNext()) {
+//                final int idx = it.next();
+//                map = rf.getMapping(idx, map);
+//                for (int idx2 : f.getIndexes(map)) {
+//                    System.out.println("Setting " + idx2 + " to 0");
+//                    f.setValue(idx2, 0);
+//                }
+//            }
+//        }
+
+        Iterator<Integer> it = f.noGoodIterator();
+        VariableAssignment map = null;
+        final double ng = f.getFactory().getSummarizeOperation().getNoGood();
+        while (it.hasNext()) {
+            final int idx = it.next();
+            map = f.getMapping(idx, map);
+            for (CostFunction rf : res) {
+                if (rf.getValue(map) == ng) {
+                    f.setValue(idx, 0);
+                    break;
+                }
+            }
+        }
+
         res.add(f);
         return res.toArray(new CostFunction[0]);
     }

@@ -47,6 +47,7 @@ import es.csic.iiia.dcop.util.metrics.Norm0;
 import es.csic.iiia.dcop.util.metrics.Norm1;
 import es.csic.iiia.dcop.util.metrics.Norm2;
 import es.csic.iiia.dcop.util.metrics.NormInf;
+import java.util.ArrayList;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -264,6 +265,7 @@ public class CostFunctionStatsTest {
     /**
      * Test of getBestApproximation method, of class CostFunctionStats.
      */
+    @Ignore
     @Test
     public void testGetBestApproximation() {
         Metric[] metrics = new Metric[]{
@@ -383,7 +385,7 @@ public class CostFunctionStatsTest {
     }
 
     @Test
-    public void testGetApproximation2() {
+    public void testGetZeroDecompositionApproximation() {
         final double v = factory.getSummarizeOperation().getNoGood();
         Variable x = new Variable("x", 2);
         Variable y = new Variable("y", 2);
@@ -392,22 +394,27 @@ public class CostFunctionStatsTest {
         Variable u = new Variable("u", 2);
         CostFunction cf = factory.buildSparseCostFunction(new Variable[]{x,y,z,t,u});
         cf.setValues(new double[] {
-            v, v, v, v, v, v, v, v, v, v, v, v, v, v, v, v, 4.61, 4.61, 4.61,
-            4.61, 4.61, 4.61, 4.61, 4.61, 4.61, 4.61, 4.61, 4.61, 4.61, 4.61,
-            4.61, 4.61
+            v, v, v, 5.15, v, v, v, v, v, v, 3.12, v, v, v, v, v, 4.61, 4.61, 4.61,
+            4.61, 4.61, 4.61, 4.61, 4.61, 4.61, 4.21, 4.61, 4.61, 4.61, 4.61,
+            v, 4.61
         });
 
         CostFunction[] fs = CostFunctionStats.getZeroDecompositionApproximation(cf, 3);
+        ArrayList<CostFunction> r = new ArrayList<CostFunction>();
         for (int i=0;i<fs.length-1;i++) {
-            System.out.println("F:" + fs[i]);
+            //System.out.println("F:" + fs[i]);
+            r.add(fs[i]);
         }
-        System.out.println("Remainder: " + fs[fs.length-1]);
+        CostFunction remainder = fs[fs.length-1];
+        //System.out.println("Remainder: " + remainder);
+        CostFunction combi = remainder.combine(r);
+        assertEquals(cf, combi);
 
-        CostFunction[] res = CostFunctionStats.getVotedBestApproximation(cf, 3, 1000);
-        System.out.println("Best");
-        for (int i=0; i<res.length-1; i++) {
-            System.out.println("\t" + res[i]);
-        }
+//        CostFunction[] res = CostFunctionStats.getVotedBestApproximation(cf, 3, 1000);
+//        System.out.println("Best");
+//        for (int i=0; i<res.length-1; i++) {
+//            System.out.println("\t" + res[i]);
+//        }
     }
 
 }

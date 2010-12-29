@@ -39,6 +39,8 @@
 package es.csic.iiia.dcop;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -949,6 +951,82 @@ public abstract class CostFunctionTest {
         CostFunction res = factory.buildCostFunction(new Variable[0]);
         res.setValue(0, 0.1);
         assertEquals(red, res);
+    }
+
+    /**
+     * Test of iterator method, of class CostFunction.
+     */
+    @Test
+    public void testIterator() {
+        final double ng = factory.getSummarizeOperation().getNoGood();
+
+        // Testing missing initial, existing end
+        f1.setValue(0, ng);
+        f1.setValue(1, ng);
+        int idx = 1;
+        Iterator<Integer> it = f1.iterator();
+        while (++idx < f1.getSize()) {
+            assertTrue(it.hasNext());
+            assertEquals(idx, (int)it.next());
+        }
+        try {
+            assertFalse(it.hasNext());
+            it.next();
+            fail("Calling next() should raise NoSuchElementException at this point.");
+        } catch (NoSuchElementException e) {}
+
+        // Testing existing initial, missing end
+        f1.setValue(0, 0);
+        f1.setValue(f1.getSize()-1, ng);
+        it = f1.iterator();
+        assertTrue(it.hasNext());
+        assertEquals((int)it.next(), 0);
+        idx = 1;
+        while (++idx < f1.getSize()-1) {
+            assertTrue(it.hasNext());
+            assertEquals((int)it.next(), idx);
+        }
+        try {
+            assertFalse(it.hasNext());
+            it.next();
+            fail("Calling next() should raise NoSuchElementException at this point.");
+        } catch (NoSuchElementException e) {}
+    }
+
+    /**
+     * Test of noGoodIterator method, of class CostFunction.
+     */
+    @Test
+    public void testNoGoodIterator() {
+        final double ng = factory.getSummarizeOperation().getNoGood();
+
+        // Testing missing initial, existing end
+        f1.setValue(0, ng);
+        f1.setValue(1, ng);
+        Iterator<Integer> it = f1.noGoodIterator();
+        assertTrue(it.hasNext());
+        assertEquals(0, (int)it.next());
+        assertTrue(it.hasNext());
+        assertEquals(1, (int)it.next());
+        try {
+            assertFalse(it.hasNext());
+            it.next();
+            fail("Calling next() should raise NoSuchElementException at this point.");
+        } catch (NoSuchElementException e) {}
+
+        // Testing existing initial, missing end
+        f1.setValue(0, 0);
+        f1.setValue(f1.getSize()-1, ng);
+        it = f1.noGoodIterator();
+        assertTrue(it.hasNext());
+        assertEquals(1, (int)it.next());
+        assertTrue(it.hasNext());
+        assertEquals(f1.getSize()-1, (int)it.next());
+        try {
+            assertFalse(it.hasNext());
+            it.next();
+            fail("Calling next() should raise NoSuchElementException at this point.");
+        } catch (NoSuchElementException e) {}
     }
 
 }

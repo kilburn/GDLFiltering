@@ -52,18 +52,17 @@ public class Norm0 implements Metric {
         for (Iterator<Integer> i = f.iterator(); i.hasNext();) {
             if (Math.abs(f.getValue(i.next())) > 1e-5) s += 1;
         }
+        s += f.getNumberOfNoGoods();
         return s;
     }
 
     public double getValue(CostFunction f, double boundValue) {
-        final double ng = f.getFactory().getSummarizeOperation().getNoGood();
-        
         double s = 0;
         for (Iterator<Integer> i = f.iterator(); i.hasNext();) {
             double v = f.getValue(i.next());
-            if (v == ng) v = 0;
             if (Math.abs(v) > 1e-5) s += 1;
         }
+        s += f.getNumberOfNoGoods();
         return s;
     }
 

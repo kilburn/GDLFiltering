@@ -159,14 +159,20 @@ public abstract class IGdlPartitionStrategy {
         IGdlMessage prev = fetchPreviousMessage(e);
         ArrayList<CostFunction> fs = prev.getFactors();
 
-        // Every previously incoming factor is used to filter the outgoing factor.
+        // 1. Every previously incoming factor is used to filter the outgoing factor.
+        // 2. Other outgoing factors can *also* aid in filtering.
+        fs.addAll(msg.getFactors());
         for (CostFunction outf : msg.getFactors()) {
+            fs.remove(outf);
+            final CostFunction filtered = outf.filter(fs, bound);
             if (log.isTraceEnabled()) {
                 log.trace("Input b:" + bound + " f:" + outf);
+                log.trace("Filtered: " + filtered);
             }
-            outf = outf.filter(fs, bound);
-            res.addFactor(outf);
+            res.addFactor(filtered);
+            fs.add(outf);
         }
+        fs.removeAll(msg.getFactors());
 
         res.cc = msg.cc;
         return res;
