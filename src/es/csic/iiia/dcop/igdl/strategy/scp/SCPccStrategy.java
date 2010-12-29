@@ -41,7 +41,7 @@ package es.csic.iiia.dcop.igdl.strategy.scp;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
-import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
+import es.csic.iiia.dcop.igdl.strategy.ApproximationStrategy;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
@@ -57,7 +57,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class SCPccStrategy extends IGdlPartitionStrategy {
+public class SCPccStrategy extends ApproximationStrategy {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
 
@@ -67,7 +67,7 @@ public class SCPccStrategy extends IGdlPartitionStrategy {
     }
 
     @Override
-    protected IGdlMessage partition(ArrayList<CostFunction> fs,
+    protected IGdlMessage approximate(ArrayList<CostFunction> fs,
             UPEdge<? extends IUPNode, IGdlMessage> e) {
         
         // Message to be sent
@@ -81,7 +81,7 @@ public class SCPccStrategy extends IGdlPartitionStrategy {
         ArrayList<ArrayList<CostFunction>> partitions = new ArrayList<ArrayList<CostFunction>>();
 
         // PartitionsVariables is a list containing the sets of variables present
-        // in the corresponding partition.
+        // in the corresponding approximate.
         ArrayList<Collection<Variable>> partitionsVariables = new ArrayList<Collection<Variable>>();
 
         // Sort the input functions by decreasing arity, randomizing the order

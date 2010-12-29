@@ -55,10 +55,10 @@ import org.slf4j.LoggerFactory;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public abstract class RankStrategy extends IGdlPartitionStrategy {
+public abstract class RankStrategy extends ApproximationStrategy {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
-    private IGdlPartitionStrategy strategy;
+    private ApproximationStrategy strategy;
 
     @Override
     public void initialize(IUPNode node) {
@@ -68,7 +68,7 @@ public abstract class RankStrategy extends IGdlPartitionStrategy {
     }
 
     @Override
-    protected IGdlMessage partition(ArrayList<CostFunction> fs,
+    protected IGdlMessage approximate(ArrayList<CostFunction> fs,
             UPEdge<? extends IUPNode, IGdlMessage> e) {
 
         // Sort the functions according to their rank (max - min)
@@ -91,7 +91,7 @@ public abstract class RankStrategy extends IGdlPartitionStrategy {
             fs = sortFunctions(fs);
         }
 
-        return strategy.getPartition(fs, e);
+        return strategy.getApproximation(fs, e);
     }
 
     private ArrayList<CostFunction> sortFunctions(ArrayList<CostFunction> fs) {

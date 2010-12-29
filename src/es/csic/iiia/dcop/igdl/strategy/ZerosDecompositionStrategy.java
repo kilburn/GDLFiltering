@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class ZerosDecompositionStrategy extends IGdlPartitionStrategy {
+public class ZerosDecompositionStrategy extends ApproximationStrategy {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
     private Metric informationLossNorm = new Norm0();
@@ -66,7 +66,7 @@ public class ZerosDecompositionStrategy extends IGdlPartitionStrategy {
     }
 
     @Override
-    protected IGdlMessage partition(ArrayList<CostFunction> fs,
+    protected IGdlMessage approximate(ArrayList<CostFunction> fs,
             UPEdge<? extends IUPNode, IGdlMessage> e) {
 
         long cc = 0;

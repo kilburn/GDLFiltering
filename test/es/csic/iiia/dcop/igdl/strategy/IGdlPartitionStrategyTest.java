@@ -97,73 +97,73 @@ public abstract class IGdlPartitionStrategyTest {
     }
 
     /**
-     * Test of initialize method, of class IGdlPartitionStrategy.
+     * Test of initialize method, of class ApproximationStrategy.
      */
     @Test
     public void testInitialize() {
         System.out.println("initialize");
         IUPNode node = null;
-        IGdlPartitionStrategy instance = new IGdlPartitionStrategyImpl();
+        ApproximationStrategy instance = new IGdlPartitionStrategyImpl();
         instance.initialize(node);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
 
     /**
-     * Test of partition method, of class IGdlPartitionStrategy.
+     * Test of approximate method, of class ApproximationStrategy.
      */
     @Test
     public void testPartition() {
         System.out.println("partition");
         ArrayList<CostFunction> fs = null;
         UPEdge<? extends IUPNode, IGdlMessage> e = null;
-        IGdlPartitionStrategy instance = new IGdlPartitionStrategyImpl();
+        ApproximationStrategy instance = new IGdlPartitionStrategyImpl();
         IGdlMessage expResult = null;
-        IGdlMessage result = instance.partition(fs, e);
+        IGdlMessage result = instance.approximate(fs, e);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
 
     /**
-     * Test of getPartition method, of class IGdlPartitionStrategy.
+     * Test of getApproximation method, of class ApproximationStrategy.
      */
     @Test
     public void testGetPartition() {
         System.out.println("getPartition");
         ArrayList<CostFunction> fs = null;
         UPEdge<? extends IUPNode, IGdlMessage> e = null;
-        IGdlPartitionStrategy instance = new IGdlPartitionStrategyImpl();
+        ApproximationStrategy instance = new IGdlPartitionStrategyImpl();
         IGdlMessage expResult = null;
-        IGdlMessage result = instance.getPartition(fs, e);
+        IGdlMessage result = instance.getApproximation(fs, e);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
 
     /**
-     * Test of setFilteringOptions method, of class IGdlPartitionStrategy.
+     * Test of setFilteringOptions method, of class ApproximationStrategy.
      */
     @Test
     public void testSetFilteringOptions() {
         System.out.println("setFilteringOptions");
         double bound = 0.0;
         ArrayList<UPEdge<FIGdlNode, IGdlMessage>> previousEdges = null;
-        IGdlPartitionStrategy instance = new IGdlPartitionStrategyImpl();
+        ApproximationStrategy instance = new IGdlPartitionStrategyImpl();
         instance.setFilteringOptions(bound, previousEdges);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
 
     /**
-     * Test of filterFactor method, of class IGdlPartitionStrategy.
+     * Test of filterFactor method, of class ApproximationStrategy.
      */
     @Test
     public void testFilterFactor() {
         System.out.println("filterFactor");
         UPEdge<? extends IUPNode, IGdlMessage> e = null;
         CostFunction factor = null;
-        IGdlPartitionStrategy instance = new IGdlPartitionStrategyImpl();
+        ApproximationStrategy instance = new IGdlPartitionStrategyImpl();
         CostFunction expResult = null;
         CostFunction result = instance.filterFactor(e, factor);
         assertEquals(expResult, result);
@@ -172,14 +172,14 @@ public abstract class IGdlPartitionStrategyTest {
     }
 
     /**
-     * Test of filterMessage method, of class IGdlPartitionStrategy.
+     * Test of filterMessage method, of class ApproximationStrategy.
      */
     @Test
     public void testFilterMessage() {
         System.out.println("filterMessage");
         UPEdge<? extends IUPNode, IGdlMessage> e = null;
         IGdlMessage msg = null;
-        IGdlPartitionStrategy instance = new IGdlPartitionStrategyImpl();
+        ApproximationStrategy instance = new IGdlPartitionStrategyImpl();
         IGdlMessage expResult = null;
         IGdlMessage result = instance.filterMessage(e, msg);
         assertEquals(expResult, result);
@@ -187,9 +187,9 @@ public abstract class IGdlPartitionStrategyTest {
         fail("The test case is a prototype.");
     }
 
-    public class IGdlPartitionStrategyImpl extends IGdlPartitionStrategy {
+    public class IGdlPartitionStrategyImpl extends ApproximationStrategy {
 
-        public IGdlMessage partition(ArrayList<CostFunction> fs, UPEdge<? extends IUPNode, IGdlMessage> e) {
+        public IGdlMessage approximate(ArrayList<CostFunction> fs, UPEdge<? extends IUPNode, IGdlMessage> e) {
             return null;
         }
     }

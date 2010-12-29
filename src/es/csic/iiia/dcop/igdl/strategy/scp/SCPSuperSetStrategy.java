@@ -41,7 +41,7 @@ package es.csic.iiia.dcop.igdl.strategy.scp;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
-import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
+import es.csic.iiia.dcop.igdl.strategy.ApproximationStrategy;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
@@ -57,7 +57,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class SCPSuperSetStrategy extends IGdlPartitionStrategy {
+public class SCPSuperSetStrategy extends ApproximationStrategy {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
 
@@ -92,7 +92,7 @@ public class SCPSuperSetStrategy extends IGdlPartitionStrategy {
     }
 
     @Override
-    public IGdlMessage partition(ArrayList<CostFunction> fs,
+    public IGdlMessage approximate(ArrayList<CostFunction> fs,
             UPEdge<? extends IUPNode, IGdlMessage> e) {
         // Message to be sent
         IGdlMessage msg = new IGdlMessage();
@@ -102,7 +102,7 @@ public class SCPSuperSetStrategy extends IGdlPartitionStrategy {
         ArrayList<ArrayList<CostFunction>> partitions = new ArrayList<ArrayList<CostFunction>>();
 
         // PartitionsVariables is a list containing the sets of variables present
-        // in the corresponding partition.
+        // in the corresponding approximate.
         ArrayList<Collection<Variable>> partitionsVariables = new ArrayList<Collection<Variable>>();
 
         // Initialize the partitions to the variables of received functions

@@ -38,7 +38,7 @@
 
 package es.csic.iiia.dcop.igdl;
 
-import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
+import es.csic.iiia.dcop.igdl.strategy.ApproximationStrategy;
 import es.csic.iiia.dcop.mp.AbstractNode.Modes;
 import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.up.UPResults;
@@ -57,11 +57,11 @@ public class IGdlFactory implements UPFactory<IGdlGraph, IGdlNode, UPEdge<IGdlNo
 
     private Modes mode = Modes.TREE_UP;
     private int r = Integer.MAX_VALUE;
-    private IGdlPartitionStrategy partitionStrategy;
+    private ApproximationStrategy approximationStrategy;
 
-    public IGdlFactory(int r, IGdlPartitionStrategy partitionStrategy) {
+    public IGdlFactory(int r, ApproximationStrategy approximationStrategy) {
         this.r = r;
-        this.partitionStrategy = partitionStrategy;
+        this.approximationStrategy = approximationStrategy;
     }
 
     public IGdlGraph buildGraph() {
@@ -73,7 +73,7 @@ public class IGdlFactory implements UPFactory<IGdlGraph, IGdlNode, UPEdge<IGdlNo
         n.setMode(mode);
         n.setR(r);
         try {
-            n.setPartitionStrategy(partitionStrategy.getClass().newInstance());
+            n.setApproximationStrategy(approximationStrategy.getClass().newInstance());
         } catch (InstantiationException ex) {
             Logger.getLogger(IGdlFactory.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {

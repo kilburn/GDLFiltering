@@ -45,7 +45,7 @@ import es.csic.iiia.dcop.igdl.IGdlMessage;
 import es.csic.iiia.dcop.igdl.IGdlNode;
 import es.csic.iiia.dcop.igdl.strategy.gd.GreedyDecompositionStrategy;
 import es.csic.iiia.dcop.igdl.strategy.ZerosDecompositionStrategy;
-import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
+import es.csic.iiia.dcop.igdl.strategy.ApproximationStrategy;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import java.util.ArrayList;
@@ -113,7 +113,7 @@ public class KWayPartitionerTest {
         IGdlMessage result = instance.getPartitions();
         
 
-        IGdlPartitionStrategy s = new ZerosDecompositionStrategy();
+        ApproximationStrategy s = new ZerosDecompositionStrategy();
         IUPNode n1 = new IGdlNode();
         n1.setR(2);
         IUPNode n2 = new IGdlNode();
@@ -121,11 +121,11 @@ public class KWayPartitionerTest {
         UPEdge e = new UPEdge(n1,n2);
         e.setVariables(evs.toArray(new Variable[0]));
         s.initialize(n1);
-        IGdlMessage result2 = s.getPartition(new ArrayList<CostFunction>(fs),e);
+        IGdlMessage result2 = s.getApproximation(new ArrayList<CostFunction>(fs),e);
 
-        IGdlPartitionStrategy s3 = new ZerosDecompositionStrategy();
+        ApproximationStrategy s3 = new ZerosDecompositionStrategy();
         s3.initialize(n1);
-        IGdlMessage result3 = s3.getPartition(new ArrayList<CostFunction>(fs),e);
+        IGdlMessage result3 = s3.getApproximation(new ArrayList<CostFunction>(fs),e);
 
         result.setBelief(f1.combine(f2).combine(f3).combine(f4).summarize(evs.toArray(new Variable[0])));
         System.out.println(result);

@@ -38,7 +38,7 @@
 
 package es.csic.iiia.dcop.igdl;
 
-import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
+import es.csic.iiia.dcop.igdl.strategy.ApproximationStrategy;
 import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
@@ -66,9 +66,9 @@ public class IGdlNode extends IUPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
     private ArrayList<CostFunction> costFunctions;
 
     /**
-     * Partitioning strategy to use
+     * Approximation strategy to use
      */
-    private IGdlPartitionStrategy strategy;
+    private ApproximationStrategy strategy;
 
     /**
      * Constructs a new clique with the specified member variable and null
@@ -115,7 +115,7 @@ public class IGdlNode extends IUPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
         for (CostFunction f : relations) {
             costFunctions.add(factory.buildCostFunction(f));
         }       
-        getPartitionStrategy().initialize(this);
+        getApproximationStrategy().initialize(this);
 
         // Send initial messages
         sendMessages();
@@ -186,8 +186,8 @@ public class IGdlNode extends IUPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
                 }
             }
 
-            // Obtain the partition
-            IGdlMessage msg = getPartitionStrategy().getPartition(fs, e);
+            // Obtain the approximate
+            IGdlMessage msg = getApproximationStrategy().getApproximation(fs, e);
             if (log.isTraceEnabled()) {
                 msg.setBelief(belief.summarize(e.getVariables()));
             }
@@ -205,14 +205,14 @@ public class IGdlNode extends IUPNode<UPEdge<IGdlNode, IGdlMessage>, UPResult> {
     /**
      * @return the strategy
      */
-    public IGdlPartitionStrategy getPartitionStrategy() {
+    public ApproximationStrategy getApproximationStrategy() {
         return strategy;
     }
 
     /**
      * @param strategy the strategy to set
      */
-    public void setPartitionStrategy(IGdlPartitionStrategy strategy) {
+    public void setApproximationStrategy(ApproximationStrategy strategy) {
         this.strategy = strategy;
     }
 

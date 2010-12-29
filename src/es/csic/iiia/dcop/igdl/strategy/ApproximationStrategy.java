@@ -53,7 +53,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public abstract class IGdlPartitionStrategy {
+public abstract class ApproximationStrategy {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
 
@@ -71,7 +71,7 @@ public abstract class IGdlPartitionStrategy {
     private ArrayList<UPEdge<FIGdlNode, IGdlMessage>> previousEdges;
 
 
-    public IGdlPartitionStrategy() {
+    public ApproximationStrategy() {
         bound = Double.NaN;
         optimalBound = Double.NaN;
         previousEdges = null;
@@ -85,10 +85,10 @@ public abstract class IGdlPartitionStrategy {
         this.node = node;
     }
 
-    protected abstract IGdlMessage partition(ArrayList<CostFunction> fs,
+    protected abstract IGdlMessage approximate(ArrayList<CostFunction> fs,
             UPEdge<? extends IUPNode, IGdlMessage> e);
 
-    public final IGdlMessage getPartition(ArrayList<CostFunction> fs,
+    public final IGdlMessage getApproximation(ArrayList<CostFunction> fs,
             UPEdge<? extends IUPNode, IGdlMessage> e)
     {
         // Informational, just for debugging
@@ -105,7 +105,7 @@ public abstract class IGdlPartitionStrategy {
             }
         }
 
-        return partition(fs, e);
+        return approximate(fs, e);
     }
 
 
@@ -161,18 +161,20 @@ public abstract class IGdlPartitionStrategy {
 
         // 1. Every previously incoming factor is used to filter the outgoing factor.
         // 2. Other outgoing factors can *also* aid in filtering.
-        fs.addAll(msg.getFactors());
-        for (CostFunction outf : msg.getFactors()) {
-            fs.remove(outf);
-            final CostFunction filtered = outf.filter(fs, bound);
+        ArrayList<CostFunction> outFunctions = msg.getFactors();
+        for (int i=0, len=outFunctions.size(); i<len; i++) {
+            ArrayList<CostFunction> filterers = new ArrayList<CostFunction>(fs);
+            for (int j=0; j<len; j++) {
+                if (i!=j) filterers.add(outFunctions.get(j));
+            }
+            final CostFunction outf = outFunctions.get(i);
+            final CostFunction filtered = outf.filter(filterers, bound);
             if (log.isTraceEnabled()) {
                 log.trace("Input b:" + bound + " f:" + outf);
                 log.trace("Filtered: " + filtered);
             }
             res.addFactor(filtered);
-            fs.add(outf);
         }
-        fs.removeAll(msg.getFactors());
 
         res.cc = msg.cc;
         return res;

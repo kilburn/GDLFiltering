@@ -58,7 +58,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class FlexibleZerosDecompositionStrategy extends IGdlPartitionStrategy {
+public class FlexibleZerosDecompositionStrategy extends ApproximationStrategy {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
     private Metric informationLossNorm = new Norm0();
@@ -69,7 +69,7 @@ public class FlexibleZerosDecompositionStrategy extends IGdlPartitionStrategy {
     }
 
     @Override
-    protected IGdlMessage partition(ArrayList<CostFunction> fs,
+    protected IGdlMessage approximate(ArrayList<CostFunction> fs,
             UPEdge<? extends IUPNode, IGdlMessage> e) {
 
         long cc = 0;
@@ -85,7 +85,7 @@ public class FlexibleZerosDecompositionStrategy extends IGdlPartitionStrategy {
         ArrayList<ArrayList<CostFunction>> partitions = new ArrayList<ArrayList<CostFunction>>();
 
         // PartitionsVariables is a list containing the sets of variables present
-        // in the corresponding partition.
+        // in the corresponding approximate.
         ArrayList<Collection<Variable>> partitionsVariables = new ArrayList<Collection<Variable>>();
 
         // Sort the input functions by decreasing arity, randomizing the order

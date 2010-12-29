@@ -41,7 +41,7 @@ package es.csic.iiia.dcop.igdl.strategy.cbp;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.igdl.IGdlMessage;
-import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
+import es.csic.iiia.dcop.igdl.strategy.ApproximationStrategy;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
@@ -56,7 +56,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public abstract class CBPartitioningStrategy extends IGdlPartitionStrategy {
+public abstract class CBPartitioningStrategy extends ApproximationStrategy {
 
     /**
      * Removes from the cvars set all these variables that do not count
@@ -87,7 +87,7 @@ public abstract class CBPartitioningStrategy extends IGdlPartitionStrategy {
     }
 
     @Override
-    protected IGdlMessage partition(ArrayList<CostFunction> fs,
+    protected IGdlMessage approximate(ArrayList<CostFunction> fs,
             UPEdge<? extends IUPNode, IGdlMessage> e) {
 
         fs = partition2(fs, e);

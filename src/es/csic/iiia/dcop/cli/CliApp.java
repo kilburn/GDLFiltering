@@ -61,7 +61,7 @@ import es.csic.iiia.dcop.figdl.FIGdlFactory;
 import es.csic.iiia.dcop.figdl.FIGdlGraph;
 import es.csic.iiia.dcop.gdl.GdlFactory;
 import es.csic.iiia.dcop.igdl.IGdlFactory;
-import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
+import es.csic.iiia.dcop.igdl.strategy.ApproximationStrategy;
 import es.csic.iiia.dcop.io.CliqueTreeSerializer;
 import es.csic.iiia.dcop.io.DatasetReader;
 import es.csic.iiia.dcop.io.TreeReader;
@@ -153,8 +153,8 @@ public class CliApp {
         SUPERSET (es.csic.iiia.dcop.igdl.strategy.scp.SCPSuperSetStrategy.class),
         ;
 
-        private IGdlPartitionStrategy instance;
-        PS(Class<? extends IGdlPartitionStrategy> c) {
+        private ApproximationStrategy instance;
+        PS(Class<? extends ApproximationStrategy> c) {
             try {
                 instance = c.newInstance();
             } catch (InstantiationException ex) {
@@ -163,7 +163,7 @@ public class CliApp {
                 java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        IGdlPartitionStrategy getInstance() {
+        ApproximationStrategy getInstance() {
             return instance;
         }
     }
@@ -584,7 +584,7 @@ public class CliApp {
                     factory = new GdlFactory();
                     ((GdlFactory)factory).setMode(Modes.TREE_UP);
                 } else {
-                    IGdlPartitionStrategy pStrategy = partitionStrategy.getInstance();
+                    ApproximationStrategy pStrategy = partitionStrategy.getInstance();
                     factory = algorithm == ALGO_IGDL
                         ? new IGdlFactory(this.getIGdlR(), pStrategy)
                         : new FIGdlFactory(this.getIGdlR(), pStrategy);

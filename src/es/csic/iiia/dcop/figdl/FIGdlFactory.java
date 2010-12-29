@@ -39,7 +39,7 @@
 package es.csic.iiia.dcop.figdl;
 
 import es.csic.iiia.dcop.igdl.IGdlMessage;
-import es.csic.iiia.dcop.igdl.strategy.IGdlPartitionStrategy;
+import es.csic.iiia.dcop.igdl.strategy.ApproximationStrategy;
 import es.csic.iiia.dcop.mp.AbstractNode.Modes;
 import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.up.UPResults;
@@ -58,11 +58,11 @@ public class FIGdlFactory implements UPFactory<FIGdlGraph, FIGdlNode, UPEdge<FIG
 
     private Modes mode = Modes.TREE_UP;
     private int r = Integer.MAX_VALUE;
-    private IGdlPartitionStrategy partitionStrategy;
+    private ApproximationStrategy approximationStrategy;
 
-    public FIGdlFactory(int r, IGdlPartitionStrategy partitionStrategy) {
+    public FIGdlFactory(int r, ApproximationStrategy approximationStrategy) {
         this.r = r;
-        this.partitionStrategy = partitionStrategy;
+        this.approximationStrategy = approximationStrategy;
     }
 
     public FIGdlGraph buildGraph() {
@@ -76,7 +76,7 @@ public class FIGdlFactory implements UPFactory<FIGdlGraph, FIGdlNode, UPEdge<FIG
         n.setMode(mode);
         n.setR(2);
         try {
-            n.setPartitionStrategy(partitionStrategy.getClass().newInstance());
+            n.setApproximationStrategy(approximationStrategy.getClass().newInstance());
         } catch (InstantiationException ex) {
             Logger.getLogger(FIGdlFactory.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
