@@ -41,7 +41,6 @@ package es.csic.iiia.dcop.figdl;
 import es.csic.iiia.dcop.CostFunction.Summarize;
 import es.csic.iiia.dcop.bb.UBGraph;
 import es.csic.iiia.dcop.bb.UBResults;
-import es.csic.iiia.dcop.igdl.IGdlMessage;
 import es.csic.iiia.dcop.mp.Result;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
@@ -59,7 +58,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMessage>,UPResults> {
+public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, FIGdlMessage>,UPResults> {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
 
@@ -91,7 +90,7 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMessage>
     }
 
     @Override
-    public void addEdge(UPEdge<FIGdlNode, IGdlMessage> edge) {
+    public void addEdge(UPEdge<FIGdlNode, FIGdlMessage> edge) {
         super.addEdge(edge);
         iteration.addEdge(edge);
     }

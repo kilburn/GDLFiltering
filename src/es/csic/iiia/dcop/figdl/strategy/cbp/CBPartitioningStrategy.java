@@ -36,12 +36,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.igdl.strategy.cbp;
+package es.csic.iiia.dcop.figdl.strategy.cbp;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.igdl.IGdlMessage;
-import es.csic.iiia.dcop.igdl.strategy.ApproximationStrategy;
+import es.csic.iiia.dcop.figdl.FIGdlMessage;
+import es.csic.iiia.dcop.figdl.strategy.ApproximationStrategy;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
@@ -87,14 +87,14 @@ public abstract class CBPartitioningStrategy extends ApproximationStrategy {
     }
 
     @Override
-    protected IGdlMessage approximate(ArrayList<CostFunction> fs,
-            UPEdge<? extends IUPNode, IGdlMessage> e) {
+    protected FIGdlMessage approximate(ArrayList<CostFunction> fs,
+            UPEdge<? extends IUPNode, FIGdlMessage> e) {
 
         fs = partition2(fs, e);
 
         // Build the actual message
         log.trace("-- Resulting partitions");
-        IGdlMessage msg = new IGdlMessage();
+        FIGdlMessage msg = new FIGdlMessage();
         Variable[] evs = e.getVariables();
         for (int i=0, len=fs.size(); i<len; i++) {
             final CostFunction f = fs.get(i);
@@ -113,7 +113,7 @@ public abstract class CBPartitioningStrategy extends ApproximationStrategy {
     }
 
     private ArrayList<CostFunction> partition2(ArrayList<CostFunction> fs,
-            UPEdge<? extends IUPNode, IGdlMessage> e) {
+            UPEdge<? extends IUPNode, FIGdlMessage> e) {
             final Comparator<Candidate> comparator = new CandidateComparatorMax();
 
             fs = new ArrayList<CostFunction>(fs);
@@ -130,7 +130,7 @@ public abstract class CBPartitioningStrategy extends ApproximationStrategy {
 
     private void expand (ArrayList<CostFunction> fs, Candidate chosen,
             ArrayList<Candidate> candidates,
-            UPEdge<? extends IUPNode, IGdlMessage> e) {
+            UPEdge<? extends IUPNode, FIGdlMessage> e) {
 
         final int r = node.getR();
         HashSet<Variable> evs = new HashSet<Variable>();
@@ -174,7 +174,7 @@ public abstract class CBPartitioningStrategy extends ApproximationStrategy {
     }
 
     private ArrayList<Candidate> expand (ArrayList<CostFunction> fs,
-            UPEdge<? extends IUPNode, IGdlMessage> e) {
+            UPEdge<? extends IUPNode, FIGdlMessage> e) {
 
         final int r = node.getR();
 

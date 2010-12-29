@@ -36,12 +36,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.igdl.strategy;
+package es.csic.iiia.dcop.figdl.strategy;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.figdl.FIGdlNode;
-import es.csic.iiia.dcop.igdl.IGdlMessage;
+import es.csic.iiia.dcop.figdl.FIGdlMessage;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
@@ -68,7 +68,7 @@ public abstract class ApproximationStrategy {
     private double optimalBound;
 
 
-    private ArrayList<UPEdge<FIGdlNode, IGdlMessage>> previousEdges;
+    private ArrayList<UPEdge<FIGdlNode, FIGdlMessage>> previousEdges;
 
 
     public ApproximationStrategy() {
@@ -85,11 +85,11 @@ public abstract class ApproximationStrategy {
         this.node = node;
     }
 
-    protected abstract IGdlMessage approximate(ArrayList<CostFunction> fs,
-            UPEdge<? extends IUPNode, IGdlMessage> e);
+    protected abstract FIGdlMessage approximate(ArrayList<CostFunction> fs,
+            UPEdge<? extends IUPNode, FIGdlMessage> e);
 
-    public final IGdlMessage getApproximation(ArrayList<CostFunction> fs,
-            UPEdge<? extends IUPNode, IGdlMessage> e)
+    public final FIGdlMessage getApproximation(ArrayList<CostFunction> fs,
+            UPEdge<? extends IUPNode, FIGdlMessage> e)
     {
         // Informational, just for debugging
         if (log.isTraceEnabled()) {
@@ -114,7 +114,7 @@ public abstract class ApproximationStrategy {
      *************************************************************************/
 
     public void setFilteringOptions(double bound,
-            ArrayList<UPEdge<FIGdlNode, IGdlMessage>> previousEdges)
+            ArrayList<UPEdge<FIGdlNode, FIGdlMessage>> previousEdges)
     {
         if (Double.isNaN(optimalBound))
             this.bound = bound;
@@ -127,14 +127,14 @@ public abstract class ApproximationStrategy {
         return bound;
     }
 
-    protected CostFunction filterFactor(UPEdge<? extends IUPNode, IGdlMessage> e,
+    protected CostFunction filterFactor(UPEdge<? extends IUPNode, FIGdlMessage> e,
             CostFunction factor) {
 
         if (Double.isNaN(bound)) {
             return factor;
         }
 
-        IGdlMessage prev = fetchPreviousMessage(e);
+        FIGdlMessage prev = fetchPreviousMessage(e);
         //ArrayList<CostFunction> fs = prev.getFactors();
 
         
@@ -148,15 +148,15 @@ public abstract class ApproximationStrategy {
         return res;
     }
 
-    protected IGdlMessage filterMessage(UPEdge<? extends IUPNode, IGdlMessage> e,
-            IGdlMessage msg) {
+    protected FIGdlMessage filterMessage(UPEdge<? extends IUPNode, FIGdlMessage> e,
+            FIGdlMessage msg) {
 
         if (Double.isNaN(bound)) {
             return msg;
         }
 
-        IGdlMessage res = new IGdlMessage();
-        IGdlMessage prev = fetchPreviousMessage(e);
+        FIGdlMessage res = new FIGdlMessage();
+        FIGdlMessage prev = fetchPreviousMessage(e);
         ArrayList<CostFunction> fs = prev.getFactors();
 
         // 1. Every previously incoming factor is used to filter the outgoing factor.
@@ -190,11 +190,11 @@ public abstract class ApproximationStrategy {
      * @param e
      * @return
      */
-    protected final IGdlMessage fetchPreviousMessage(UPEdge<? extends IUPNode, IGdlMessage> e) {
-        IGdlMessage prev = e.getMessage(node);
+    protected final FIGdlMessage fetchPreviousMessage(UPEdge<? extends IUPNode, FIGdlMessage> e) {
+        FIGdlMessage prev = e.getMessage(node);
         if (prev == null) {
             // Fetch the "previous" copy of the current edge
-            UPEdge<? extends IUPNode, IGdlMessage> pe = fetchPreviousEdge(e);
+            UPEdge<? extends IUPNode, FIGdlMessage> pe = fetchPreviousEdge(e);
             prev = pe.getMessage(node);
             if (prev == null) {
                 pe.tick();
@@ -204,9 +204,9 @@ public abstract class ApproximationStrategy {
         return prev;
     }
 
-    protected final UPEdge<? extends IUPNode, IGdlMessage> fetchPreviousEdge(UPEdge<? extends IUPNode, IGdlMessage> edge) {
+    protected final UPEdge<? extends IUPNode, FIGdlMessage> fetchPreviousEdge(UPEdge<? extends IUPNode, FIGdlMessage> edge) {
 
-        for (UPEdge<? extends IUPNode, IGdlMessage> e : previousEdges) {
+        for (UPEdge<? extends IUPNode, FIGdlMessage> e : previousEdges) {
             if (e.getNode1() == edge.getNode1() && e.getNode2() == edge.getNode2()) {
                 return e;
             }

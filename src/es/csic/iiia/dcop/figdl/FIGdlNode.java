@@ -38,12 +38,11 @@
 
 package es.csic.iiia.dcop.figdl;
 
-import es.csic.iiia.dcop.igdl.strategy.ApproximationStrategy;
+import es.csic.iiia.dcop.figdl.strategy.ApproximationStrategy;
 import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.VariableAssignment;
-import es.csic.iiia.dcop.igdl.IGdlMessage;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
@@ -57,7 +56,7 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult> {
+public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, FIGdlMessage>, UPResult> {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
 
@@ -74,7 +73,7 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
     /**
      * FIGdlNode from previous iteration
      */
-    private ArrayList<UPEdge<FIGdlNode, IGdlMessage>> previousEdges;
+    private ArrayList<UPEdge<FIGdlNode, FIGdlMessage>> previousEdges;
 
     /**
      * Bounds from previous iteration
@@ -125,13 +124,13 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
     public void prepareNextIteration(double bound) {
 
         if (previousEdges != null) previousEdges.clear();
-        previousEdges = new ArrayList<UPEdge<FIGdlNode, IGdlMessage>>();
-        for(UPEdge<FIGdlNode, IGdlMessage> e : getEdges()) {
+        previousEdges = new ArrayList<UPEdge<FIGdlNode, FIGdlMessage>>();
+        for(UPEdge<FIGdlNode, FIGdlMessage> e : getEdges()) {
             if (e.getMessage(this) == null) {
                 e.tick();
             }
 
-            UPEdge<FIGdlNode, IGdlMessage> newe = new UPEdge<FIGdlNode, IGdlMessage>(e);
+            UPEdge<FIGdlNode, FIGdlMessage> newe = new UPEdge<FIGdlNode, FIGdlMessage>(e);
             previousEdges.add(newe);
         }
 
@@ -178,9 +177,9 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
 
         // And the received messages
         informationLoss = 0; maxInformationLoss = 0;
-        Collection<UPEdge<FIGdlNode, IGdlMessage>> edges = getEdges();
-        for (UPEdge<FIGdlNode, IGdlMessage> e : edges) {
-            IGdlMessage msg = e.getMessage(this);
+        Collection<UPEdge<FIGdlNode, FIGdlMessage>> edges = getEdges();
+        for (UPEdge<FIGdlNode, FIGdlMessage> e : edges) {
+            FIGdlMessage msg = e.getMessage(this);
             if (msg != null) {
                 costFunctions.addAll(msg.getFactors());
                 if (isParent(e)) {
@@ -214,7 +213,7 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
             belief = belief.combine(costFunctions);
         }
 
-        for (UPEdge<FIGdlNode, IGdlMessage> e : getEdges()) {
+        for (UPEdge<FIGdlNode, FIGdlMessage> e : getEdges()) {
             if (!readyToSend(e)) {
                 continue;
             }
@@ -230,14 +229,14 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, IGdlMessage>, UPResult>
                 // ... but removing is an expensive operation, so
                 // we build a new list instead which is faster.
                 fs = new ArrayList<CostFunction>(relations);
-                for (UPEdge<FIGdlNode, IGdlMessage> e2 : getEdges()) {
+                for (UPEdge<FIGdlNode, FIGdlMessage> e2 : getEdges()) {
                     if (e == e2) continue;
                     fs.addAll(e2.getMessage(this).getFactors());
                 }
             }
 
             // Obtain the approximate
-            IGdlMessage msg = getApproximationStrategy().getApproximation(fs, e);
+            FIGdlMessage msg = getApproximationStrategy().getApproximation(fs, e);
             if (log.isTraceEnabled()) {
                 CostFunction lb = belief.summarize(e.getVariables());
                 if (e.getMessage(this) != null) {

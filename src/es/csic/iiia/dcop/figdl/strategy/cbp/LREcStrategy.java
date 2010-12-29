@@ -36,48 +36,37 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.igdl;
+package es.csic.iiia.dcop.figdl.strategy.cbp;
 
-import es.csic.iiia.dcop.up.IUPNode;
-import es.csic.iiia.dcop.up.UPResults;
-import es.csic.iiia.dcop.up.UPEdge;
-import es.csic.iiia.dcop.up.UPGraph;
+import es.csic.iiia.dcop.CostFunction;
+import es.csic.iiia.dcop.Variable;
+import es.csic.iiia.dcop.util.metrics.Metric;
+import es.csic.iiia.dcop.util.metrics.Norm1;
+import java.util.HashSet;
 
 /**
- * Utility Propagation message passing algorithm implementation using the GDL
- * algorithm as described in the Action-GDL paper.
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class IGdlGraph extends UPGraph<IGdlNode,UPEdge<IGdlNode, IGdlMessage>,UPResults> {
+public class LREcStrategy extends CBPartitioningStrategy {
+    private static Metric metric = new Norm1();
 
-    /**
-     * Constructs a clique graph that uses the specified {@code EdgeFactory} to
-     * create it's edges.
-     */
-    public IGdlGraph() {
-        super();
+    @Override
+    protected void filterVars(HashSet<Variable> cvars, HashSet<Variable> evs) {
+        cvars.retainAll(evs);
     }
 
     @Override
-    public void addNode(IGdlNode clique) {
-        super.addNode(clique);
-    }
+    protected double getGain(CostFunction merged, CostFunction f1, CostFunction f2, Variable[] vars) {
+        double gain = 0;
 
-    @Override
-    protected UPResults buildResults() {
-        return new UPResults();
-    }
+        vars = merged.getSharedVariables(vars).toArray(new Variable[0]);
+        CostFunction sc = f1.summarize(vars).combine(f2.summarize(vars));
+        CostFunction cs = merged.summarize(vars);
+        gain = metric.getValue(cs.combine(sc.negate()));
+        gain /= (double)merged.getVariableSet().size();
 
-    @Override
-    protected void end() {
-        super.end();
-    }
-
-    public void setR(int r) {
-        for(IUPNode n : getNodes()) {
-            n.setR(r);
-        }
+        return gain;
     }
 
 }

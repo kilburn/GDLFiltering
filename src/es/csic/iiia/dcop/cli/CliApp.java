@@ -60,8 +60,7 @@ import es.csic.iiia.dcop.dsa.DSAResults;
 import es.csic.iiia.dcop.figdl.FIGdlFactory;
 import es.csic.iiia.dcop.figdl.FIGdlGraph;
 import es.csic.iiia.dcop.gdl.GdlFactory;
-import es.csic.iiia.dcop.igdl.IGdlFactory;
-import es.csic.iiia.dcop.igdl.strategy.ApproximationStrategy;
+import es.csic.iiia.dcop.figdl.strategy.ApproximationStrategy;
 import es.csic.iiia.dcop.io.CliqueTreeSerializer;
 import es.csic.iiia.dcop.io.DatasetReader;
 import es.csic.iiia.dcop.io.TreeReader;
@@ -77,7 +76,6 @@ import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.VPResults;
 import es.csic.iiia.dcop.vp.strategy.OptimalStrategy;
 import es.csic.iiia.dcop.vp.strategy.VPStrategy;
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -115,10 +113,6 @@ public class CliApp {
      */
     public static final int ALGO_MAX_SUM = 1;
     /**
-     * Use IGDL as solving algorithm.
-     */
-    public static final int ALGO_IGDL = 2;
-    /**
      * Use Filtered-IGDL as solving algorithm.
      */
     public static final int ALGO_FIGDL = 3;
@@ -137,20 +131,20 @@ public class CliApp {
     public static final int JT_HEURISTIC_MCN = 1;
 
     public enum PS {
-        SCP_C (es.csic.iiia.dcop.igdl.strategy.scp.SCPcStrategy.class),
-        SCP_CC (es.csic.iiia.dcop.igdl.strategy.scp.SCPccStrategy.class),
-        SCP_FLEX (es.csic.iiia.dcop.igdl.strategy.scp.SCPFlexibleStrategy.class),
-        RANKUP (es.csic.iiia.dcop.igdl.strategy.RankUpStrategy.class),
-        RANKDOWN (es.csic.iiia.dcop.igdl.strategy.RankDownStrategy.class),
-        LRE_D (es.csic.iiia.dcop.igdl.strategy.gd.LREGreedyStrategy.class),
-        LMRE_D (es.csic.iiia.dcop.igdl.strategy.gd.LMREGreedyStrategy.class),
-        ZEROS_D (es.csic.iiia.dcop.igdl.strategy.ZerosDecompositionStrategy.class),
-        ZEROS_FLEX (es.csic.iiia.dcop.igdl.strategy.FlexibleZerosDecompositionStrategy.class),
-        LRE_C (es.csic.iiia.dcop.igdl.strategy.cbp.LREcStrategy.class),
-        LRE_CC (es.csic.iiia.dcop.igdl.strategy.cbp.LREccStrategy.class),
-        LMRE_C (es.csic.iiia.dcop.igdl.strategy.cbp.LMREcStrategy.class),
-        LMRE_CC (es.csic.iiia.dcop.igdl.strategy.cbp.LMREccStrategy.class),
-        SUPERSET (es.csic.iiia.dcop.igdl.strategy.scp.SCPSuperSetStrategy.class),
+        SCP_C (es.csic.iiia.dcop.figdl.strategy.scp.SCPcStrategy.class),
+        SCP_CC (es.csic.iiia.dcop.figdl.strategy.scp.SCPccStrategy.class),
+        SCP_FLEX (es.csic.iiia.dcop.figdl.strategy.scp.SCPFlexibleStrategy.class),
+        RANKUP (es.csic.iiia.dcop.figdl.strategy.RankUpStrategy.class),
+        RANKDOWN (es.csic.iiia.dcop.figdl.strategy.RankDownStrategy.class),
+        LRE_D (es.csic.iiia.dcop.figdl.strategy.gd.LREGreedyStrategy.class),
+        LMRE_D (es.csic.iiia.dcop.figdl.strategy.gd.LMREGreedyStrategy.class),
+        ZEROS_D (es.csic.iiia.dcop.figdl.strategy.ZerosDecompositionStrategy.class),
+        ZEROS_FLEX (es.csic.iiia.dcop.figdl.strategy.FlexibleZerosDecompositionStrategy.class),
+        LRE_C (es.csic.iiia.dcop.figdl.strategy.cbp.LREcStrategy.class),
+        LRE_CC (es.csic.iiia.dcop.figdl.strategy.cbp.LREccStrategy.class),
+        LMRE_C (es.csic.iiia.dcop.figdl.strategy.cbp.LMREcStrategy.class),
+        LMRE_CC (es.csic.iiia.dcop.figdl.strategy.cbp.LMREccStrategy.class),
+        SUPERSET (es.csic.iiia.dcop.figdl.strategy.scp.SCPSuperSetStrategy.class),
         ;
 
         private ApproximationStrategy instance;
@@ -577,7 +571,6 @@ public class CliApp {
         switch(algorithm) {
 
             case ALGO_GDL:
-            case ALGO_IGDL:
             case ALGO_FIGDL:
                 UPFactory factory = null;
                 if (algorithm == ALGO_GDL) {
@@ -585,9 +578,7 @@ public class CliApp {
                     ((GdlFactory)factory).setMode(Modes.TREE_UP);
                 } else {
                     ApproximationStrategy pStrategy = partitionStrategy.getInstance();
-                    factory = algorithm == ALGO_IGDL
-                        ? new IGdlFactory(this.getIGdlR(), pStrategy)
-                        : new FIGdlFactory(this.getIGdlR(), pStrategy);
+                    factory = new FIGdlFactory(this.getIGdlR(), pStrategy);
                 }
                 int variables = 0;
                 JTResults results = null;

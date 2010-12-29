@@ -41,11 +41,10 @@ package es.csic.iiia.dcop.util;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.igdl.IGdlMessage;
-import es.csic.iiia.dcop.igdl.IGdlNode;
-import es.csic.iiia.dcop.igdl.strategy.gd.GreedyDecompositionStrategy;
-import es.csic.iiia.dcop.igdl.strategy.ZerosDecompositionStrategy;
-import es.csic.iiia.dcop.igdl.strategy.ApproximationStrategy;
+import es.csic.iiia.dcop.figdl.FIGdlMessage;
+import es.csic.iiia.dcop.figdl.FIGdlNode;
+import es.csic.iiia.dcop.figdl.strategy.ZerosDecompositionStrategy;
+import es.csic.iiia.dcop.figdl.strategy.ApproximationStrategy;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import java.util.ArrayList;
@@ -110,22 +109,22 @@ public class KWayPartitionerTest {
         List<CostFunction> fs = Arrays.asList(new CostFunction[]{f1, f2, f3, f4});
         List<Variable> evs = Arrays.asList(new Variable[]{y, z, t});
         KWayPartitioner instance = new KWayPartitioner(fs, new HashSet<Variable>(evs), 2);
-        IGdlMessage result = instance.getPartitions();
+        FIGdlMessage result = instance.getPartitions();
         
 
         ApproximationStrategy s = new ZerosDecompositionStrategy();
-        IUPNode n1 = new IGdlNode();
+        IUPNode n1 = new FIGdlNode();
         n1.setR(2);
-        IUPNode n2 = new IGdlNode();
+        IUPNode n2 = new FIGdlNode();
         n2.setR(2);
         UPEdge e = new UPEdge(n1,n2);
         e.setVariables(evs.toArray(new Variable[0]));
         s.initialize(n1);
-        IGdlMessage result2 = s.getApproximation(new ArrayList<CostFunction>(fs),e);
+        FIGdlMessage result2 = s.getApproximation(new ArrayList<CostFunction>(fs),e);
 
         ApproximationStrategy s3 = new ZerosDecompositionStrategy();
         s3.initialize(n1);
-        IGdlMessage result3 = s3.getApproximation(new ArrayList<CostFunction>(fs),e);
+        FIGdlMessage result3 = s3.getApproximation(new ArrayList<CostFunction>(fs),e);
 
         result.setBelief(f1.combine(f2).combine(f3).combine(f4).summarize(evs.toArray(new Variable[0])));
         System.out.println(result);

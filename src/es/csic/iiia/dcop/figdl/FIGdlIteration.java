@@ -39,7 +39,6 @@
 package es.csic.iiia.dcop.figdl;
 
 import es.csic.iiia.dcop.up.UPResults;
-import es.csic.iiia.dcop.igdl.IGdlMessage;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import org.slf4j.Logger;
@@ -51,7 +50,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class FIGdlIteration extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMessage>,UPResults> {
+public class FIGdlIteration extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, FIGdlMessage>,UPResults> {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
 
@@ -116,7 +115,7 @@ public class FIGdlIteration extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, IGdlMess
         for(FIGdlNode n : getNodes()) {
             n.prepareNextIteration(bound);
         }
-        for(UPEdge<FIGdlNode, IGdlMessage> e : getEdges()) {
+        for(UPEdge<FIGdlNode, FIGdlMessage> e : getEdges()) {
             e.clear();
         }
     }

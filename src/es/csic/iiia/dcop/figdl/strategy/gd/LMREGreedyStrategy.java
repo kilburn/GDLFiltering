@@ -36,19 +36,19 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.igdl.strategy.gd;
+package es.csic.iiia.dcop.figdl.strategy.gd;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.util.metrics.Metric;
-import es.csic.iiia.dcop.util.metrics.Norm1;
+import es.csic.iiia.dcop.util.metrics.NormInf;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class LREGreedyStrategy extends GreedyDecompositionStrategy {
+public class LMREGreedyStrategy extends GreedyDecompositionStrategy {
     
-    private static final Metric metric = new Norm1();
+    private static final Metric metric = new NormInf();
 
     @Override
     protected double getGain(CostFunction f) {

@@ -36,17 +36,35 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.igdl.strategy;
+package es.csic.iiia.dcop.figdl.strategy.cbp;
+
+import es.csic.iiia.dcop.CostFunction;
+import es.csic.iiia.dcop.Variable;
+import es.csic.iiia.dcop.util.metrics.Metric;
+import es.csic.iiia.dcop.util.metrics.NormInf;
+import java.util.HashSet;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class RankDownStrategy extends RankStrategy {
+public class LMREccStrategy extends CBPartitioningStrategy {
+    private static Metric metric = new NormInf();
 
     @Override
-    protected int getOrder() {
-        return -1;
+    protected void filterVars(HashSet<Variable> cvars, HashSet<Variable> evs) {}
+
+    @Override
+    protected double getGain(CostFunction merged, CostFunction f1, CostFunction f2, Variable[] vars) {
+        double gain = 0;
+
+        vars = merged.getSharedVariables(vars).toArray(new Variable[0]);
+        CostFunction sc = f1.summarize(vars).combine(f2.summarize(vars));
+        CostFunction cs = merged.summarize(vars);
+        gain = metric.getValue(cs.combine(sc.negate()));
+        gain /= (double)merged.getVariableSet().size();
+
+        return gain;
     }
 
 }

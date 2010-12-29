@@ -70,7 +70,6 @@ public class Cli {
         System.err.println("  -a algorithm, --algorithm=algorithm (gdl)");
         System.err.println("    Uses the specified algorithm, where algorithm is one of: ");
         System.err.println("      - gdl : GDL over junction tree optimal solver.");
-        System.err.println("      - igdl : Iterative GDL over junction tree solver.");
         System.err.println("      - figdl : Filtered IGDL over junction tree solver.");
         System.err.println("      - maxsum : max-sum approximation.");
         System.err.println("      - dsa : dsa approximation (p=0.9).");
@@ -255,8 +254,6 @@ public class Cli {
                         cli.setAlgorithm(CliApp.ALGO_MAX_SUM);
                     else if (arg.equals("figdl"))
                         cli.setAlgorithm(CliApp.ALGO_FIGDL);
-                    else if (arg.equals("igdl"))
-                        cli.setAlgorithm(CliApp.ALGO_IGDL);
                     else if (arg.equals("dsa"))
                         cli.setAlgorithm(CliApp.ALGO_DSA);
                     else {

@@ -38,8 +38,7 @@
 
 package es.csic.iiia.dcop.figdl;
 
-import es.csic.iiia.dcop.igdl.IGdlMessage;
-import es.csic.iiia.dcop.igdl.strategy.ApproximationStrategy;
+import es.csic.iiia.dcop.figdl.strategy.ApproximationStrategy;
 import es.csic.iiia.dcop.mp.AbstractNode.Modes;
 import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.up.UPResults;
@@ -53,7 +52,7 @@ import java.util.logging.Logger;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class FIGdlFactory implements UPFactory<FIGdlGraph, FIGdlNode, UPEdge<FIGdlNode, IGdlMessage>,
+public class FIGdlFactory implements UPFactory<FIGdlGraph, FIGdlNode, UPEdge<FIGdlNode, FIGdlMessage>,
     UPResult, UPResults> {
 
     private Modes mode = Modes.TREE_UP;
@@ -85,8 +84,8 @@ public class FIGdlFactory implements UPFactory<FIGdlGraph, FIGdlNode, UPEdge<FIG
         return n;
     }
 
-    public UPEdge<FIGdlNode, IGdlMessage> buildEdge(FIGdlNode node1, FIGdlNode node2) {
-        return new UPEdge<FIGdlNode, IGdlMessage>(node1, node2);
+    public UPEdge<FIGdlNode, FIGdlMessage> buildEdge(FIGdlNode node1, FIGdlNode node2) {
+        return new UPEdge<FIGdlNode, FIGdlMessage>(node1, node2);
     }
 
     public UPResult buildResult(FIGdlNode node) {

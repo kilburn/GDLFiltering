@@ -49,10 +49,10 @@ import es.csic.iiia.dcop.bb.UBResults;
 import es.csic.iiia.dcop.dfs.DFS;
 import es.csic.iiia.dcop.dfs.MCN;
 import es.csic.iiia.dcop.dfs.MCS;
-import es.csic.iiia.dcop.igdl.IGdlFactory;
-import es.csic.iiia.dcop.igdl.IGdlGraph;
-import es.csic.iiia.dcop.igdl.IGdlMessage;
-import es.csic.iiia.dcop.igdl.strategy.RankUpStrategy;
+import es.csic.iiia.dcop.figdl.FIGdlFactory;
+import es.csic.iiia.dcop.figdl.FIGdlGraph;
+import es.csic.iiia.dcop.figdl.FIGdlMessage;
+import es.csic.iiia.dcop.figdl.strategy.RankUpStrategy;
 import es.csic.iiia.dcop.jt.JunctionTree;
 import es.csic.iiia.dcop.mp.AbstractNode.Modes;
 import es.csic.iiia.dcop.mp.DefaultResults;
@@ -220,7 +220,7 @@ public class GDLTest {
 
         // Build a junction tree
         DFS dfs = new MCN(factors);
-        UPFactory f = new IGdlFactory(Integer.MAX_VALUE, new RankUpStrategy());
+        UPFactory f = new FIGdlFactory(Integer.MAX_VALUE, new RankUpStrategy());
         UPGraph g = JunctionTreeAlgo.buildGraph(f, dfs.getFactorDistribution(), dfs.getAdjacency());
         JunctionTree jt = new JunctionTree(g);
         jt.run(100);
@@ -228,7 +228,7 @@ public class GDLTest {
 
         // Run the UtilityPropagation phase
         g.setFactory(factory);
-        ((IGdlGraph)g).setR(1);
+        ((FIGdlGraph)g).setMaxR(1);
         DefaultResults<UPResult> results = g.run(100);
         System.out.println(results);
 
@@ -380,7 +380,7 @@ public class GDLTest {
             ok = f.combine(ok);
         }
         ok.summarize(new Variable[]{y,z,u});
-        IGdlMessage m = new IGdlMessage();
+        FIGdlMessage m = new FIGdlMessage();
         m.addFactor(p1);
         m.addFactor(p2);
         m.setBelief(ok);
@@ -388,7 +388,7 @@ public class GDLTest {
 
         p1 = f1.combine(f3).combine(f4).combine(f5).combine(f6).summarize(new Variable[]{u,z});
         p2 = f2.summarize(new Variable[]{y,z});
-        m = new IGdlMessage();
+        m = new FIGdlMessage();
         m.addFactor(p1);
         m.addFactor(p2);
         m.setBelief(ok);
@@ -396,7 +396,7 @@ public class GDLTest {
 
         p1 = f1.combine(f2.summarize(new Variable[]{z})).combine(f3).combine(f4)
                 .combine(f5).combine(f6).summarize(new Variable[]{u,z});
-        m = new IGdlMessage();
+        m = new FIGdlMessage();
         m.addFactor(p1);
         m.setBelief(ok);
         System.err.println(m);

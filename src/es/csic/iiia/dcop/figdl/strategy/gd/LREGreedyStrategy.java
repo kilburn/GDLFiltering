@@ -36,30 +36,24 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.igdl.strategy;
+package es.csic.iiia.dcop.figdl.strategy.gd;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import es.csic.iiia.dcop.CostFunction;
+import es.csic.iiia.dcop.util.metrics.Metric;
+import es.csic.iiia.dcop.util.metrics.Norm1;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class SCPcStrategyTest extends IGdlPartitionStrategyTest {
+public class LREGreedyStrategy extends GreedyDecompositionStrategy {
+    
+    private static final Metric metric = new Norm1();
 
-    public SCPcStrategyTest() {
-    }
-
-    @Before
     @Override
-    public void setUp() {
-    }
-
-    @After
-    @Override
-    public void tearDown() {
+    protected double getGain(CostFunction f) {
+        final double bound = node.getBound();
+        return Double.isNaN(bound) ? metric.getValue(f) : metric.getValue(f, bound);
     }
 
 }

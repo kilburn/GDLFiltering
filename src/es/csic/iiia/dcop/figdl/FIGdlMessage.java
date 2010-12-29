@@ -36,7 +36,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.igdl;
+package es.csic.iiia.dcop.figdl;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
@@ -51,7 +51,7 @@ import java.util.ArrayList;
  * 
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class IGdlMessage implements UPMessage {
+public class FIGdlMessage implements UPMessage {
 
     private ArrayList<CostFunction> factors;
     private CostFunction belief = null;
@@ -59,11 +59,11 @@ public class IGdlMessage implements UPMessage {
     private double informationLoss = 0;
     private double maxInformationLoss = 0;
 
-    public IGdlMessage(ArrayList<CostFunction> factors) {
+    public FIGdlMessage(ArrayList<CostFunction> factors) {
         this.factors = factors;
     }
 
-    public IGdlMessage() {
+    public FIGdlMessage() {
         this.factors = new ArrayList<CostFunction>();
     }
 

@@ -40,7 +40,7 @@ package es.csic.iiia.dcop.util;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.igdl.IGdlMessage;
+import es.csic.iiia.dcop.figdl.FIGdlMessage;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -87,9 +87,9 @@ public class KWayPartitioner {
 
     }
 
-    public IGdlMessage getPartitions() {
+    public FIGdlMessage getPartitions() {
 
-        IGdlMessage m = new IGdlMessage();
+        FIGdlMessage m = new FIGdlMessage();
         CostFunction belief = null;
 
         Set<Node> candidates = new HashSet<Node>();

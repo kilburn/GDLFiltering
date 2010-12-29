@@ -36,20 +36,18 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.igdl.strategy.scp;
+package es.csic.iiia.dcop.figdl.strategy.scp;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.igdl.IGdlMessage;
-import es.csic.iiia.dcop.igdl.strategy.ApproximationStrategy;
+import es.csic.iiia.dcop.figdl.FIGdlMessage;
+import es.csic.iiia.dcop.figdl.strategy.ApproximationStrategy;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.TreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +55,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class SCPFlexibleStrategy extends ApproximationStrategy {
+public class SCPcStrategy extends ApproximationStrategy {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
 
@@ -67,41 +65,41 @@ public class SCPFlexibleStrategy extends ApproximationStrategy {
     }
 
     @Override
-    protected IGdlMessage approximate(ArrayList<CostFunction> fs,
-            UPEdge<? extends IUPNode, IGdlMessage> e) {
+    protected FIGdlMessage approximate(ArrayList<CostFunction> fs,
+            UPEdge<? extends IUPNode, FIGdlMessage> e) {
         
         // Message to be sent
-        IGdlMessage msg = new IGdlMessage();
+        FIGdlMessage msg = new FIGdlMessage();
         
-        // Partitions is a list of functions that will be sent through the edge
-        // (after summarizing to the edge's variables)
-        ArrayList<ArrayList<CostFunction>> partitions = new ArrayList<ArrayList<CostFunction>>();
+        // Parts is a list of functions that will be sent through the edge
+        // (after summarizing to the edge's variable)
+        ArrayList<CostFunction> parts = new ArrayList<CostFunction>();
 
-        // PartitionsVariables is a list containing the sets of variables present
-        // in the corresponding approximate.
-        ArrayList<Collection<Variable>> partitionsAllVariables = new ArrayList<Collection<Variable>>();
-        ArrayList<Collection<Variable>> partitionsEdgeVariables = new ArrayList<Collection<Variable>>();
+        // Partsev is a list containing the sets of edge variables present
+        // in the corresponding part.
+        ArrayList<Collection<Variable>> partsev = new ArrayList<Collection<Variable>>();
 
         // Iterate over the functions, merging them whenever it's possible
         // or creating a new function when it's not.
         final int r = node.getR();
-        final int s = node.getS();
         log.trace("-- Calculating partitions (r=" + r + ")");
         for (CostFunction inFunction : fs) {
-            // Obtain a set of variables in inFunction
-            Collection<Variable> functionAllVariables = new HashSet<Variable>(inFunction.getVariableSet());
+            // Obtain a set of edge variables in inFunction
+            Collection<Variable> sev = inFunction.getSharedVariables(e.getVariables());
 
             // Check if the source function is already bigger than what we
             // can manage.
-            while (functionAllVariables.size() > r) {
+            while (sev.size() > r) {
                 // Remove one variable
-                Variable v = functionAllVariables.iterator().next();
-                functionAllVariables.remove(v);
+                Variable v = sev.iterator().next();
+                sev.remove(v);
+                Collection<Variable> nfv = new HashSet<Variable>(inFunction.getVariableSet());
+                nfv.remove(v);
 
                 if (log.isTraceEnabled()) {
                     log.trace("\tRemoving " + v.getName() + " from " + inFunction);
                 }
-                inFunction = inFunction.summarize(functionAllVariables.toArray(new Variable[0]));
+                inFunction = inFunction.summarize(nfv.toArray(new Variable[0]));
                 if (log.isTraceEnabled()) {
                     log.trace("\t-> " + inFunction);
                 }
@@ -110,30 +108,23 @@ public class SCPFlexibleStrategy extends ApproximationStrategy {
             // Check if there's a suitable existing part where we can merge
             // inFunction
             boolean merged = false;
-
-            final Collection<Variable> functionEdgeVariables = new HashSet<Variable>(Arrays.asList(e.getVariables()));
-            functionEdgeVariables.retainAll(functionAllVariables);
             
-            for (int i=0, len=partitions.size(); i<len; i++) {
-                final Collection<Variable> partitionAllVariables  = partitionsAllVariables.get(i);
-                final Collection<Variable> partitionEdgeVariables = partitionsAllVariables.get(i);
+            for (int i=0, len=parts.size(); i<len; i++) {
+                final Collection<Variable> partev = partsev.get(i);
 
-                // Tmp/tmp2 is to avoid editing the original set
-                Collection<Variable> tmp = new HashSet<Variable>(partitionAllVariables);
-                tmp.addAll(functionAllVariables);
-                Collection<Variable> tmp2 = new HashSet<Variable>(partitionEdgeVariables);
-                tmp2.addAll(functionEdgeVariables);
-
+                // Tmp is to avoid editing the original set
+                Collection<Variable> tmp = new HashSet<Variable>(partev);
+                tmp.addAll(sev);
                 //log.trace("\t\t(" + i + ") tmp size: " + tmp.size());
-                if (tmp.size() <= s && tmp2.size() <= r) {
+                if (tmp.size() <= r) {
 
                     if (log.isTraceEnabled()) {
                         log.trace("\tP(" + i + ") += " + inFunction);
                     }
 
-                    partitions.get(i).add(inFunction);
-                    partitionsAllVariables.set(i, tmp);
-                    partitionsEdgeVariables.set(i, tmp2);
+                    parts.set(i, parts.get(i).combine(inFunction));
+                    msg.cc += parts.get(i).getSize();
+                    partsev.set(i, tmp);
                     merged = true;
                     break;
                 }
@@ -144,28 +135,22 @@ public class SCPFlexibleStrategy extends ApproximationStrategy {
             if (!merged) {
 
                 if (log.isTraceEnabled()) {
-                    log.trace("\tP(" + partitions.size() + ")  = " + inFunction);
+                    log.trace("\tP(" + parts.size() + ")  = " + inFunction);
                 }
 
-                ArrayList<CostFunction> newPartition = new ArrayList<CostFunction>();
-                newPartition.add(inFunction);
-                partitions.add(newPartition);
-                partitionsAllVariables.add(functionAllVariables);
-                partitionsEdgeVariables.add(functionEdgeVariables);
+                parts.add(inFunction);
+                partsev.add(sev);
             }
         }
 
         // Now that we have all the parts, summarize and add them
         log.trace("-- Resulting partitions");
-        Collection<Variable> edgeVariables = Arrays.asList(e.getVariables());
-        for (int i=0, len=partitions.size(); i<len; i++) {
+        for (int i=0, len=parts.size(); i<len; i++) {
             if (log.isTraceEnabled()) {
-                log.trace("\t" + partitions.get(i));
+                log.trace("\t" + parts.get(i));
             }
-            partitionsAllVariables.get(i).retainAll(edgeVariables);
-            final Variable[] vars = partitionsAllVariables.get(i).toArray(new Variable[0]);
-            final ArrayList<CostFunction> partition = partitions.get(i);
-            final CostFunction f = partition.remove(partition.size()-1).combine(partition).summarize(vars);
+            final Variable[] vars = partsev.get(i).toArray(new Variable[0]);
+            final CostFunction f = parts.get(i).summarize(vars);
             msg.addFactor(f);
             msg.cc += f.getSize();
             if (log.isTraceEnabled()) {

@@ -36,11 +36,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.igdl.strategy;
+package es.csic.iiia.dcop.figdl.strategy;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.igdl.IGdlMessage;
+import es.csic.iiia.dcop.figdl.FIGdlMessage;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
@@ -69,13 +69,13 @@ public class FlexibleZerosDecompositionStrategy extends ApproximationStrategy {
     }
 
     @Override
-    protected IGdlMessage approximate(ArrayList<CostFunction> fs,
-            UPEdge<? extends IUPNode, IGdlMessage> e) {
+    protected FIGdlMessage approximate(ArrayList<CostFunction> fs,
+            UPEdge<? extends IUPNode, FIGdlMessage> e) {
 
         long cc = 0;
 
         // Message to be sent
-        IGdlMessage msg = new IGdlMessage();
+        FIGdlMessage msg = new FIGdlMessage();
 
         // Tracking of broken variable links
         int nBrokenLinks = 0;

@@ -36,29 +36,29 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.igdl.strategy.gd;
+package es.csic.iiia.dcop.figdl.strategy;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.igdl.IGdlMessage;
-import es.csic.iiia.dcop.igdl.strategy.ApproximationStrategy;
+import es.csic.iiia.dcop.figdl.FIGdlMessage;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
-import es.csic.iiia.dcop.util.CombinationGenerator;
+import es.csic.iiia.dcop.util.CostFunctionStats;
+import es.csic.iiia.dcop.util.metrics.Metric;
+import es.csic.iiia.dcop.util.metrics.Norm0;
 import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Implements the greedy decomposition approximation for FIGDL's cost
- * propagation phase.
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public abstract class GreedyDecompositionStrategy extends ApproximationStrategy {
+public class ZerosDecompositionStrategy extends ApproximationStrategy {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
+    private Metric informationLossNorm = new Norm0();
 
     @Override
     public void initialize(IUPNode node) {
@@ -66,31 +66,32 @@ public abstract class GreedyDecompositionStrategy extends ApproximationStrategy 
     }
 
     @Override
-    protected IGdlMessage approximate(ArrayList<CostFunction> fs,
-            UPEdge<? extends IUPNode, IGdlMessage> e) {
+    protected FIGdlMessage approximate(ArrayList<CostFunction> fs,
+            UPEdge<? extends IUPNode, FIGdlMessage> e) {
 
         long cc = 0;
-
+        
         // Message to be sent
-        IGdlMessage msg = new IGdlMessage();
+        FIGdlMessage msg = new FIGdlMessage();
 
         // Calculate the "big" function that should be sent
         CostFunction remaining = node.getFactory().buildNeutralCostFunction(new Variable[0]);
         remaining = remaining.combine(fs);
-
+        
         // null belief yields an empty message
         if (remaining == null) {
             return msg;
         }
 
         msg.cc += remaining.getSize();
-
+        
         // Filter the belief
         remaining = this.filterFactor(e, remaining);
 
         // Summarize the belief to the shared variables
-        Variable[] edgeVars = remaining.getSharedVariables(e.getVariables()).toArray(new Variable[0]);
-        remaining = remaining.summarize(edgeVars);
+        remaining = remaining.summarize(
+            remaining.getSharedVariables(e.getVariables()).toArray(new Variable[0])
+        );
 
         msg.cc += remaining.getSize();
 
@@ -100,34 +101,26 @@ public abstract class GreedyDecompositionStrategy extends ApproximationStrategy 
             return msg;
         }
 
-        // Greedily explore the lattice of possible projections
-        double best = 0;
-        do {
-            best = Double.NEGATIVE_INFINITY;
+        // Remove the constant value (summarization to no variables)
+        CostFunction cst = remaining.summarize(new Variable[0]);
+        msg.addFactor(cst);
+        remaining = remaining.combine(cst.negate());
+        msg.cc += remaining.getSize();
 
-            // Select the projection with higher gain
-            CombinationGenerator g = new CombinationGenerator(edgeVars, node.getR());
-            CostFunction bestFunction = null, nextFunction = null;
-            while(g.hasNext()) {
-                Variable[] next = g.next().toArray(new Variable[0]);
-                nextFunction = remaining.summarize(next);
-                double gain = getGain(nextFunction);
-                if (gain > best) {
-                    bestFunction = nextFunction;
-                    best = gain;
-                }
-            }
-            
-            // Add it to the message, and update the remaining
-            if (best > 0) {
-                msg.addFactor(bestFunction);
-                remaining = remaining.combine(bestFunction.negate());
-            }
-        } while (best > 0);
+        // Obtain the projection approximation
+        CostFunction[] res =
+                CostFunctionStats.getZeroDecompositionApproximation(remaining, node.getR());
+        for (int i=0; i<res.length-1; i++) {
+            msg.addFactor(res[i]);
+            msg.cc += remaining.getSize();
+        }
+
+        // And the total information lost
+        msg.setInformationLoss(
+                informationLossNorm.getValue(res[res.length-1])
+        );
 
         return msg;
     }
-
-    protected abstract double getGain(CostFunction f);
 
 }
