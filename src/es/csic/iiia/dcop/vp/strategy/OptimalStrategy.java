@@ -68,8 +68,11 @@ public class OptimalStrategy extends VPStrategy {
             UPNode upnode
     ){
 
+        if (mappings.isEmpty()) {
+            mappings.add(new VariableAssignment());
+        }
 
-        int solutionsToTry = 1;
+        int solutionsToTry = 0;
         if (true) {
             if (upnode instanceof FIGdlNode) {
                 FIGdlNode finode = (FIGdlNode)upnode;
@@ -107,10 +110,6 @@ public class OptimalStrategy extends VPStrategy {
                     solutionsToTry++;
                 }
             }
-        }
-
-        if (mappings.isEmpty()) {
-            mappings.add(new VariableAssignment());
         }
 
         AltCalculator c = new AltCalculator(upnode, mappings, solutionsToTry);

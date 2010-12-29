@@ -859,6 +859,10 @@ public abstract class AbstractCostFunction implements CostFunction {
             return false;
         }
 
+        if (this == other) {
+            return true;
+        }
+
         if (this.variableSet != other.getVariableSet() &&
                 (this.variableSet == null ||
                 !this.variableSet.equals(other.getVariableSet())))

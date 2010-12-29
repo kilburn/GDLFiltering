@@ -148,7 +148,6 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, FIGdlMessage
                 VPResults res = vp.run(1000);
                 ArrayList<Result> rs = iterResults.getResults();
                 rs.get(0).addSentBytes(res.getSentBytes());
-                System.out.println(res.getSentBytes());
 
                 // Bound calculation
                 UBGraph ub = new UBGraph(vp);

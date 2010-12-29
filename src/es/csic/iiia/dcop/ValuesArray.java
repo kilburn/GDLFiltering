@@ -137,7 +137,7 @@ public class ValuesArray extends ArrayList<Double> {
         final int size = size();
 
         if (size != other.size()) {
-            throw new ArrayIndexOutOfBoundsException("Value arrays must be of the same size to be combined.");
+            throw new ArrayIndexOutOfBoundsException("Value arrays must be of the same size to be combined.\n"+this+"\n"+other);
         }
 
         ValuesArray res = new ValuesArray(this);

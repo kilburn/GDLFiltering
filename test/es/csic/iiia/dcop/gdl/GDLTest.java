@@ -53,16 +53,19 @@ import es.csic.iiia.dcop.figdl.FIGdlFactory;
 import es.csic.iiia.dcop.figdl.FIGdlGraph;
 import es.csic.iiia.dcop.figdl.FIGdlMessage;
 import es.csic.iiia.dcop.figdl.strategy.RankUpStrategy;
+import es.csic.iiia.dcop.figdl.strategy.ZerosDecompositionStrategy;
 import es.csic.iiia.dcop.jt.JunctionTree;
 import es.csic.iiia.dcop.mp.AbstractNode.Modes;
 import es.csic.iiia.dcop.mp.DefaultResults;
 import es.csic.iiia.dcop.up.UPFactory;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.up.UPResult;
+import es.csic.iiia.dcop.up.UPResults;
 import es.csic.iiia.dcop.util.CostFunctionStats;
 import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.VPResults;
 import es.csic.iiia.dcop.vp.strategy.OptimalStrategy;
+import java.util.ArrayList;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -111,7 +114,6 @@ public class GDLTest {
         a = new Variable("a", 2);
         b = new Variable("b", 2);
         c = new Variable("c", 2);
-        Variable[] variables = new Variable[] {a,b,c};
 
         // Simple cycle with unique solution
         CostFunction f0 = factory.buildCostFunction(new Variable[] {a, b});
@@ -131,14 +133,7 @@ public class GDLTest {
 
         // Run the UtilityPropagation phase
         g.setFactory(factory);
-        DefaultResults<UPResult> results = g.run(100);
-        for (UPResult r : results.getResults()) {
-            VariableAssignment map2 = r.getFactor().getOptimalConfiguration(null);
-            for (Variable v : map2.keySet()) {
-                System.out.println(v.getName() + ":" + map2.get(v));
-            }
-        }
-        System.out.println(results);
+        UPResults results = g.run(100);
 
         // Extract a solution
         VPGraph vp = new VPGraph(g, new OptimalStrategy());
@@ -186,8 +181,8 @@ public class GDLTest {
     }
 
     @Test
-    public void testIGdlExample() {
-        System.out.println("RUNNING IGDL");
+    public void testFIGdlExample() {
+        System.out.println("RUNNING FIGDL");
         // Set operating mode
         CostFunction.Summarize summarize = CostFunction.Summarize.MIN;
         CostFunction.Combine combine = CostFunction.Combine.SUM;
@@ -201,7 +196,6 @@ public class GDLTest {
         t = new Variable("t", 2);
         u = new Variable("u", 2);
         v = new Variable("v", 2);
-        Variable[] variables = new Variable[] {x, y, z, t, u, v};
 
         // Simple cycle with unique solution
         CostFunction f0 = factory.buildCostFunction(new Variable[] {x, y});
@@ -220,7 +214,7 @@ public class GDLTest {
 
         // Build a junction tree
         DFS dfs = new MCN(factors);
-        UPFactory f = new FIGdlFactory(Integer.MAX_VALUE, new RankUpStrategy());
+        UPFactory f = new FIGdlFactory(Integer.MAX_VALUE, new ZerosDecompositionStrategy());
         UPGraph g = JunctionTreeAlgo.buildGraph(f, dfs.getFactorDistribution(), dfs.getAdjacency());
         JunctionTree jt = new JunctionTree(g);
         jt.run(100);
@@ -229,6 +223,7 @@ public class GDLTest {
         // Run the UtilityPropagation phase
         g.setFactory(factory);
         ((FIGdlGraph)g).setMaxR(1);
+        ((FIGdlGraph)g).setMinR(1);
         DefaultResults<UPResult> results = g.run(100);
         System.out.println(results);
 

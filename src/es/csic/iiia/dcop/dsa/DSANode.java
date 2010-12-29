@@ -145,9 +145,9 @@ public class DSANode extends AbstractNode<DSAEdge, DSAResult> {
         }
 
         if (log.isTraceEnabled()) {
-            System.out.println("Prev:  " + previousAssignment);
+            log.trace("Prev:  " + previousAssignment);
             log.trace("Combi: " + combi);
-            System.out.println("Next:  " + myAssignment.get(variable));
+            log.trace("Next:  " + myAssignment.get(variable));
         }
 
         // Send updated messages

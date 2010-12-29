@@ -115,8 +115,10 @@ public class KWayPartitionerTest {
         ApproximationStrategy s = new ZerosDecompositionStrategy();
         IUPNode n1 = new FIGdlNode();
         n1.setR(2);
+        n1.setFactory(factory);
         IUPNode n2 = new FIGdlNode();
         n2.setR(2);
+        n2.setFactory(factory);
         UPEdge e = new UPEdge(n1,n2);
         e.setVariables(evs.toArray(new Variable[0]));
         s.initialize(n1);
