@@ -740,13 +740,13 @@ public abstract class AbstractCostFunction implements CostFunction {
         Iterator<Integer> it = iterator();
         while(it.hasNext()) {
             final int i = it.next();
-            map = result.getMapping(i, map);
+            map = getMapping(i, map);
             double v = getValue(i);
-            if (v == ng) continue;
 
             for (CostFunction f : fs) {
                 v = com.eval(v, f.getValue(map));
             }
+            
             if (sum.isBetter(bound, v)) {
                 result.setValue(i, sum.getNoGood());
             } else {
@@ -816,6 +816,17 @@ public abstract class AbstractCostFunction implements CostFunction {
             }
         }
         return result;
+    }
+
+    /** {@inheritDoc} */
+    public int getNumberOfZeros() {
+        int zeros = 0;
+        for(Iterator<Integer> it = iterator(); it.hasNext();){
+            if (getValue(it.next()) == 0) {
+                zeros++;
+            }
+        }
+        return zeros;
     }
 
     /** {@inheritDoc} */

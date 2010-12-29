@@ -98,7 +98,7 @@ public class CostFunctionFactory {
 
     public CostFunction buildCostFunction(CostFunction function) {
         double sparsity = function.getNumberOfNoGoods()/(double)function.getSize();
-        return sparsity > 0.8
+        return sparsity >= 0.8
                 ? sparseFactory.buildCostFunction(function)
                 : denseFactory.buildCostFunction(function);
     }

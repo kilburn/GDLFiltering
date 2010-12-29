@@ -451,6 +451,14 @@ public interface CostFunction {
      */
     public Iterator<Integer> iterator();
 
+    /**
+     * Obtains an iterator over the linearized indices of infinity (nogood)
+     * elements of this cost function.
+     *
+     * @return Iterator over the indices of this cost function.
+     */
+    public Iterator<Integer> noGoodIterator();
+
     public void setFactory(CostFunctionFactory factory);
 
     public CostFunctionFactory getFactory();

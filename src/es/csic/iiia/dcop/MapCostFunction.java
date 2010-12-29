@@ -42,6 +42,7 @@ import es.csic.iiia.dcop.util.CostFunctionStats;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * Cost Function implementation that stores the whole hypercube of values in
@@ -65,11 +66,6 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
     private double zero;
 
     /**
-     * Counter of zeros
-     */
-    private int nZeros;
-
-    /**
      * Creates a new CostFunction, initialized to the zero value.
      *
      * @param variables involved in this factor.
@@ -79,7 +75,6 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
         
         map = new HashMap<Integer,Double>();
         zero = zeroValue;
-        nZeros = 0;
     }
 
     /**
@@ -99,7 +94,6 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
             zero = getFactory().getSummarizeOperation().getNoGood();
             setValues(factor.getValues());
         }
-        nZeros = factor.getNumberOfZeros();
     }
 
     /**
@@ -107,7 +101,6 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
      */
     private void reset() {
         map = new HashMap<Integer, Double>();
-        nZeros = 0;
     }
 
     /** {@inheritDoc} */
@@ -138,6 +131,11 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
     }
 
     /** {@inheritDoc} */
+    public Iterator<Integer> noGoodIterator() {
+        return new NoGoodIterator();
+    }
+
+    /** {@inheritDoc} */
     public double getValue(int index) {
         if (index < 0 || index >= size) 
             throw new IndexOutOfBoundsException(Integer.toString(index));
@@ -152,39 +150,16 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
             throw new IndexOutOfBoundsException(Integer.toString(index) + " out of "
                     + size);
 
-        final double prev = map.containsKey(index) ? map.get(index) : zero;
-
-        if (prev == 0) {
-            if (value == 0) {
-                return;
-            } else if (value == zero) {
-                map.remove(index);
-                nZeros--;
-            } else {
-                map.put(index, value);
-                nZeros--;
-            }
+        if (value == zero) {
+            map.remove(index);
         } else {
-            if (value == 0) {
-                map.put(index, value);
-                nZeros++;
-            } else if (value == zero) {
-                map.remove(index);
-            } else {
-                map.put(index, value);
-            }
+            map.put(index, value);
         }
-
     }
 
     /** {@inheritDoc} */
     public int getNumberOfNoGoods() {
         return size - map.size();
-    }
-
-    /** {@inheritDoc} */
-    public int getNumberOfZeros() {
-        return nZeros;
     }
 
     /** {@inheritDoc} */
@@ -209,6 +184,44 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
         buf.append("}");
 
         return buf.toString();
+    }
+
+    private class NoGoodIterator implements Iterator<Integer> {
+        Iterator<Integer> it = map.keySet().iterator();
+        private int nextGood = it.hasNext() ? it.next() : -1;
+        private int currentNoGood = -1;
+
+        public NoGoodIterator() {
+            findNextNoGood();
+        }
+
+        private void findNextNoGood() {
+            currentNoGood++;
+            while (currentNoGood == nextGood) {
+                currentNoGood++;
+                nextGood = it.hasNext() ? it.next() : -1;
+            }
+            if (currentNoGood >= size) {
+                currentNoGood = -1;
+            }
+        }
+
+        public boolean hasNext() {
+            return currentNoGood >= 0;
+        }
+
+        public Integer next() {
+            if (currentNoGood < 0) {
+                throw new NoSuchElementException();
+            }
+            final Integer res = currentNoGood;
+            findNextNoGood();
+            return res;
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 
 }

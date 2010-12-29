@@ -40,6 +40,7 @@ package es.csic.iiia.dcop;
 
 import java.io.Serializable;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * Cost Function implementation that stores the whole hypercube of values in
@@ -63,11 +64,6 @@ public final class HypercubeCostFunction extends AbstractCostFunction implements
     private int nNoGoods;
 
     /**
-     * Counter of zeros
-     */
-    private int nZeros;
-
-    /**
      * Creates a new CostFunction, initialized to zeros.
      *
      * @param variables involved in this factor.
@@ -76,7 +72,6 @@ public final class HypercubeCostFunction extends AbstractCostFunction implements
         super(variables);
         values = new double[size];
         nNoGoods = 0;
-        nZeros = size;
     }
 
     /**
@@ -88,7 +83,6 @@ public final class HypercubeCostFunction extends AbstractCostFunction implements
         super(factor);
         values = factor.getValues().clone();
         nNoGoods = factor.getNumberOfNoGoods();
-        nZeros = factor.getNumberOfZeros();
     }
 
     /** {@inheritDoc} */
@@ -105,7 +99,6 @@ public final class HypercubeCostFunction extends AbstractCostFunction implements
 
         this.values = new double[values.length];
         nNoGoods = 0;
-        nZeros = 0;
         for (int i=0; i<values.length; i++) {
             setValue(i, values[i]);
         }
@@ -114,6 +107,11 @@ public final class HypercubeCostFunction extends AbstractCostFunction implements
     /** {@inheritDoc} */
     public Iterator<Integer> iterator() {
         return new HypercubeIterator();
+    }
+
+    /** {@inheritDoc} */
+    public Iterator<Integer> noGoodIterator() {
+        return new NoGoodIterator();
     }
 
     /** {@inheritDoc} */
@@ -128,14 +126,8 @@ public final class HypercubeCostFunction extends AbstractCostFunction implements
         if (value != ng && prev == ng) {
             nNoGoods--;
         }
-        if (value != 0 && prev == 0) {
-            nZeros--;
-        }
         if (value == ng && prev != ng) {
             nNoGoods++;
-        }
-        if (value == 0 && prev != 0) {
-            nZeros++;
         }
         values[index] = value;
     }
@@ -143,11 +135,6 @@ public final class HypercubeCostFunction extends AbstractCostFunction implements
     /** {@inheritDoc} */
     public int getNumberOfNoGoods() {
         return nNoGoods;
-    }
-
-    /** {@inheritDoc} */
-    public int getNumberOfZeros() {
-        return nZeros;
     }
 
     /** {@inheritDoc} */
@@ -177,7 +164,66 @@ public final class HypercubeCostFunction extends AbstractCostFunction implements
      * over its elements using the common java conventions.
      */
     protected class HypercubeIterator implements Iterator<Integer> {
-        private int idx = 0;
+        private int idx;
+        private double ng = getFactory().getSummarizeOperation().getNoGood();
+
+        public HypercubeIterator() {
+            idx = -1;
+            findNextGood();
+        }
+
+        private void findNextGood() {
+            idx++;
+            while (idx < size && getValue(idx) == ng) {
+                idx++;
+            }
+            if (idx == size) {
+                idx = -1;
+            }
+        }
+
+        @Override
+        public boolean hasNext() {
+            return idx >= 0 && idx < size;
+        }
+
+        @Override
+        public Integer next() {
+            if (idx < 0) {
+                throw new NoSuchElementException();
+            }
+
+            final Integer res = idx;
+            findNextGood();
+            return res;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException("You can not remove elements from an hypercube.");
+        }
+
+    }
+
+    /**
+     * Implements the Iterator interface for an hypercube, allowing to iterate
+     * over its elements using the common java conventions.
+     */
+    protected class NoGoodIterator implements Iterator<Integer> {
+        private int idx;
+        private double ng = getFactory().getSummarizeOperation().getNoGood();
+
+        public NoGoodIterator() {
+            idx = -1;
+            findNextNoGood();
+        }
+
+        private void findNextNoGood() {
+            idx++;
+            while (idx < size && getValue(idx) != ng) {
+                idx++;
+            }
+        }
 
         @Override
         public boolean hasNext() {
@@ -186,7 +232,13 @@ public final class HypercubeCostFunction extends AbstractCostFunction implements
 
         @Override
         public Integer next() {
-            return idx++;
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+
+            final Integer res = idx;
+            findNextNoGood();
+            return res;
         }
 
         @Override

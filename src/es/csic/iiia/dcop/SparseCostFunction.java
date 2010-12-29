@@ -165,6 +165,21 @@ public final class SparseCostFunction extends AbstractCostFunction implements Se
     }
 
     /** {@inheritDoc} */
+    public Iterator<Integer> noGoodIterator() {
+        return new Iterator<Integer>() {
+            public boolean hasNext() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            public Integer next() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            public void remove() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+    }
+
+    /** {@inheritDoc} */
     public double getValue(int index) {
         if (index < 0 || index >= size) 
             throw new IndexOutOfBoundsException(Integer.toString(index));
