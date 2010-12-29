@@ -41,7 +41,6 @@ package es.csic.iiia.dcop.util;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.HypercubeCostFunction;
 import es.csic.iiia.dcop.MapCostFunction;
-import es.csic.iiia.dcop.SparseCostFunction;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 
@@ -62,8 +61,6 @@ public class FunctionCounter {
         nNaNTuples += f.getNumberOfNoGoods();
         if (f instanceof HypercubeCostFunction) {
             nDense += f.getSize();
-        } else if (f instanceof SparseCostFunction) {
-            nSparse += f.getSize();
         } else if (f instanceof MapCostFunction) {
             nSparse += f.getSize();
         }
