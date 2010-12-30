@@ -74,8 +74,10 @@ import es.csic.iiia.dcop.util.Compressor;
 import es.csic.iiia.dcop.util.UnaryVariableFilterer;
 import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.VPResults;
-import es.csic.iiia.dcop.vp.strategy.OptimalStrategy;
+import es.csic.iiia.dcop.vp.strategy.solving.OptimalSolvingStrategy;
 import es.csic.iiia.dcop.vp.strategy.VPStrategy;
+import es.csic.iiia.dcop.vp.strategy.expansion.ExpansionStrategy;
+import es.csic.iiia.dcop.vp.strategy.solving.SolvingStrategy;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -130,7 +132,14 @@ public class CliApp {
      */
     public static final int JT_HEURISTIC_MCN = 1;
 
-    public enum PS {
+    void setSolutionExpansion(SolutionExpansionStrategies solutionExpansionStrategy) {
+        this.expansionStrategy = solutionExpansionStrategy;
+    }
+    void setSolutionSolving(SolutionSolvingStrategies solutionSolvingStrategy) {
+        this.solvingStrategy = solutionSolvingStrategy;
+    }
+
+    public enum ApproximationStrategies {
         SCP_C (es.csic.iiia.dcop.figdl.strategy.scp.SCPcStrategy.class),
         SCP_CC (es.csic.iiia.dcop.figdl.strategy.scp.SCPccStrategy.class),
         SCP_FLEX (es.csic.iiia.dcop.figdl.strategy.scp.SCPFlexibleStrategy.class),
@@ -148,7 +157,7 @@ public class CliApp {
         ;
 
         private ApproximationStrategy instance;
-        PS(Class<? extends ApproximationStrategy> c) {
+        ApproximationStrategies(Class<? extends ApproximationStrategy> c) {
             try {
                 instance = c.newInstance();
             } catch (InstantiationException ex) {
@@ -163,10 +172,51 @@ public class CliApp {
     }
 
     /**
+     * Solution expansion strategies
+     */
+    public enum SolutionExpansionStrategies {
+        ROOT_EXPANDS (es.csic.iiia.dcop.vp.strategy.expansion.RootExpandsAll.class),
+        STOCHASTIC (es.csic.iiia.dcop.vp.strategy.expansion.StochasticalExpansion.class),
+        INFORMATION_LOSS (es.csic.iiia.dcop.vp.strategy.expansion.InformationLossExpansion.class),
+        ;
+
+        private ExpansionStrategy instance;
+        SolutionExpansionStrategies(Class<? extends ExpansionStrategy> c) {
+            try {
+                instance = c.newInstance();
+            } catch (InstantiationException ex) {
+                java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IllegalAccessException ex) {
+                java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        ExpansionStrategy getInstance() {
+            return instance;
+        }
+    }
+
+    /**
      * Solution propagation strategies
      */
-    public static final int SS_OPTIMAL  = 0;
-    public static final int SS_PARTIAL  = 1;
+    public enum SolutionSolvingStrategies {
+        OPTIMAL (es.csic.iiia.dcop.vp.strategy.solving.OptimalSolvingStrategy.class),
+        DSA (es.csic.iiia.dcop.vp.strategy.solving.DSASolvingStrategy.class),
+        ;
+
+        private SolvingStrategy instance;
+        SolutionSolvingStrategies(Class<? extends SolvingStrategy> c) {
+            try {
+                instance = c.newInstance();
+            } catch (InstantiationException ex) {
+                java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IllegalAccessException ex) {
+                java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        SolvingStrategy getInstance() {
+            return instance;
+        }
+    }
 
     /**
      * Compession methods
@@ -200,8 +250,9 @@ public class CliApp {
     private boolean createTraceFile = false;
     private String traceFile = "trace.txt";
     private int IGdlR = 2;
-    private PS partitionStrategy = PS.RANKUP;
-    private int solutionStrategy = SS_OPTIMAL;
+    private ApproximationStrategies approximationStrategy = ApproximationStrategies.RANKUP;
+    private SolutionExpansionStrategies expansionStrategy = SolutionExpansionStrategies.ROOT_EXPANDS;
+    private SolutionSolvingStrategies solvingStrategy = SolutionSolvingStrategies.OPTIMAL;
 
     private String optimalFile = null;
 
@@ -426,6 +477,15 @@ public class CliApp {
             // Create the clique graph, using the specified algorithm
             UPGraph cg = createCliqueGraph(factors);
 
+            // Setup the solution propagation strategy
+            VPStrategy sStrategy = new VPStrategy(
+                    expansionStrategy.getInstance(),
+                    solvingStrategy.getInstance()
+            );
+            if (algorithm == ALGO_FIGDL && cg instanceof FIGdlGraph) {
+                FIGdlGraph.setSolutionStrategy(sStrategy);
+            }
+
             // Add noise if requested
             if (randomVariance != 0) {
                 RandomNoiseAdder rna = new RandomNoiseAdder(randomVariance);
@@ -460,16 +520,6 @@ public class CliApp {
 
             } else {
 
-                
-
-                // Extract a solution
-                VPStrategy sStrategy = null;
-                switch (solutionStrategy) {
-                    case SS_OPTIMAL:
-                        sStrategy = new OptimalStrategy();
-                        break;
-
-                }
                 VPGraph st = new VPGraph(cg, sStrategy);
                 VPResults res = st.run(10000);
                 ArrayList<Result> rs = results.getResults();
@@ -577,7 +627,7 @@ public class CliApp {
                     factory = new GdlFactory();
                     ((GdlFactory)factory).setMode(Modes.TREE_UP);
                 } else {
-                    ApproximationStrategy pStrategy = partitionStrategy.getInstance();
+                    ApproximationStrategy pStrategy = approximationStrategy.getInstance();
                     factory = new FIGdlFactory(this.getIGdlR(), pStrategy);
                 }
                 int variables = 0;
@@ -729,8 +779,8 @@ public class CliApp {
         }
     }
 
-    void setPartitionStrategy(PS partitionStrategy) {
-        this.partitionStrategy = partitionStrategy;
+    void setPartitionStrategy(ApproximationStrategies partitionStrategy) {
+        this.approximationStrategy = partitionStrategy;
     }
 
     void setCompressionMethod(int method) {

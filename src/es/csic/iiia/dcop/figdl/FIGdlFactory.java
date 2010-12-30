@@ -81,6 +81,7 @@ public class FIGdlFactory implements UPFactory<FIGdlGraph, FIGdlNode, UPEdge<FIG
         } catch (IllegalAccessException ex) {
             Logger.getLogger(FIGdlFactory.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
         return n;
     }
 

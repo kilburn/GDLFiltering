@@ -52,7 +52,6 @@ import es.csic.iiia.dcop.dfs.MCS;
 import es.csic.iiia.dcop.figdl.FIGdlFactory;
 import es.csic.iiia.dcop.figdl.FIGdlGraph;
 import es.csic.iiia.dcop.figdl.FIGdlMessage;
-import es.csic.iiia.dcop.figdl.strategy.RankUpStrategy;
 import es.csic.iiia.dcop.figdl.strategy.ZerosDecompositionStrategy;
 import es.csic.iiia.dcop.jt.JunctionTree;
 import es.csic.iiia.dcop.mp.AbstractNode.Modes;
@@ -64,8 +63,9 @@ import es.csic.iiia.dcop.up.UPResults;
 import es.csic.iiia.dcop.util.CostFunctionStats;
 import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.VPResults;
-import es.csic.iiia.dcop.vp.strategy.OptimalStrategy;
-import java.util.ArrayList;
+import es.csic.iiia.dcop.vp.strategy.VPStrategy;
+import es.csic.iiia.dcop.vp.strategy.expansion.RootExpandsAll;
+import es.csic.iiia.dcop.vp.strategy.solving.OptimalSolvingStrategy;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -81,6 +81,7 @@ import static org.junit.Assert.*;
 public class GDLTest {
 
     private CostFunctionFactory factory;
+    private VPStrategy solvingStrategy;
 
     public GDLTest() {
     }
@@ -96,6 +97,7 @@ public class GDLTest {
     @Before
     public void setUp() {
         factory = new CostFunctionFactory();
+        solvingStrategy = new VPStrategy(new RootExpandsAll(), new OptimalSolvingStrategy());
     }
 
     @After
@@ -136,7 +138,7 @@ public class GDLTest {
         UPResults results = g.run(100);
 
         // Extract a solution
-        VPGraph vp = new VPGraph(g, new OptimalStrategy());
+        VPGraph vp = new VPGraph(g, solvingStrategy);
         VPResults res = vp.run(100);
         UBGraph ub = new UBGraph(vp);
         UBResults ubres = ub.run(100);
@@ -223,12 +225,13 @@ public class GDLTest {
         // Run the UtilityPropagation phase
         g.setFactory(factory);
         ((FIGdlGraph)g).setMaxR(1);
-        ((FIGdlGraph)g).setMinR(1);
+        FIGdlGraph.setMinR(1);
+        FIGdlGraph.setSolutionStrategy(solvingStrategy);
         DefaultResults<UPResult> results = g.run(100);
         System.out.println(results);
 
         // Extract a solution
-        VPGraph vp = new VPGraph(g, new OptimalStrategy());
+        VPGraph vp = new VPGraph(g, solvingStrategy);
         VPResults res = vp.run(100);
         UBGraph ub = new UBGraph(vp);
         UBResults ubres = ub.run(100);
@@ -310,7 +313,7 @@ public class GDLTest {
         System.out.println(results);
 
         // Extract a solution
-        VPGraph vp = new VPGraph(g, new OptimalStrategy());
+        VPGraph vp = new VPGraph(g, solvingStrategy);
         VPResults res = vp.run(100);
         UBGraph ub = new UBGraph(vp);
         UBResults ubres = ub.run(100);

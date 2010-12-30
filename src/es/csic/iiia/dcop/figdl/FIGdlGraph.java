@@ -49,7 +49,8 @@ import es.csic.iiia.dcop.up.UPResults;
 import es.csic.iiia.dcop.util.FunctionCounter;
 import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.VPResults;
-import es.csic.iiia.dcop.vp.strategy.OptimalStrategy;
+import es.csic.iiia.dcop.vp.strategy.VPStrategy;
+import es.csic.iiia.dcop.vp.strategy.solving.OptimalSolvingStrategy;
 import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +66,7 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, FIGdlMessage
     private static int minR = 2;
     private static int maxS = Integer.MAX_VALUE;
     private static double optimumValue = Double.NaN;
+    private static VPStrategy solutionStrategy;
 
     public static void setMaxS(int max_s) {
         maxS = max_s;
@@ -78,6 +80,10 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, FIGdlMessage
 
     public static void setMinR(int min_r) {
         minR = min_r;
+    }
+
+    public static void setSolutionStrategy(VPStrategy strategy) {
+        solutionStrategy = strategy;
     }
 
     private FIGdlIteration iteration = new FIGdlIteration();
@@ -144,7 +150,7 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, FIGdlMessage
 
 
                 // Solution extraction
-                VPGraph vp = new VPGraph(this, new OptimalStrategy());
+                VPGraph vp = new VPGraph(this, solutionStrategy);
                 VPResults res = vp.run(1000);
                 ArrayList<Result> rs = iterResults.getResults();
                 rs.get(0).addSentBytes(res.getSentBytes());

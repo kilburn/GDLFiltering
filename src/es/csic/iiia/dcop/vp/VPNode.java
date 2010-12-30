@@ -46,7 +46,6 @@ import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.mp.AbstractNode;
 import es.csic.iiia.dcop.up.UPNode;
 import es.csic.iiia.dcop.vp.strategy.VPStrategy;
-import es.csic.iiia.dcop.vp.strategy.VPStrategy.MappingResults;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;

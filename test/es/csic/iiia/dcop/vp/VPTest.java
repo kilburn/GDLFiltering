@@ -38,6 +38,7 @@
 
 package es.csic.iiia.dcop.vp;
 
+import es.csic.iiia.dcop.vp.strategy.expansion.RootExpandsAll;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
@@ -49,7 +50,8 @@ import es.csic.iiia.dcop.dfs.MCS;
 import es.csic.iiia.dcop.gdl.GdlFactory;
 import es.csic.iiia.dcop.up.UPFactory;
 import es.csic.iiia.dcop.up.UPGraph;
-import es.csic.iiia.dcop.vp.strategy.OptimalStrategy;
+import es.csic.iiia.dcop.vp.strategy.VPStrategy;
+import es.csic.iiia.dcop.vp.strategy.solving.OptimalSolvingStrategy;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -67,6 +69,7 @@ public class VPTest {
     private CostFunction[] f;
     private UPGraph cg;
     private CostFunctionFactory factory;
+    private VPStrategy solvingStrategy;
 
     public VPTest() {
     }
@@ -108,6 +111,8 @@ public class VPTest {
         MCS mcs = new MCS(f);
         UPFactory fac = new GdlFactory();
         cg = JunctionTreeAlgo.buildGraph(fac, mcs.getFactorDistribution(), mcs.getAdjacency());
+
+        solvingStrategy = new VPStrategy(new RootExpandsAll(), new OptimalSolvingStrategy());
     }
 
     @After
@@ -119,7 +124,7 @@ public class VPTest {
      */
     @Test
     public void testBuildResults() {
-        VPGraph instance = new VPGraph(cg, new OptimalStrategy());
+        VPGraph instance = new VPGraph(cg, solvingStrategy);
         VPResults result = instance.buildResults();
         assertNotNull(result);
     }
@@ -144,7 +149,7 @@ public class VPTest {
         factory.setMode(summarize, combine, normalize);
         cg.setFactory(factory);
         cg.run(100);
-        VPGraph instance = new VPGraph(cg, new OptimalStrategy());
+        VPGraph instance = new VPGraph(cg, solvingStrategy);
 
         VariableAssignment expResult = new VariableAssignment();
         for (int i=0; i<5; i++) {
@@ -168,7 +173,7 @@ public class VPTest {
         factory.setMode(summarize, combine, normalize);
         cg.setFactory(factory);
         cg.run(100);
-        VPGraph instance = new VPGraph(cg, new OptimalStrategy());
+        VPGraph instance = new VPGraph(cg, solvingStrategy);
 
         VariableAssignment expResult = new VariableAssignment();
         for (int i=0; i<5; i++) {

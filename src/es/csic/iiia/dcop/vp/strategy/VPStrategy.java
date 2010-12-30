@@ -38,37 +38,131 @@
 
 package es.csic.iiia.dcop.vp.strategy;
 
+import es.csic.iiia.dcop.vp.strategy.expansion.ExpansionStrategy;
+import es.csic.iiia.dcop.vp.strategy.solving.SolvingStrategy;
+import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.up.UPNode;
+import es.csic.iiia.dcop.vp.MappingResults;
+import es.csic.iiia.dcop.vp.VPGraph;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.TreeSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public abstract class VPStrategy {
+public class VPStrategy {
 
-    public static int nMappings = 1;
+    private static Logger log = LoggerFactory.getLogger(VPGraph.class);
+    public static int numberOfSolutions = 1;
+    
+    private ExpansionStrategy expansion;
+    private SolvingStrategy solving;
 
-    public abstract MappingResults getExtendedMappings(ArrayList<VariableAssignment> mappings, UPNode upnode);
+    public VPStrategy(ExpansionStrategy expansion, SolvingStrategy solving) {
+        this.expansion = expansion;
+        this.solving = solving;
+    }
 
-    public class MappingResults {
+    public MappingResults getExtendedMappings(ArrayList<VariableAssignment> mappings, UPNode upnode) {
+
+        if (mappings.isEmpty()) {
+            mappings.add(new VariableAssignment());
+        }
+
+        int solutionsToExpand = expansion.getNumberOfSolutionsToExpand(mappings, upnode);
         
-        private ArrayList<VariableAssignment> mappings;
-        private ArrayList<Integer> uMap;
-
-        public MappingResults(ArrayList<VariableAssignment> mappings,
-                ArrayList<Integer> uMap) {
-            this.mappings = mappings;
-            this.uMap = uMap;
+        SolutionExplorer solExplorer = new SolutionExplorer(upnode, mappings, solutionsToExpand);
+        if (log.isTraceEnabled()) {
+            log.trace(solExplorer.toString());
         }
 
-        public ArrayList<VariableAssignment> getMappings() {
-            return mappings;
+        return new MappingResults(solExplorer.maps, solExplorer.upper);
+    }
+
+    private class SolutionExplorer {
+        private TreeSet<CandidateSolution> candidates = null;
+        private ArrayList<VariableAssignment> maps;
+        private ArrayList<Integer> upper;
+
+        public SolutionExplorer(UPNode node,
+                ArrayList<VariableAssignment> upMaps, int expand)
+        {
+            CostFunction.Summarize sum = node.getFactory().getSummarizeOperation();
+
+            maps = new ArrayList<VariableAssignment>();
+            upper = new ArrayList<Integer>();
+
+            // Firstly, we need to expand the initial mappings
+            int parent=0;
+            for (VariableAssignment map : upMaps) {
+
+                ArrayList<CostFunction> rb = node.getReducedBelief(map);
+                CandidateSolution candidate = null;
+                
+                
+                candidate = solving.getCandidateSolution(rb, parent, map);
+
+                maps.add(candidate.getAssignment());
+                upper.add(parent);
+
+                if (expand > 0) {
+                    if (candidates == null) {
+                        candidates = new TreeSet<CandidateSolution>(new SolutionComparator(sum));
+                    }
+                    candidates.add(candidate.next());
+                }
+
+                parent++;
+            }
+
+            // And then we need to open new solutions
+            for (int j=0; j<expand; j++) {
+                // Fetch the best alternative
+                CandidateSolution candidate = candidates.first();
+                candidates.remove(candidate);
+
+                // Add the corresponding mapping
+                if (!maps.contains(candidate.getAssignment())) {
+                    maps.add(candidate.getAssignment());
+                    upper.add(candidate.getParentIndex());
+                }
+
+                // Re-introduce the subsequent alternative
+                candidates.add(candidate.next());
+            }
+
         }
 
-        public ArrayList<Integer> getuMap() {
-            return uMap;
+        @Override
+        public String toString() {
+            StringBuilder buf = new StringBuilder("Mappings:\n");
+            for(VariableAssignment map : maps) {
+                buf.append(map).append("\n");
+            }
+            return buf.toString();
+        }
+
+        private class SolutionComparator implements Comparator<CandidateSolution> {
+            private CostFunction.Summarize sum;
+            public SolutionComparator(CostFunction.Summarize sum) {
+                this.sum = sum;
+            }
+            public int compare(CandidateSolution t, CandidateSolution t1) {
+                final double c1 = t.getCost();
+                final double c2 = t1.getCost();
+                if (sum.isBetter(c1, c2)) {
+                    return -1;
+                }
+                if (sum.isBetter(c2, c1)) {
+                    return 1;
+                }
+                return 0;
+            }
         }
     }
 

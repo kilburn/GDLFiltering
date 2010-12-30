@@ -40,7 +40,8 @@ package es.csic.iiia.dcop.cli;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.figdl.FIGdlGraph;
-import es.csic.iiia.dcop.vp.strategy.OptimalStrategy;
+import es.csic.iiia.dcop.vp.strategy.solving.OptimalSolvingStrategy;
+import es.csic.iiia.dcop.vp.strategy.VPStrategy;
 import gnu.getopt.Getopt;
 import gnu.getopt.LongOpt;
 import java.io.File;
@@ -129,7 +130,6 @@ public class Cli {
         System.err.println("      - lre-c      : content-based local relative error strategy (just communication bounded).");
         System.err.println("      - lmre-c     : content-based local max relative error strategy (just communication bounded).");
         System.err.println("      - lmre-cc    : content-based local max relative error strategy (communication and computation bounded).");
-        //System.err.println("      - rankdown : merges functions from highest ranked (max-min value) to lowest.");
         System.err.println("      - lre-d      : greedy decomposition using LRE.");
         System.err.println("      - lmre-d     : greedy decomposition using LMRE.");
         System.err.println("      - superset   : superset scope-based partitioning.");
@@ -141,6 +141,15 @@ public class Cli {
         System.err.println("    Uses the specified summarizing operator, where operator is one of: ");
         System.err.println("      - min : summarizes using the minimum value (for costs).");
         System.err.println("      - max : summarizes using the maximum value (for utilites).");
+        System.err.println("  --solution-expansion=strategy (root)");
+        System.err.println("    Uses the specified solution expansion strategy, where strategy is one of: ");
+        System.err.println("      - root        : root expands all solutions");
+        System.err.println("      - stochastic  : each solution is expanded with a probability (p=0.9)");
+        System.err.println("      - information : expansion based on the information loss observed during utility propagation.");
+        System.err.println("  --solution-solving=strategy (optimal)");
+        System.err.println("    Uses the specified solution solving strategy, where strategy is one of: ");
+        System.err.println("      - optimal     : solutions are computed optimaly");
+        System.err.println("      - stochastic  : solutions are computed using dsa");
         System.err.println("  -t [file], --trace[=file]");
         System.err.println("    Save algorithms' traces in [file], or \"trace.txt\" if unspecified.");
         System.err.println();
@@ -176,6 +185,8 @@ public class Cli {
             new LongOpt("partition-strategy", LongOpt.REQUIRED_ARGUMENT, null, 'p'),
             new LongOpt("random-noise", LongOpt.OPTIONAL_ARGUMENT, null, 'r'),
             new LongOpt("summarize", LongOpt.REQUIRED_ARGUMENT, null, 's'),
+            new LongOpt("solution-expansion", LongOpt.REQUIRED_ARGUMENT, null, 6),
+            new LongOpt("solution-solving", LongOpt.REQUIRED_ARGUMENT, null, 7),
             new LongOpt("trace", LongOpt.OPTIONAL_ARGUMENT, null, 't'),
         };
         Getopt g = new Getopt(programName, argv, "a:c:e:f::g::hi:j:l:m:n:p:r::s:t::", longopts);
@@ -208,7 +219,7 @@ public class Cli {
                         System.err.println("Error: the number of solutions to propagate must be greater than 0.");
                         System.exit(0);
                     }
-                    OptimalStrategy.nMappings = nsols;
+                    VPStrategy.numberOfSolutions = nsols;
                     break;
 
                 case 2:
@@ -243,6 +254,32 @@ public class Cli {
                     arg = g.getOptarg();
                     if (arg != null) {
                         cli.setOptimalFile(arg);
+                    }
+                    break;
+
+                case 6:
+                    arg = g.getOptarg().toLowerCase();
+                    if (arg.equals("root"))
+                        cli.setSolutionExpansion(CliApp.SolutionExpansionStrategies.ROOT_EXPANDS);
+                    else if (arg.equals("stochastic"))
+                        cli.setSolutionExpansion(CliApp.SolutionExpansionStrategies.STOCHASTIC);
+                    else if (arg.equals("information"))
+                        cli.setSolutionExpansion(CliApp.SolutionExpansionStrategies.INFORMATION_LOSS);
+                    else {
+                        System.err.println("Error: invalid solution expansion strategy \"" + arg + "\"");
+                        System.exit(0);
+                    }
+                    break;
+
+                case 7:
+                    arg = g.getOptarg().toLowerCase();
+                    if (arg.equals("optimal"))
+                        cli.setSolutionSolving(CliApp.SolutionSolvingStrategies.OPTIMAL);
+                    else if (arg.equals("dsa"))
+                        cli.setSolutionSolving(CliApp.SolutionSolvingStrategies.DSA);
+                    else {
+                        System.err.println("Error: invalid solution solving strategy \"" + arg + "\"");
+                        System.exit(0);
                     }
                     break;
 
@@ -365,33 +402,33 @@ public class Cli {
                 case 'p':
                     arg = g.getOptarg();
                     if (arg.equals("scp-c"))
-                        cli.setPartitionStrategy(CliApp.PS.SCP_C);
+                        cli.setPartitionStrategy(CliApp.ApproximationStrategies.SCP_C);
                     else if (arg.equals("scp-cc"))
-                        cli.setPartitionStrategy(CliApp.PS.SCP_CC);
+                        cli.setPartitionStrategy(CliApp.ApproximationStrategies.SCP_CC);
                     else if (arg.equals("scp-flex"))
-                        cli.setPartitionStrategy(CliApp.PS.SCP_FLEX);
+                        cli.setPartitionStrategy(CliApp.ApproximationStrategies.SCP_FLEX);
                     else if (arg.equals("rankup"))
-                        cli.setPartitionStrategy(CliApp.PS.RANKUP);
+                        cli.setPartitionStrategy(CliApp.ApproximationStrategies.RANKUP);
                     else if (arg.equals("rankdown"))
-                        cli.setPartitionStrategy(CliApp.PS.RANKDOWN);
+                        cli.setPartitionStrategy(CliApp.ApproximationStrategies.RANKDOWN);
                     else if (arg.equals("lre-d"))
-                        cli.setPartitionStrategy(CliApp.PS.LRE_D);
+                        cli.setPartitionStrategy(CliApp.ApproximationStrategies.LRE_D);
                     else if (arg.equals("lmre-d"))
-                        cli.setPartitionStrategy(CliApp.PS.LMRE_D);
+                        cli.setPartitionStrategy(CliApp.ApproximationStrategies.LMRE_D);
                     else if (arg.equals("zeros-d"))
-                        cli.setPartitionStrategy(CliApp.PS.ZEROS_D);
+                        cli.setPartitionStrategy(CliApp.ApproximationStrategies.ZEROS_D);
                     else if (arg.equals("zeros-flex"))
-                        cli.setPartitionStrategy(CliApp.PS.ZEROS_FLEX);
+                        cli.setPartitionStrategy(CliApp.ApproximationStrategies.ZEROS_FLEX);
                     else if (arg.equals("lre-cc"))
-                        cli.setPartitionStrategy(CliApp.PS.LRE_CC);
+                        cli.setPartitionStrategy(CliApp.ApproximationStrategies.LRE_CC);
                     else if (arg.equals("lmre-cc"))
-                        cli.setPartitionStrategy(CliApp.PS.LMRE_CC);
+                        cli.setPartitionStrategy(CliApp.ApproximationStrategies.LMRE_CC);
                     else if (arg.equals("lre-c"))
-                        cli.setPartitionStrategy(CliApp.PS.LRE_C);
+                        cli.setPartitionStrategy(CliApp.ApproximationStrategies.LRE_C);
                     else if (arg.equals("lmre-c"))
-                        cli.setPartitionStrategy(CliApp.PS.LMRE_C);
+                        cli.setPartitionStrategy(CliApp.ApproximationStrategies.LMRE_C);
                     else if (arg.equals("superset"))
-                        cli.setPartitionStrategy(CliApp.PS.SUPERSET);
+                        cli.setPartitionStrategy(CliApp.ApproximationStrategies.SUPERSET);
                     else {
                         System.err.println("Error: invalid heuristic \"" + arg + "\"");
                         System.exit(0);
