@@ -38,6 +38,7 @@
 
 package es.csic.iiia.dcop;
 
+import es.csic.iiia.dcop.util.ConstraintChecks;
 import es.csic.iiia.dcop.util.CostFunctionStats;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -701,7 +702,9 @@ public abstract class AbstractCostFunction implements CostFunction {
         // Perform the actual filtering
         //Iterator<Integer> it = result.iterator();
         boolean allNogoods = true;
-        for (int i = 0, len = result.getSize(); i < len; i++) {
+        Iterator<Integer> it = iterator();
+        while(it.hasNext()) {
+            final int i = it.next();
             if (combi.getValue(i) != operation.getNoGood()) {
                 allNogoods = false;
             }
