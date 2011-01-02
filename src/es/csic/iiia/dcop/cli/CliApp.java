@@ -74,7 +74,6 @@ import es.csic.iiia.dcop.util.Compressor;
 import es.csic.iiia.dcop.util.UnaryVariableFilterer;
 import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.VPResults;
-import es.csic.iiia.dcop.vp.strategy.solving.OptimalSolvingStrategy;
 import es.csic.iiia.dcop.vp.strategy.VPStrategy;
 import es.csic.iiia.dcop.vp.strategy.expansion.ExpansionStrategy;
 import es.csic.iiia.dcop.vp.strategy.solving.SolvingStrategy;
@@ -511,15 +510,8 @@ public class CliApp {
             UBResults ubres = null;
 
             if (algorithm == ALGO_FIGDL && cg instanceof FIGdlGraph) {
-
                 ubres = ((FIGdlGraph)cg).getUBResults();
-                System.out.println("ITERATIONS " + results.getIterations());
-                System.out.println("CBR " + results.getCBR(communicationCost));
-                System.out.println("BYTES " + results.getSentBytes());
-                System.out.println("LOAD_FACTOR " + results.getLoadFactor());
-
             } else {
-
                 VPGraph st = new VPGraph(cg, sStrategy);
                 VPResults res = st.run(10000);
                 ArrayList<Result> rs = results.getResults();
@@ -527,14 +519,15 @@ public class CliApp {
                 UBGraph ub = new UBGraph(st);
                 ubres = ub.run(1000);
                 rs.get(0).addSentBytes(ubres.getSentBytes());
-
-                System.out.println("ITERATIONS " + results.getIterations());
-                System.out.println("CBR " + results.getCBR(communicationCost));
-                System.out.println("BYTES " + results.getSentBytes());
-                System.out.println("LOAD_FACTOR " + results.getLoadFactor());
             }
 
             map = ubres.getMap();
+            System.out.println("ITERATIONS " + results.getIterations());
+            System.out.println("CBR " + results.getCBR(communicationCost));
+            System.out.println("TOTAL_CCS " + results.getTotalCcc());
+            System.out.println("CYCLE_CCS " + results.getMaximalCcc());
+            System.out.println("BYTES " + results.getSentBytes());
+            System.out.println("LOAD_FACTOR " + results.getLoadFactor());
             System.out.println("BOUND " + ubres.getBound());
         }
 

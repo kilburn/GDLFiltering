@@ -70,16 +70,6 @@ public class DefaultResults<R extends Result> implements Results<R> {
     private ArrayList<Long> totalCc;
 
     /**
-     * List of load factor per cycle.
-     */
-    private ArrayList<Double> loadFactor;
-
-    /**
-     * Total number of sent bytes
-     */
-    private long sentBytes;
-
-    /**
      * Cumulative maximal cycle checks.
      */
     private long maximalCcc;
@@ -143,6 +133,16 @@ public class DefaultResults<R extends Result> implements Results<R> {
     }
 
     /**
+     * Merges the given results object with this one.
+     *
+     */
+    public void mergeResults(DefaultResults other) {
+        for (int i=0; i<other.iterations; i++) {
+            addCycle((Long)other.maximalCc.get(i), (Long)other.totalCc.get(i));
+        }
+    }
+
+    /**
      * Returns the <abbr title="Cycle Based Runtime">CBR</abbr> time of the
      * algorithm run, using <em>L = communicationCost * t</em>.
      *
@@ -178,7 +178,7 @@ public class DefaultResults<R extends Result> implements Results<R> {
 
     @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer("R: ");
+        StringBuilder buf = new StringBuilder("R: ");
         buf.append(iterations);
         buf.append("i, ");
         buf.append(maximalCcc);

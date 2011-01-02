@@ -50,7 +50,6 @@ import es.csic.iiia.dcop.util.FunctionCounter;
 import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.VPResults;
 import es.csic.iiia.dcop.vp.strategy.VPStrategy;
-import es.csic.iiia.dcop.vp.strategy.solving.OptimalSolvingStrategy;
 import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -137,7 +136,8 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, FIGdlMessage
                     exit = true;
                     break;
                 }
-                globalResults.addCycle(iterResults.getMaximalCcc(), iterResults.getTotalCcc());
+                globalResults.mergeResults(iterResults);
+                //globalResults.addCycle(iterResults.getMaximalCcc(), iterResults.getTotalCcc());
 
 
                 Summarize summarize = null;
