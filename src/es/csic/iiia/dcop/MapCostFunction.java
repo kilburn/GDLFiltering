@@ -38,6 +38,7 @@
 
 package es.csic.iiia.dcop;
 
+import es.csic.iiia.dcop.util.ConstraintChecks;
 import es.csic.iiia.dcop.util.CostFunctionStats;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -141,6 +142,7 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
             throw new IndexOutOfBoundsException(Integer.toString(index));
 
         final Double v = map.get(index);
+        ConstraintChecks.inc();
         return v == null ? zero : v;
     }
 

@@ -110,7 +110,7 @@ public class DSANode extends AbstractNode<DSAEdge, DSAResult> {
         }
     }
 
-    public long run() {
+    public void run() {
         if (log.isTraceEnabled()) {
             log.trace("Node " + this.getName() + " running.");
         }
@@ -120,7 +120,7 @@ public class DSANode extends AbstractNode<DSAEdge, DSAResult> {
 
         // Stochastically choose where to update or not
         if (random.nextDouble() > p) {
-            return cc;
+            return;
         }
 
 
@@ -155,7 +155,6 @@ public class DSANode extends AbstractNode<DSAEdge, DSAResult> {
         
         // And finish.
         setUpdated(false);
-        return cc;
     }
 
     public boolean isConverged() {

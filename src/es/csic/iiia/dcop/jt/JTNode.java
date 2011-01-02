@@ -46,7 +46,6 @@ import es.csic.iiia.dcop.up.UPNode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map.Entry;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,9 +87,7 @@ public class JTNode extends AbstractNode<JTEdge, Result> {
         reachableVariables = new HashSet<Variable>(variables);
     }
 
-    public long run() {
-        // CC count
-        long cc = 0;
+    public void run() {
         converged = true;
 
         // List of new variables received
@@ -124,7 +121,6 @@ public class JTNode extends AbstractNode<JTEdge, Result> {
         
         // And finish.
         setUpdated(false);
-        return cc;
     }
 
     public boolean isConverged() {

@@ -104,9 +104,7 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
         sendMessages();
     }
 
-    public long run() {
-        long cc = 0;
-
+    public void run() {
         // Collect received values
         ubs = new ValuesArray(localUBs);
         ArrayList<Integer> upMappings = vpnode.getUpMappings();
@@ -131,7 +129,6 @@ public class UBNode extends AbstractNode<UBEdge, UBResult> {
 
         // Reset state
         setUpdated(false);
-        return cc;
     }
 
     public UBResult end() {

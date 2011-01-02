@@ -76,9 +76,7 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
         setMode(Modes.TREE_DOWN);
     }
 
-    public long run() {
-        long cc = 0;
-
+    public void run() {
         // Receive incoming messages
         mappings = new ArrayList<VariableAssignment>();
         for(VPEdge e : getEdges()) {
@@ -109,7 +107,6 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
         }
 
         setUpdated(false);
-        return cc;
     }
 
 

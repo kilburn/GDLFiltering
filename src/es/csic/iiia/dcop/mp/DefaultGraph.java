@@ -38,6 +38,7 @@
 package es.csic.iiia.dcop.mp;
 
 import es.csic.iiia.dcop.mp.AbstractNode.Modes;
+import es.csic.iiia.dcop.util.ConstraintChecks;
 
 /**
  *
@@ -84,7 +85,9 @@ public abstract class DefaultGraph<N extends Node, E extends Edge, R extends Res
             long mcc = 0, tcc = 0;
             for (Node n : getNodes()) {
                 if (n.isUpdated()) {
-                    long cc = n.run();
+                    ConstraintChecks.addTracker(n);
+                    n.run();
+                    long cc = ConstraintChecks.removeTracker(n);
                     tcc += cc;
                     mcc = Math.max(mcc, cc);
                 }

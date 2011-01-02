@@ -166,7 +166,7 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, FIGdlMessage>, UPResult
      *
      * @return number of constraint checks consumed.
      */
-    public long run() {
+    public void run() {
 
         // Rebuild cost function list
         costFunctions = new ArrayList<CostFunction>();
@@ -190,9 +190,8 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, FIGdlMessage>, UPResult
         }
 
         // Send updated messages
-        long cc = sendMessages();
+        sendMessages();
         setUpdated(false);
-        return cc;
     }
 
     public UPResult end() {
@@ -204,9 +203,7 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, FIGdlMessage>, UPResult
         return new ArrayList<CostFunction>(costFunctions);
     }
 
-    private long sendMessages() {
-        long cc = 0;
-
+    private void sendMessages() {
         CostFunction belief = null;
         if (log.isTraceEnabled()) {
             belief = factory.buildNeutralCostFunction(new Variable[0]);
@@ -246,7 +243,6 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, FIGdlMessage>, UPResult
                 }
                 msg.setBelief(lb);
             }
-            cc += msg.cc;
 
             if (isParent(e)) {
                 localInformationLoss = msg.getInformationLoss();
@@ -255,8 +251,6 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, FIGdlMessage>, UPResult
 
             e.sendMessage(this, msg);
         }
-
-        return cc;
     }
 
     /* Never called because we never operate in graph mode */

@@ -38,6 +38,7 @@
 
 package es.csic.iiia.dcop;
 
+import es.csic.iiia.dcop.util.ConstraintChecks;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -116,6 +117,7 @@ public final class HypercubeCostFunction extends AbstractCostFunction implements
 
     /** {@inheritDoc} */
     public double getValue(int index) {
+        ConstraintChecks.inc();
         return values[index];
     }
 

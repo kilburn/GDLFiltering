@@ -52,7 +52,7 @@ public interface Node<E extends Edge, R extends Result> {
 
     public boolean isUpdated();
 
-    public long run();
+    public void run();
 
     public boolean isFinished();
 

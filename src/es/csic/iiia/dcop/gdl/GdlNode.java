@@ -138,11 +138,8 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
      *
      * @return number of constraint checks consumed.
      */
-    public long run() {
+    public void run() {
         final Modes mode = getMode();
-
-        // CC count
-        long cc = 0;
 
         // Combine incoming messages
         CostFunction combi = getFactory().buildNeutralCostFunction(new Variable[0]);
@@ -171,18 +168,14 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
         }
 
         this.belief = combi.combine(fns);
-        cc += belief.getSize();
 
         if (mode == Modes.GRAPH) {
             this.belief = this.belief.normalize();
-            cc += belief.getSize();
         }
 
         // Send updated messages
-        cc += sendMessages();
-
+        sendMessages();
         setUpdated(false);
-        return cc;
     }
 
     public UPResult end() {
@@ -232,8 +225,7 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
     /**
      * Send messages to our neighboors (if applicable).
      */
-    private long sendMessages() {
-        long cc = 0;
+    private void sendMessages() {
 
         for (UPEdge<GdlNode, GdlMessage> e : getEdges()) {
             // Check if we are ready to send through this edge
@@ -246,18 +238,15 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
             GdlMessage im = e.getMessage(this);
             if (im != null) {
                 msg = belief.combine(im.getFactor().negate());
-                cc += msg.getSize();
             } else {
                 msg = belief;
             }
 
             // Summarize to the separator and send the resulting message
             msg = msg.summarize(e.getVariables());
-            cc += msg.getSize();
             e.sendMessage(this, new GdlMessage(msg));
         }
         
-        return cc;
     }
 
     @Override

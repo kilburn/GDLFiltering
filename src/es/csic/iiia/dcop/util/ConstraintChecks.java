@@ -38,6 +38,8 @@
 
 package es.csic.iiia.dcop.util;
 
+import java.util.HashMap;
+
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
@@ -45,9 +47,24 @@ package es.csic.iiia.dcop.util;
 public class ConstraintChecks {
 
     private static long ccs;
+    private static HashMap<Object, Long> trackers = new HashMap<Object, Long>();
 
     public static void add(long count) {
         ccs += count;
     }
 
+    public static void addTracker(Object tracker) {
+        trackers.put(tracker, ccs);
+    }
+    public static long removeTracker(Object tracker) {
+        long tccs = ccs - trackers.remove(tracker);
+        if (trackers.isEmpty()) {
+            ccs = 0;
+        }
+        return tccs;
+    }
+
+    public static void inc() {
+        ccs += 1;
+    }
 }
