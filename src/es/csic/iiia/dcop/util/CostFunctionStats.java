@@ -450,19 +450,19 @@ public class CostFunctionStats {
 //            }
 //        }
 
-        Iterator<Integer> it = f.noGoodIterator();
-        VariableAssignment map = null;
-        final double ng = f.getFactory().getSummarizeOperation().getNoGood();
-        while (it.hasNext()) {
-            final int idx = it.next();
-            map = f.getMapping(idx, map);
-            for (CostFunction rf : res) {
-                if (rf.getValue(map) == ng) {
-                    f.setValue(idx, 0);
-                    break;
-                }
-            }
-        }
+//        Iterator<Integer> it = f.noGoodIterator();
+//        VariableAssignment map = null;
+//        final double ng = f.getFactory().getSummarizeOperation().getNoGood();
+//        while (it.hasNext()) {
+//            final int idx = it.next();
+//            map = f.getMapping(idx, map);
+//            for (CostFunction rf : res) {
+//                if (rf.getValue(map) == ng) {
+//                    f.setValue(idx, 0);
+//                    break;
+//                }
+//            }
+//        }
 
         res.add(f);
         return res.toArray(new CostFunction[0]);

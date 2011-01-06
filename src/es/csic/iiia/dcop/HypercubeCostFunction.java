@@ -71,6 +71,8 @@ public final class HypercubeCostFunction extends AbstractCostFunction implements
      */
     protected HypercubeCostFunction(Variable[] variables) {
         super(variables);
+        if (size < 0)
+            return;
         values = new double[size];
         nNoGoods = 0;
     }

@@ -70,7 +70,7 @@ public class DSASolvingStrategy implements SolvingStrategy {
         for (Variable v : totalVars) {
             size *= v.getDomain();
         }
-        if (size * sparsity > 1e4) {
+        if (size * sparsity < 1e4) {
             // TODO: Implement something.
         }
 
