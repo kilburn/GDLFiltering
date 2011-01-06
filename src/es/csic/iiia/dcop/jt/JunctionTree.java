@@ -38,12 +38,14 @@
 
 package es.csic.iiia.dcop.jt;
 
+import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.mp.DefaultGraph;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.up.UPNode;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,6 +108,53 @@ public class JunctionTree extends DefaultGraph<JTNode, JTEdge, JTResults> {
             log.trace("\n======= CLIQUE TREE/GRAPH");
             log.trace(this.toString());
         }
+    }
+
+    public int getLowestDecisionRoot() {
+        int node = -1;
+        int minDecisionVariables = Integer.MAX_VALUE;
+
+        ArrayList<JTNode> ns = getNodes();
+        for (int i=0, len=ns.size(); i<len; i++) {
+            final JTNode n = ns.get(i);
+            int dv = getNumberOfDecisionVariables(n);
+
+            log.info("Root " + i + ": " + dv + " decision variables.");
+            if (dv < minDecisionVariables) {
+                node = i;
+                minDecisionVariables = dv;
+            }
+        }
+
+        return node;
+    }
+
+    private int getNumberOfDecisionVariables(JTNode n) {
+        return dfs(null, n, -1, new HashSet<Variable>());
+    }
+
+    private int dfs(JTNode root, JTNode node, int maxVars, HashSet<Variable> assignedVars) {
+        HashSet<Variable> vars = new HashSet<Variable>(node.getNode().getVariables());
+        vars.removeAll(assignedVars);
+        if (vars.size() > maxVars) {
+            maxVars = vars.size();
+        }
+
+        vars = new HashSet<Variable>(node.getNode().getVariables());
+        for (JTEdge edge : node.getEdges()) {
+            // Skip the parent
+            JTNode child = edge.getDestination(node);
+            if (child == root)
+                continue;
+
+            // Recursion call
+            final int dv = dfs(node, child, maxVars, vars);
+            if (dv > maxVars) {
+                maxVars = dv;
+            }
+        }
+
+        return maxVars;
     }
 
 }

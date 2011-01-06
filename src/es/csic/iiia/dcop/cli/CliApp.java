@@ -634,6 +634,8 @@ public class CliApp {
                     JunctionTree jt = new JunctionTree(cg);
                     results = jt.run(1000);
                     variables = results.getMaxVariables();
+                    int newRoot = jt.getLowestDecisionRoot();
+                    cg.setRoot(newRoot);
                 } else {
                     int minVariables = Integer.MAX_VALUE;
                     for(int i=0; i < maxJunctionTreeTries; i++) {
@@ -660,6 +662,8 @@ public class CliApp {
                             minVariables = variables;
                             cg = candidateCg;
                             results = candidateResults;
+                            int newRoot = jt.getLowestDecisionRoot();
+                            cg.setRoot(newRoot);
                         }
                     }
                 }
