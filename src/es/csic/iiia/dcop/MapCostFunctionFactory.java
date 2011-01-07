@@ -69,7 +69,8 @@ public class MapCostFunctionFactory implements CostFunctionTypeFactory {
         MapCostFunction c = new MapCostFunction(variables,
                 factory.getSummarizeOperation().getNoGood());
         c.setFactory(factory);
-        c.initialize(initialValue);
+        if (initialValue != factory.getSummarizeOperation().getNoGood())
+            c.initialize(initialValue);
         return c;
     }
 
