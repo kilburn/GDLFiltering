@@ -52,6 +52,7 @@ import java.util.Set;
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
 public class VPMessage implements Message {
+    final static double log2 = Math.log(2);
 
     private ArrayList<VariableAssignment> mappings;
 
@@ -89,11 +90,18 @@ public class VPMessage implements Message {
     }
 
     public long getBytes() {
-        long sum = 0;
+        double bits = 0;
         for(VariableAssignment m : mappings) {
-            if (m != null) sum += m.size()*4;
+            if (m == null) continue;
+            for (Variable v : m.keySet()) {
+                bits += requiredBits(v);
+            }
         }
-        return sum;
+        return (long)Math.ceil(bits/8);
+    }
+
+    private static double requiredBits(Variable v) {
+        return Math.log(v.getDomain()) / log2;
     }
 
 }
