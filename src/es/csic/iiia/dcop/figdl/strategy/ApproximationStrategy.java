@@ -54,6 +54,9 @@ import org.slf4j.LoggerFactory;
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
 public abstract class ApproximationStrategy {
+    public static final byte FILTER_CLASSIC  = 0;
+    public static final byte FILTER_IMPROVED = 1;
+    public static byte filteringMethod = FILTER_IMPROVED;
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
 
@@ -163,10 +166,16 @@ public abstract class ApproximationStrategy {
         // 2. Other outgoing factors can *also* aid in filtering.
         ArrayList<CostFunction> outFunctions = msg.getFactors();
         for (int i=0, len=outFunctions.size(); i<len; i++) {
-            ArrayList<CostFunction> filterers = new ArrayList<CostFunction>(fs);
-            for (int j=0; j<len; j++) {
-                if (i!=j) filterers.add(outFunctions.get(j));
+            ArrayList<CostFunction> filterers;
+            if (filteringMethod == FILTER_IMPROVED) {
+                filterers = new ArrayList<CostFunction>(fs);
+                for (int j=0; j<len; j++) {
+                    if (i!=j) filterers.add(outFunctions.get(j));
+                }
+            } else {
+                filterers = fs;
             }
+            
             final CostFunction outf = outFunctions.get(i);
             final CostFunction filtered = outf.filter(filterers, bound);
             if (log.isTraceEnabled()) {
