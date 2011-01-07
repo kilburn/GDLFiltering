@@ -117,6 +117,8 @@ public class JunctionTree extends DefaultGraph<JTNode, JTEdge, JTResults> {
         ArrayList<JTNode> ns = getNodes();
         for (int i=0, len=ns.size(); i<len; i++) {
             final JTNode n = ns.get(i);
+            if (n.getEdges().size() < 2) continue;
+
             int dv = getNumberOfDecisionVariables(n);
 
             log.info("Root " + i + ": " + dv + " decision variables.");
