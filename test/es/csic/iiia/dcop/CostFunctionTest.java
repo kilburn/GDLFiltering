@@ -963,11 +963,11 @@ public abstract class CostFunctionTest {
         // Testing missing initial, existing end
         f1.setValue(0, ng);
         f1.setValue(1, ng);
-        int idx = 1;
-        Iterator<Integer> it = f1.iterator();
+        long idx = 1;
+        Iterator<Long> it = f1.iterator();
         while (++idx < f1.getSize()) {
             assertTrue(it.hasNext());
-            assertEquals(idx, (int)it.next());
+            assertEquals(idx, (long)it.next());
         }
         try {
             assertFalse(it.hasNext());
@@ -980,11 +980,11 @@ public abstract class CostFunctionTest {
         f1.setValue(f1.getSize()-1, ng);
         it = f1.iterator();
         assertTrue(it.hasNext());
-        assertEquals((int)it.next(), 0);
+        assertEquals((long)it.next(), 0);
         idx = 1;
         while (++idx < f1.getSize()-1) {
             assertTrue(it.hasNext());
-            assertEquals((int)it.next(), idx);
+            assertEquals((long)it.next(), idx);
         }
         try {
             assertFalse(it.hasNext());
@@ -1003,11 +1003,11 @@ public abstract class CostFunctionTest {
         // Testing missing initial, existing end
         f1.setValue(0, ng);
         f1.setValue(1, ng);
-        Iterator<Integer> it = f1.noGoodIterator();
+        Iterator<Long> it = f1.noGoodIterator();
         assertTrue(it.hasNext());
-        assertEquals(0, (int)it.next());
+        assertEquals(0, (long)it.next());
         assertTrue(it.hasNext());
-        assertEquals(1, (int)it.next());
+        assertEquals(1, (long)it.next());
         try {
             assertFalse(it.hasNext());
             it.next();
@@ -1019,9 +1019,9 @@ public abstract class CostFunctionTest {
         f1.setValue(f1.getSize()-1, ng);
         it = f1.noGoodIterator();
         assertTrue(it.hasNext());
-        assertEquals(1, (int)it.next());
+        assertEquals(1, (long)it.next());
         assertTrue(it.hasNext());
-        assertEquals(f1.getSize()-1, (int)it.next());
+        assertEquals(f1.getSize()-1, (long)it.next());
         try {
             assertFalse(it.hasNext());
             it.next();

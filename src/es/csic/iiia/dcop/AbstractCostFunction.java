@@ -38,7 +38,6 @@
 
 package es.csic.iiia.dcop;
 
-import es.csic.iiia.dcop.util.ConstraintChecks;
 import es.csic.iiia.dcop.util.CostFunctionStats;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -77,12 +76,12 @@ public abstract class AbstractCostFunction implements CostFunction {
      * Total size (in elements) of the hypercube formed by this function's
      * variables.
      */
-    protected int size;
+    protected long size;
 
     /**
      * List of aggregated dimensionality up to "index".
      */
-    protected int[] sizes;
+    protected long[] sizes;
 
     /**
      * The factory that generated this CostFunction.
@@ -119,7 +118,7 @@ public abstract class AbstractCostFunction implements CostFunction {
 
     /** {@inheritDoc} */
     public void initialize(Double initialValue) {
-        for (int i=0; i<size; i++) {
+        for (long i=0; i<size; i++) {
             setValue(i, initialValue);
         }
     }
@@ -142,7 +141,7 @@ public abstract class AbstractCostFunction implements CostFunction {
     private void computeFunctionSize() {
         final int len = variables.length;
         size = 1;
-        sizes = new int[len];
+        sizes = new long[len];
         boolean overflow = false;
         for (int i=0; i<len; i++) {
             sizes[i] = size;
@@ -159,28 +158,12 @@ public abstract class AbstractCostFunction implements CostFunction {
     }
 
     /**
-     * Gets the value of this factor for the given linearized index.
-     *
-     * @param index linearized index.
-     * @return value corresponding factor value.
-     */
-    public abstract double getValue(int index);
-
-    /**
-     * Gets the value of this factor for the given linearized index.
-     *
-     * @param index linearized index.
-     * @param value of the given index.
-     */
-    public abstract void setValue(int index, double value);
-
-    /**
      * Obtains an iterator over the linearized indices of non-infinity elements of this
      * cost function.
      * 
      * @return Iterator over the indices of this cost function.
      */
-    public abstract Iterator<Integer> iterator();
+    public abstract Iterator<Long> iterator();
 
     /** {@inheritDoc} */
     public VariableAssignment getOptimalConfiguration(VariableAssignment mapping) {
@@ -193,21 +176,66 @@ public abstract class AbstractCostFunction implements CostFunction {
             return mapping;
         }
 
-        int i = getOptimalConfiguration();
-        if (i < 0) {i = new Random().nextInt(size);}
+        long i = getOptimalConfiguration();
+        if (i < 0) {i = nextRandomLong(size);}
         mapping.putAll(getMapping(i, null));
         return mapping;
     }
 
+    private static long nextRandomLong(long n) {
+        Random random = new Random();
+
+
+        if (n <= 0) {
+            throw new IllegalArgumentException(
+                "Upper bound for nextInt must be positive"
+            );
+        }
+        // Code adapted from Harmony Random#nextInt(int)
+        if ((n & -n) == n) { // n is power of 2
+            // dropping lower order bits improves behaviour for low values of n
+            return (random.nextLong() & 0x7fffffffffffffffL) >> 63 // drop all the bits
+                - bitsRequired(n-1); // except the ones we need
+        }
+        // Not a power of two
+        long val;
+        long bits;
+        do { // reject some values to improve distribution
+            bits = random.nextLong() & 0x7fffffffffffffffL;
+            val = bits % n;
+        } while (bits - val + (n - 1) < 0);
+        return val;
+    }
+
+    private static int bitsRequired(long num){
+        // Derived from Hacker's Delight, Figure 5-9
+        long y=num; // for checking right bits
+        int n=0; // number of leading zeros found
+        while(true){
+            // 64 = number of bits in a long
+            if (num < 0) {
+                return 64-n; // no leading zeroes left
+            }
+            if (y == 0) {
+                return n; // no bits left to check
+            }
+            n++;
+            num=num << 1; // check leading bits
+            y=y >> 1; // check trailing bits
+        }
+    }
+
+
+
     /** {@inheritDoc} */
-    public int getOptimalConfiguration() {
+    public long getOptimalConfiguration() {
         // Find the maximal value
         Summarize operation = factory.getSummarizeOperation();
-        ArrayList<Integer> idx = new ArrayList<Integer>();
+        ArrayList<Long> idx = new ArrayList<Long>();
         double optimal = operation.getNoGood();
-        Iterator<Integer> it = iterator();
+        Iterator<Long> it = iterator();
         while(it.hasNext()) {
-            final int i = it.next();
+            final long i = it.next();
             final double value = getValue(i);
             if (operation.isBetter(value, optimal)) {
                 optimal = value;
@@ -234,14 +262,14 @@ public abstract class AbstractCostFunction implements CostFunction {
      * @param mapping of the desired configuration.
      * @return corresponding linearized index.
      */
-    public int getIndex(VariableAssignment mapping) {
+    public long getIndex(VariableAssignment mapping) {
         final int len = variables.length;
         if (len == 0) {
             // This can be an empty or a constant factor
             return size == 0 ? -1 : 0;
         }
 
-        int idx = 0;
+        long idx = 0;
         for (int i = 0; i < len; i++) {
             Integer v = mapping.get(variables[i]);
             if (v != null) {
@@ -259,17 +287,17 @@ public abstract class AbstractCostFunction implements CostFunction {
      * @param mapping of the desired configuration.
      * @return corresponding linearized index.
      */
-    public ArrayList<Integer> getIndexes(VariableAssignment mapping) {
-        ArrayList<Integer> idxs = new ArrayList<Integer>();
+    public ArrayList<Long> getIndexes(VariableAssignment mapping) {
+        ArrayList<Long> idxs = new ArrayList<Long>();
 
         final int len = variables.length;
         if (len == 0) {
             if (size > 0) {
-                idxs.add(0);
+                idxs.add(0L);
             }
             return idxs;
         }
-        idxs.add(0);
+        idxs.add(0L);
         
         for (int i = 0; i < len; i++) {
             Integer v = mapping.get(variables[i]);
@@ -300,7 +328,7 @@ public abstract class AbstractCostFunction implements CostFunction {
      *                is automatically instantiated.
      * @return variable mapping filled with the desired configuration.
      */
-    public VariableAssignment getMapping(int index, VariableAssignment mapping) {
+    public VariableAssignment getMapping(long index, VariableAssignment mapping) {
         if (mapping == null) {
             mapping = new VariableAssignment(variables.length);
         } else {
@@ -317,7 +345,7 @@ public abstract class AbstractCostFunction implements CostFunction {
      * Get the function's size (in number of possible configurations).
      * @return number of function's possible configurations.
      */
-    public int getSize() {
+    @Override public long getSize() {
         return size;
     }
 
@@ -325,7 +353,7 @@ public abstract class AbstractCostFunction implements CostFunction {
      * Get the functions's aggregated dimesionalities vector.
      * @return function's aggregated dimensionalities vector.
      */
-    protected int[] getSizes() {
+    protected long[] getSizes() {
         return sizes;
     }
 
@@ -351,7 +379,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         buf.append(" {");
         if (size>0 && getValues() != null) {
             buf.append(CostFunctionStats.formatValue(getValue(0)));
-            for(int i=1; i<size; i++) {
+            for(long i=1; i<size; i++) {
                 buf.append(",");
                 buf.append(CostFunctionStats.formatValue(getValue(i)));
             }
@@ -368,7 +396,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         buf.append(" {\n");
         if (size>0 && getValues() != null) {
             VariableAssignment map = null;
-            for(int i=0; i<size; i++) {
+            for(long i=0; i<size; i++) {
                 map = getMapping(i, map);
                 for (Variable v : variables) {
                     buf.append(map.get(v));
@@ -391,7 +419,7 @@ public abstract class AbstractCostFunction implements CostFunction {
 
     /** {@inheritDoc} */
     public double getValue(VariableAssignment mapping) {
-        int idx = this.getIndex(mapping);
+        long idx = this.getIndex(mapping);
         if (idx < 0)
             return getFactory().getCombineOperation().getNeutralValue();
         return getValue(idx);
@@ -427,12 +455,12 @@ public abstract class AbstractCostFunction implements CostFunction {
      * @param index values array index.
      * @return subindices list.
      */
-    protected int[] indexToSubindex(int index) {
+    protected int[] indexToSubindex(long index) {
         int[] idx = new int[variables.length];
         final int len = variables.length;
         for (int i = 0; i < len; i++) {
             final int ii = len - 1 - i;
-            idx[i] = index / sizes[ii];
+            idx[i] = (int)(index / sizes[ii]);
             index = index % sizes[ii];
         }
         return idx;
@@ -442,9 +470,9 @@ public abstract class AbstractCostFunction implements CostFunction {
     public CostFunction negate() {
         Combine operation = factory.getCombineOperation();
         CostFunction result = factory.buildCostFunction(this);
-        Iterator<Integer> it = iterator();
+        Iterator<Long> it = iterator();
         while(it.hasNext()) {
-            final int i = it.next();
+            final long i = it.next();
             result.setValue(i, operation.invert(getValue(i)));
         }
         return result;
@@ -484,16 +512,16 @@ public abstract class AbstractCostFunction implements CostFunction {
         CostFunction left  = ratio1 > ratio2 ? this : factor;
         CostFunction right = left == this ? factor : this;
 
-        Iterator<Integer> it = left.iterator();
+        Iterator<Long> it = left.iterator();
         VariableAssignment map2 = null;
         while(it.hasNext()) {
-            final int i = it.next();
+            final long i = it.next();
             final double lv = left.getValue(i);
             if (lv == nogood) continue;
 
             map = left.getMapping(i, map);
 
-            for (int fidx : right.getIndexes(map)) {
+            for (long fidx : right.getIndexes(map)) {
                 map2 = right.getMapping(fidx, map2);
                 map2.putAll(map);
 
@@ -600,7 +628,7 @@ public abstract class AbstractCostFunction implements CostFunction {
 
         fs.remove(fs.size()-1);
         VariableAssignment map = null;
-        for (int i=0; i<result.getSize(); i++) {
+        for (long i=0; i<result.getSize(); i++) {
             map = result.getMapping(i, map);
 
             double v = getValue(map);
@@ -629,7 +657,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         CostFunction result = factory.buildCostFunction(this);
 
         // Calculate aggregation
-        Iterator<Integer> it = iterator();
+        Iterator<Long> it = iterator();
         double sum = 0;
         while(it.hasNext()) {
             sum += getValue(it.next());
@@ -641,14 +669,14 @@ public abstract class AbstractCostFunction implements CostFunction {
         switch (mode) {
             case SUM0:
                 while(it.hasNext()) {
-                    final int i = it.next();
+                    final long i = it.next();
                     result.setValue(i, getValue(i) - avg);
                 }
                 break;
             case SUM1:
                 // Avoid div by 0
                 while(it.hasNext()) {
-                    final int i = it.next();
+                    final long i = it.next();
                     final double value = getValue(i);
                     final double v = sum != 0 ? value/sum : 1/dlen;
                     result.setValue(i, v);
@@ -680,10 +708,10 @@ public abstract class AbstractCostFunction implements CostFunction {
                 ? factory.buildSparseCostFunction(newVariables.toArray(new Variable[0]))
                 : factory.buildCostFunction(newVariables.toArray(new Variable[0]));
         VariableAssignment map = null;
-        for (int i = 0, len = result.getSize(); i < len; i++) {
+        for (long i = 0, len = result.getSize(); i < len; i++) {
             map = result.getMapping(i, map);
             map.putAll(mapping);
-            final int idx = getIndex(map);
+            final long idx = getIndex(map);
             result.setValue(i, getValue(idx));
         }
         
@@ -702,9 +730,9 @@ public abstract class AbstractCostFunction implements CostFunction {
         // Perform the actual filtering
         //Iterator<Integer> it = result.iterator();
         boolean allNogoods = true;
-        Iterator<Integer> it = iterator();
+        Iterator<Long> it = iterator();
         while(it.hasNext()) {
-            final int i = it.next();
+            final long i = it.next();
             if (combi.getValue(i) != operation.getNoGood()) {
                 allNogoods = false;
             }
@@ -740,9 +768,9 @@ public abstract class AbstractCostFunction implements CostFunction {
 
         // Perform the actual filtering (only on "good" tuples)
         boolean allNogoods = true; VariableAssignment map = null;
-        Iterator<Integer> it = iterator();
+        Iterator<Long> it = iterator();
         while(it.hasNext()) {
-            final int i = it.next();
+            final long i = it.next();
             map = getMapping(i, map);
             double v = getValue(i);
 
@@ -809,12 +837,12 @@ public abstract class AbstractCostFunction implements CostFunction {
         }
 
         VariableAssignment map = null;
-        Iterator<Integer> it = iterator();
+        Iterator<Long> it = iterator();
         while (it.hasNext()) {
-            final int i = it.next();
+            final long i = it.next();
             map = getMapping(i, map);
             // This value is lost during the summarization
-            for (int idx : result.getIndexes(map)) {
+            for (long idx : result.getIndexes(map)) {
                 result.setValue(idx, operation.eval(getValue(i), result.getValue(idx)));
             }
         }
@@ -822,9 +850,9 @@ public abstract class AbstractCostFunction implements CostFunction {
     }
 
     /** {@inheritDoc} */
-    public int getNumberOfZeros() {
+    @Override public long getNumberOfZeros() {
         int zeros = 0;
-        for(Iterator<Integer> it = iterator(); it.hasNext();){
+        for(Iterator<Long> it = iterator(); it.hasNext();){
             if (getValue(it.next()) == 0) {
                 zeros++;
             }
@@ -880,7 +908,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         }
 
         VariableAssignment map = null;
-        for (int i=0; i<size; i++) {
+        for (long i=0; i<size; i++) {
             map = this.getMapping(i, map);
             final double v1 = getValue(i);
             final double v2 = other.getValue(map);

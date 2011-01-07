@@ -202,10 +202,10 @@ public class SCPSuperSetStrategy extends ApproximationStrategy {
     }
 
     private ArrayList<CostFunction> sortByArityWithRandomness(ArrayList<CostFunction> fs) {
-        TreeMap<Integer, ArrayList<CostFunction>> arityMap = new TreeMap<Integer, ArrayList<CostFunction>>();
+        TreeMap<Long, ArrayList<CostFunction>> arityMap = new TreeMap<Long, ArrayList<CostFunction>>();
 
         for(CostFunction f : fs) {
-            final Integer arity = f.getSize();
+            final Long arity = f.getSize();
             ArrayList<CostFunction> fsOfArity = null;
             if (arityMap.containsKey(arity)) {
                 fsOfArity = arityMap.get(arity);
@@ -217,7 +217,7 @@ public class SCPSuperSetStrategy extends ApproximationStrategy {
         }
 
         ArrayList<CostFunction> result = new ArrayList<CostFunction>();
-        for(Integer key : arityMap.keySet()) {
+        for(Long key : arityMap.keySet()) {
             ArrayList<CostFunction> fsOfArity = arityMap.get(key);
             //Collections.shuffle(fsOfArity);
             result.addAll(fsOfArity);

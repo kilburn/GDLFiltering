@@ -59,7 +59,7 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
     /**
      * Configuration -> value mapping.
      */
-    private HashMap<Integer, Double> map;
+    private HashMap<Long, Double> map;
 
     /**
      * "Zero" value (value of the missing elements)
@@ -74,7 +74,7 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
     protected MapCostFunction(Variable[] variables, double zeroValue) {
         super(variables);
         
-        map = new HashMap<Integer,Double>();
+        map = new HashMap<Long,Double>();
         zero = zeroValue;
     }
 
@@ -88,10 +88,10 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
         
         if (factor instanceof MapCostFunction) {
             final MapCostFunction f = (MapCostFunction)factor;
-            map = new HashMap<Integer,Double>(f.map);
+            map = new HashMap<Long,Double>(f.map);
             zero = f.zero;
         } else {
-            map = new HashMap<Integer,Double>(factor.getSize() - factor.getNumberOfNoGoods());
+            map = new HashMap<Long,Double>((int)(factor.getSize() - factor.getNumberOfNoGoods()));
             zero = getFactory().getSummarizeOperation().getNoGood();
             setValues(factor.getValues());
         }
@@ -101,12 +101,12 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
      * Resets the costFunction to "zero" values
      */
     private void reset() {
-        map = new HashMap<Integer, Double>();
+        map = new HashMap<Long, Double>();
     }
 
     /** {@inheritDoc} */
     public double[] getValues() {
-        double[] v = new double[size];
+        double[] v = new double[(int)size];
         for (int i=0; i<size; i++) {
             v[i] = getValue(i);
         }
@@ -127,19 +127,19 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
     }
 
     /** {@inheritDoc} */
-    public Iterator<Integer> iterator() {
+    public Iterator<Long> iterator() {
         return map.keySet().iterator();
     }
 
     /** {@inheritDoc} */
-    public Iterator<Integer> noGoodIterator() {
+    public Iterator<Long> noGoodIterator() {
         return new NoGoodIterator();
     }
 
     /** {@inheritDoc} */
-    public double getValue(int index) {
+    public double getValue(long index) {
         if (index < 0 || index >= size) 
-            throw new IndexOutOfBoundsException(Integer.toString(index));
+            throw new IndexOutOfBoundsException(Long.toString(index));
 
         final Double v = map.get(index);
         ConstraintChecks.inc();
@@ -147,9 +147,9 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
     }
 
     /** {@inheritDoc} */
-    public void setValue(int index, double value) {
+    @Override public void setValue(long index, double value) {
         if (index < 0 || index >= size)
-            throw new IndexOutOfBoundsException(Integer.toString(index) + " out of "
+            throw new IndexOutOfBoundsException(Long.toString(index) + " out of "
                     + size);
 
         if (value == zero) {
@@ -160,7 +160,7 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
     }
 
     /** {@inheritDoc} */
-    public int getNumberOfNoGoods() {
+    @Override public long getNumberOfNoGoods() {
         return size - map.size();
     }
 
@@ -175,7 +175,7 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
         StringBuilder buf = new StringBuilder();
         buf.append(getName());
         buf.append(" {");
-        for(int i : map.keySet()) {
+        for(long i : map.keySet()) {
             buf.append(i);
             buf.append(":");
             buf.append(CostFunctionStats.formatValue(map.get(i)));
@@ -188,10 +188,10 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
         return buf.toString();
     }
 
-    private class NoGoodIterator implements Iterator<Integer> {
-        Iterator<Integer> it = map.keySet().iterator();
-        private int nextGood = it.hasNext() ? it.next() : -1;
-        private int currentNoGood = -1;
+    private class NoGoodIterator implements Iterator<Long> {
+        Iterator<Long> it = map.keySet().iterator();
+        private long nextGood = it.hasNext() ? it.next() : -1;
+        private long currentNoGood = -1;
 
         public NoGoodIterator() {
             findNextNoGood();
@@ -212,11 +212,11 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
             return currentNoGood >= 0;
         }
 
-        public Integer next() {
+        public Long next() {
             if (currentNoGood < 0) {
                 throw new NoSuchElementException();
             }
-            final Integer res = currentNoGood;
+            final Long res = currentNoGood;
             findNextNoGood();
             return res;
         }

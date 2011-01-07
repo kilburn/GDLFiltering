@@ -304,7 +304,7 @@ public interface CostFunction {
      * @param mapping variable/value mapping table.
      * @return index of the values array corresponding to the given mapping.
      */
-    int getIndex(VariableAssignment mapping);
+    long getIndex(VariableAssignment mapping);
 
     /**
      * Get all the linearized indices corresponding to the given variable mapping.
@@ -312,7 +312,7 @@ public interface CostFunction {
      * @param mapping of the desired configuration.
      * @return corresponding linearized index(es).
      */
-    public List<Integer> getIndexes(VariableAssignment mapping);
+    public List<Long> getIndexes(VariableAssignment mapping);
 
     /**
      * Returns the variable/value mapping corresponding to the specified
@@ -322,7 +322,7 @@ public interface CostFunction {
      * @param mapping mapping table to fill, instantiated if null.
      * @return variable/value mapping corresponding to the given index.
      */
-    VariableAssignment getMapping(int index, VariableAssignment mapping);
+    VariableAssignment getMapping(long index, VariableAssignment mapping);
 
     /**
      * Get a short string representation of this function.
@@ -349,19 +349,19 @@ public interface CostFunction {
      * Get the function's size (in number of possible configurations).
      * @return number of function's possible configurations.
      */
-    int getSize();
+    long getSize();
 
     /**
      * Get the number of nogoods inside this cost function.
      * @return number of nogoods.
      */
-    int getNumberOfNoGoods();
+    long getNumberOfNoGoods();
 
     /**
      * Get the number of zeros inside this cost function.
      * @return number of zeros.
      */
-    int getNumberOfZeros();
+    long getNumberOfZeros();
 
     /**
      * Gets the value of this factor for the given variable states.
@@ -377,7 +377,7 @@ public interface CostFunction {
      * @param index of the state.
      * @return value corresponding factor value.
      */
-    double getValue(int index);
+    double getValue(long index);
 
     /**
      * Gets the value of this factor for the given variable/value mapping.
@@ -434,7 +434,7 @@ public interface CostFunction {
      * @param index linealized variable states.
      * @param value value for this serialized state.
      */
-    void setValue(int index, double value);
+    void setValue(long index, double value);
 
     /**
      * Sets the complete list of values for all possible variable states.
@@ -449,7 +449,7 @@ public interface CostFunction {
      *
      * @return Iterator over the indices of this cost function.
      */
-    public Iterator<Integer> iterator();
+    public Iterator<Long> iterator();
 
     /**
      * Obtains an iterator over the linearized indices of infinity (nogood)
@@ -457,7 +457,7 @@ public interface CostFunction {
      *
      * @return Iterator over the indices of this cost function.
      */
-    public Iterator<Integer> noGoodIterator();
+    public Iterator<Long> noGoodIterator();
 
     public void setFactory(CostFunctionFactory factory);
 

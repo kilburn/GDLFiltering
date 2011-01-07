@@ -49,7 +49,7 @@ public class Norm2 implements Metric {
 
     public double getValue(CostFunction f) {
         double s = 0;
-        for (Iterator<Integer> i = f.iterator(); i.hasNext();) {
+        for (Iterator<Long> i = f.iterator(); i.hasNext();) {
             final double v = f.getValue(i.next());
             s += v*v;
         }
@@ -58,7 +58,7 @@ public class Norm2 implements Metric {
 
     public double getValue(CostFunction f, double boundValue) {
         double s = 0;
-        for (Iterator<Integer> i = f.iterator(); i.hasNext();) {
+        for (Iterator<Long> i = f.iterator(); i.hasNext();) {
             double v = f.getValue(i.next());
             s += v*v;
         }

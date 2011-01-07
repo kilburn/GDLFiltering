@@ -49,7 +49,7 @@ public class NormInf implements Metric {
 
     public double getValue(CostFunction f) {
         double s = Double.NEGATIVE_INFINITY;
-        for (Iterator<Integer> i = f.iterator(); i.hasNext();) {
+        for (Iterator<Long> i = f.iterator(); i.hasNext();) {
             s = Math.max(s, f.getValue(i.next()));
         }
         return s;
@@ -64,7 +64,7 @@ public class NormInf implements Metric {
 
         // Otherwise we have to actually find it.
         double s = Double.NEGATIVE_INFINITY;
-        for (Iterator<Integer> i = f.iterator(); i.hasNext();) {
+        for (Iterator<Long> i = f.iterator(); i.hasNext();) {
             double v = f.getValue(i.next());
             s = Math.max(s, v);
         }

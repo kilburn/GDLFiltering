@@ -64,8 +64,8 @@ public class Compressor {
             case CliApp.CO_ARITH:
                 return arithmeticCompress(f);
             case CliApp.CO_SPARSE:
-                final int size = f.getSize();
-                final int nGoods = size - f.getNumberOfNoGoods();
+                final long size = f.getSize();
+                final long nGoods = size - f.getNumberOfNoGoods();
                 if (12*nGoods < 8*size) {
                     return 12*nGoods;
                 }
@@ -84,9 +84,9 @@ public class Compressor {
                     sum += arithmeticCompressWithHeader(f);
                     break;
                 case CliApp.CO_SPARSE:
-                    final int size = f.getSize();
+                    final long size = f.getSize();
 //                    final int zeros = f.getNumberOfZeros();
-                    final int nGoods = size - f.getNumberOfNoGoods();
+                    final long nGoods = size - f.getNumberOfNoGoods();
 //                    final int nValues = nGoods - zeros;
 //                    if (12*nValues + 4*zeros < 8*size) {
 //                        sum += f.getVariableSet().size()*4 + 12*nValues + 4*zeros;
@@ -144,7 +144,7 @@ public class Compressor {
             // Values next
             if (f instanceof MapCostFunction) {
                 // Sparse functions are handled by key/value!
-                Iterator<Integer> iter = f.iterator();
+                Iterator<Long> iter = f.iterator();
                 while (iter.hasNext()) {
                     c.write(toByteArray(iter.next()));
                 }

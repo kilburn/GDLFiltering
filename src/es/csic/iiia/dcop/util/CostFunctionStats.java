@@ -78,7 +78,7 @@ public class CostFunctionStats {
         double min = Double.POSITIVE_INFINITY;
         double max = Double.NEGATIVE_INFINITY;
         double sum = 0;
-        for (Iterator<Integer> i = f.iterator(); i.hasNext(); ) {
+        for (Iterator<Long> i = f.iterator(); i.hasNext(); ) {
             final double v = f.getValue(i.next());
             min = Math.min(min, v);
             max = Math.max(max, v);
@@ -113,7 +113,7 @@ public class CostFunctionStats {
     public static double getRank(CostFunction f) {
         double min = Double.POSITIVE_INFINITY;
         double max = Double.NEGATIVE_INFINITY;
-        for (Iterator<Integer> i = f.iterator(); i.hasNext();) {
+        for (Iterator<Long> i = f.iterator(); i.hasNext();) {
             final double v = f.getValue(i.next());
             min = Math.min(min, v);
             max = Math.max(max, v);
@@ -137,7 +137,7 @@ public class CostFunctionStats {
         // Compute entropy
         final double log2 = Math.log(2);
         double e = 0;
-        for (Iterator<Integer> i = f2.iterator(); i.hasNext();) {
+        for (Iterator<Long> i = f2.iterator(); i.hasNext();) {
             double p = f2.getValue(i.next());
             if (p != 0) {
                 e += p * (Math.log(p)/log2);
@@ -150,7 +150,7 @@ public class CostFunctionStats {
     
     public static double getSum(CostFunction f) {
         double s = 0;
-        for (Iterator<Integer> i = f.iterator(); i.hasNext();) {
+        for (Iterator<Long> i = f.iterator(); i.hasNext();) {
             s += f.getValue(i.next());
         }
         return s;
@@ -322,8 +322,8 @@ public class CostFunctionStats {
 
         while(!cfs.isEmpty()) {
             VariableAssignment map = null;
-            for(Iterator<Integer> i = f.iterator(); i.hasNext();) {
-                final int idx = i.next();
+            for(Iterator<Long> i = f.iterator(); i.hasNext();) {
+                final long idx = i.next();
                 final double v = f.getValue(idx);
                 if (Math.abs(v) < 1e-3) {
                     map = f.getMapping(idx, map);
@@ -333,7 +333,7 @@ public class CostFunctionStats {
 
                         // Check if we can remove this cf
                         boolean remove = true;
-                        for (Iterator<Integer> i2 = cf.iterator(); i2.hasNext();) {
+                        for (Iterator<Long> i2 = cf.iterator(); i2.hasNext();) {
                             if (cf.getValue(i2.next()) != 0) {
                                 remove = false;
                                 break;
@@ -378,14 +378,14 @@ public class CostFunctionStats {
         int ncfs = 0;
         while(!cfs.isEmpty()) {
             VariableAssignment map = null;
-            for(Iterator<Integer> i = f.iterator(); i.hasNext();) {
-                final int idx = i.next();
+            for(Iterator<Long> i = f.iterator(); i.hasNext();) {
+                final long idx = i.next();
                 final double v = f.getValue(idx);
                 if (Math.abs(v) < 1e-3) {
                     map = f.getMapping(idx, map);
                     for (int j=cfs.size()-1; j>=0; j--) {
                         final CostFunction cf = cfs.get(j);
-                        final int idx2 = cf.getIndex(map);
+                        final long idx2 = cf.getIndex(map);
                         final double v2 = cf.getValue(idx2);
 
                         // Do nothing if it's already 0
