@@ -57,7 +57,7 @@ public class DSA extends DefaultGraph<DSANode, DSAEdge, DSAResults> {
 
     private static Logger log = LoggerFactory.getLogger(DSA.class);
 
-    private double p = 0.95;
+    public static double p = 0.95;
     private Random random = new Random();
 
     /**

@@ -39,10 +39,11 @@
 package es.csic.iiia.dcop.cli;
 
 import es.csic.iiia.dcop.CostFunction;
+import es.csic.iiia.dcop.dsa.DSA;
 import es.csic.iiia.dcop.figdl.FIGdlGraph;
 import es.csic.iiia.dcop.figdl.strategy.ApproximationStrategy;
-import es.csic.iiia.dcop.vp.strategy.solving.OptimalSolvingStrategy;
 import es.csic.iiia.dcop.vp.strategy.VPStrategy;
+import es.csic.iiia.dcop.vp.strategy.expansion.StochasticalExpansion;
 import gnu.getopt.Getopt;
 import gnu.getopt.LongOpt;
 import java.io.File;
@@ -138,6 +139,8 @@ public class Cli {
         System.err.println("      - superset   : superset scope-based partitioning.");
         System.err.println("      - zeros-d    : zero-avoiding decomposition.");
         System.err.println("      - zeros-flex : zero-avoiding flexible decomposition.");
+        System.err.println("  --probability=<value> (0.9)");
+        System.err.println("    Sets the probability parameter of both DSA algorithm and stochastical solution expansion.");
         System.err.println("  -r [variance], --random-noise[=variance]");
         System.err.println("    Adds random noise with <variance> variance, or 0.001 if unspecified.");
         System.err.println("  -s operation, --summarize=operation (min)");
@@ -187,6 +190,7 @@ public class Cli {
             new LongOpt("old-style-filtering", LongOpt.NO_ARGUMENT, null, 8),
             new LongOpt("optimal-file", LongOpt.REQUIRED_ARGUMENT, null, 5),
             new LongOpt("partition-strategy", LongOpt.REQUIRED_ARGUMENT, null, 'p'),
+            new LongOpt("probability", LongOpt.REQUIRED_ARGUMENT, null, 9),
             new LongOpt("random-noise", LongOpt.OPTIONAL_ARGUMENT, null, 'r'),
             new LongOpt("summarize", LongOpt.REQUIRED_ARGUMENT, null, 's'),
             new LongOpt("solution-expansion", LongOpt.REQUIRED_ARGUMENT, null, 6),
@@ -289,6 +293,13 @@ public class Cli {
 
                 case 8:
                     ApproximationStrategy.filteringMethod = ApproximationStrategy.FILTER_CLASSIC;
+                    break;
+
+                case 9:
+                    arg = g.getOptarg();
+                    double p = Double.parseDouble(arg);
+                    StochasticalExpansion.p = p;
+                    DSA.p = p;
                     break;
 
                 case 'a':
