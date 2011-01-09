@@ -137,7 +137,6 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, FIGdlMessage
                     break;
                 }
                 globalResults.mergeResults(iterResults);
-                //globalResults.addCycle(iterResults.getMaximalCcc(), iterResults.getTotalCcc());
 
 
                 Summarize summarize = null;
@@ -154,11 +153,13 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, FIGdlMessage
                 VPResults res = vp.run(1000);
                 ArrayList<Result> rs = iterResults.getResults();
                 rs.get(0).addSentBytes(res.getSentBytes());
+                globalResults.mergeResults(res);
 
                 // Bound calculation
                 UBGraph ub = new UBGraph(vp);
                 ubResults = ub.run(1000);
                 rs.get(0).addSentBytes(ubResults.getSentBytes());
+                globalResults.mergeResults(ubResults);
                 for (Object result : iterResults.getResults()) {
                     globalResults.add((UPResult)result);
                 }
