@@ -70,7 +70,4 @@ public interface Node<E extends Edge, R extends Result> {
 
     public boolean isRoot();
 
-    public void addSentBytes(long bytes);
-    public long getSentBytes();
-
 }

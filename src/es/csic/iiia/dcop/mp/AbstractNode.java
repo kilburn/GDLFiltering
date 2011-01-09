@@ -289,15 +289,5 @@ public abstract class AbstractNode<E extends Edge, R extends Result> implements 
         this.root = true;
     }
 
-    /** {@inheritDoc} */
-    public void addSentBytes(long bytes) {
-        this.sentBytes += bytes;
-    }
-
-    /** {@inheritDoc} */
-    public long getSentBytes() {
-        return this.sentBytes;
-    }
-
 
 }

@@ -39,20 +39,19 @@
 package es.csic.iiia.dcop.bb;
 
 import es.csic.iiia.dcop.VariableAssignment;
-import es.csic.iiia.dcop.mp.DefaultResult;
+import es.csic.iiia.dcop.mp.Result;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class UBResult extends DefaultResult {
+public class UBResult implements Result {
 
     private double ub;
     private double lb;
     private VariableAssignment map;
 
     public UBResult(UBNode node, VariableAssignment map, double ub, double lb) {
-        super(node);
         this.map = map;
         this.ub = ub;
         this.lb = lb;

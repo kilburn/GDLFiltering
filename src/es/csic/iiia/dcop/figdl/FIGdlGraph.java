@@ -46,6 +46,8 @@ import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.up.UPResults;
+import es.csic.iiia.dcop.util.BytesSent;
+import es.csic.iiia.dcop.util.ConstraintChecks;
 import es.csic.iiia.dcop.util.FunctionCounter;
 import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.VPResults;
@@ -130,6 +132,9 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, FIGdlMessage
 
             for (int j=0; j<1; j++) {
 
+                ConstraintChecks.addTracker(this);
+                BytesSent.addTracker(this);
+
                 UPResults iterResults = iteration.run(maxIterations);
                 if (iterResults == null) {
                     // Early termination, use results from the previous iteration
@@ -137,7 +142,6 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, FIGdlMessage
                     break;
                 }
                 globalResults.mergeResults(iterResults);
-
 
                 Summarize summarize = null;
                 for(FIGdlNode n : getNodes()) {
@@ -152,18 +156,20 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, FIGdlMessage
                 VPGraph vp = new VPGraph(this, solutionStrategy);
                 VPResults res = vp.run(1000);
                 ArrayList<Result> rs = iterResults.getResults();
-                rs.get(0).addSentBytes(res.getSentBytes());
                 globalResults.mergeResults(res);
 
                 // Bound calculation
                 UBGraph ub = new UBGraph(vp);
                 ubResults = ub.run(1000);
-                rs.get(0).addSentBytes(ubResults.getSentBytes());
                 globalResults.mergeResults(ubResults);
                 for (Object result : iterResults.getResults()) {
                     globalResults.add((UPResult)result);
                 }
-                System.out.println("ITERBYTES " + iterResults.getSentBytes());
+
+                long iterCCs   = ConstraintChecks.removeTracker(this);
+                long iterBytes = BytesSent.removeTracker(this);
+                System.out.println("ITERBYTES " + iterBytes);
+                System.out.println("ITERCCS " + iterCCs);
                 System.out.println("ITERSPARSITY " + FunctionCounter.getRatio());
 
                 System.out.println("THIS_ITER_LB " + ubResults.getBound());

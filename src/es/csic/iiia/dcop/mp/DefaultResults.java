@@ -135,18 +135,6 @@ public class DefaultResults<R extends Result> implements Results<R> {
     }
 
     /**
-     * Returns the total number of sent bytes.
-     * @return number of bytes sent during the algorithm's execution.
-     */
-    public long getSentBytes() {
-        long bytes = 0;
-        for (R r : getResults()) {
-            bytes += r.getSentBytes();
-        }
-        return bytes;
-    }
-
-    /**
      * Adds a new cycle to the results.
      *
      * @param maxCc Maximal cycle checks for a single agent during this cycle.

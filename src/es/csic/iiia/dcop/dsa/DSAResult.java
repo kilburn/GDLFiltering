@@ -39,18 +39,17 @@
 package es.csic.iiia.dcop.dsa;
 
 import es.csic.iiia.dcop.VariableAssignment;
-import es.csic.iiia.dcop.mp.DefaultResult;
+import es.csic.iiia.dcop.mp.Result;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class DSAResult extends DefaultResult {
+public class DSAResult implements Result {
 
     private VariableAssignment assignment;
 
     public DSAResult(DSANode node) {
-        super(node);
         this.assignment = node.getAssignment();
     }
 

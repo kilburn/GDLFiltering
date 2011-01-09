@@ -96,9 +96,7 @@ public abstract class AbstractEdge<N extends Node, M extends Message> implements
                 return false;
             nm1 = message;
         }
-        long bytes = message.getBytes();
-        sender.addSentBytes(bytes);
-        BytesSent.add(bytes);
+        BytesSent.add(message.getBytes());
         return true;
     }
 

@@ -514,11 +514,10 @@ public class CliApp {
             } else {
                 VPGraph st = new VPGraph(cg, sStrategy);
                 VPResults res = st.run(10000);
-                ArrayList<Result> rs = results.getResults();
-                rs.get(0).addSentBytes(res.getSentBytes());
+                results.mergeResults(res);
                 UBGraph ub = new UBGraph(st);
                 ubres = ub.run(1000);
-                rs.get(0).addSentBytes(ubres.getSentBytes());
+                results.mergeResults(ubres);
             }
 
             map = ubres.getMap();
@@ -526,7 +525,6 @@ public class CliApp {
             System.out.println("CBR " + results.getCBR(communicationCost));
             System.out.println("TOTAL_CCS " + results.getTotalCcc());
             System.out.println("CYCLE_CCS " + results.getMaximalCcc());
-            System.out.println("BYTES " + results.getSentBytes());
             System.out.println("TOTAL_BYTES " + results.getTotalBytesc());
             System.out.println("CYBLE_BYTES " + results.getMaximalBytesc());
             System.out.println("LOAD_FACTOR " + results.getLoadFactor());
