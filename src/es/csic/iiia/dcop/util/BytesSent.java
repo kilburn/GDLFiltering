@@ -36,17 +36,35 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.mp;
+package es.csic.iiia.dcop.util;
+
+import java.util.HashMap;
 
 /**
  *
- * @param <R> 
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public interface Results<R extends Result> {
+public class BytesSent {
 
-    public void addCycle(long mcc, long tcc, long mbytes, long tbytes);
+    private static long bytes;
+    private static HashMap<Object, Long> trackers = new HashMap<Object, Long>();
 
-    public void add(R result);
+    public static void add(long count) {
+        bytes += count;
+    }
 
+    public static void addTracker(Object tracker) {
+        trackers.put(tracker, bytes);
+    }
+    public static long removeTracker(Object tracker) {
+        long tccs = bytes - trackers.remove(tracker);
+        if (trackers.isEmpty()) {
+            bytes = 0;
+        }
+        return tccs;
+    }
+
+    public static void inc() {
+        bytes += 1;
+    }
 }

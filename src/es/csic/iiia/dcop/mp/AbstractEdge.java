@@ -38,6 +38,8 @@
 
 package es.csic.iiia.dcop.mp;
 
+import es.csic.iiia.dcop.util.BytesSent;
+
 /**
  * Abstract implementation of an undirected edge between two nodes that
  * exchange messages.
@@ -94,7 +96,9 @@ public abstract class AbstractEdge<N extends Node, M extends Message> implements
                 return false;
             nm1 = message;
         }
-        sender.addSentBytes(message.getBytes());
+        long bytes = message.getBytes();
+        sender.addSentBytes(bytes);
+        BytesSent.add(bytes);
         return true;
     }
 

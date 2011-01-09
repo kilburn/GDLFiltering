@@ -527,6 +527,8 @@ public class CliApp {
             System.out.println("TOTAL_CCS " + results.getTotalCcc());
             System.out.println("CYCLE_CCS " + results.getMaximalCcc());
             System.out.println("BYTES " + results.getSentBytes());
+            System.out.println("TOTAL_BYTES " + results.getTotalBytesc());
+            System.out.println("CYBLE_BYTES " + results.getMaximalBytesc());
             System.out.println("LOAD_FACTOR " + results.getLoadFactor());
             System.out.println("BOUND " + ubres.getBound());
         }

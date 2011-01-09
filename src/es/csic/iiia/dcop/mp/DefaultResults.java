@@ -70,9 +70,34 @@ public class DefaultResults<R extends Result> implements Results<R> {
     private ArrayList<Long> totalCc;
 
     /**
+     * List of maximal bytes sent for each cycle.
+     */
+    private ArrayList<Long> maximalBytes;
+
+    /**
+     * List of total bytes sent per cycle.
+     */
+    private ArrayList<Long> totalBytes;
+
+    /**
      * Cumulative maximal cycle checks.
      */
     private long maximalCcc;
+
+    /**
+     * Cumulative total cycle checks.
+     */
+    private long totalCcc;
+
+    /**
+     * Cumulative maximal sent bytes.
+     */
+    private long maximalBytesc;
+
+    /**
+     * Cumulative total sent bytes.
+     */
+    private long totalBytesc;
 
     public long getMaximalCcc() {
         return maximalCcc;
@@ -82,10 +107,13 @@ public class DefaultResults<R extends Result> implements Results<R> {
         return totalCcc;
     }
 
-    /**
-     * Cumulative total cycle checks.
-     */
-    private long totalCcc;
+    public long getMaximalBytesc() {
+        return maximalBytesc;
+    }
+
+    public long getTotalBytesc() {
+        return totalBytesc;
+    }
 
     /**
      * Gets the number of iterations used by the algorithm run.
@@ -99,9 +127,11 @@ public class DefaultResults<R extends Result> implements Results<R> {
      * Constructs a new GDL results holder object.
      */
     public DefaultResults() {
-        this.results   = new ArrayList<R>();
-        this.totalCc   = new ArrayList<Long>();
-        this.maximalCc = new ArrayList<Long>();
+        this.results      = new ArrayList<R>();
+        this.totalCc      = new ArrayList<Long>();
+        this.maximalCc    = new ArrayList<Long>();
+        this.totalBytes   = new ArrayList<Long>();
+        this.maximalBytes = new ArrayList<Long>();
     }
 
     /**
@@ -122,14 +152,18 @@ public class DefaultResults<R extends Result> implements Results<R> {
      * @param maxCc Maximal cycle checks for a single agent during this cycle.
      * @param totalCc Total cycle checks amongs all agents during this cycle.
      */
-    public void addCycle(long maxCc, long totalCc) {
+    public void addCycle(long maxCc, long totalCc, long maxBytes, long totalBytes) {
         iterations++;
 
         this.maximalCc.add(maxCc);
         this.totalCc.add(totalCc);
+        this.maximalBytes.add(maxBytes);
+        this.totalBytes.add(totalBytes);
 
         this.maximalCcc += maxCc;
         this.totalCcc += totalCc;
+        this.maximalBytesc += maxBytes;
+        this.totalBytesc += totalBytes;
     }
 
     /**
@@ -138,7 +172,12 @@ public class DefaultResults<R extends Result> implements Results<R> {
      */
     public void mergeResults(DefaultResults other) {
         for (int i=0; i<other.iterations; i++) {
-            addCycle((Long)other.maximalCc.get(i), (Long)other.totalCc.get(i));
+            addCycle(
+                    (Long)other.maximalCc.get(i),
+                    (Long)other.totalCc.get(i),
+                    (Long)other.maximalBytes.get(i),
+                    (Long)other.totalBytes.get(i)
+            );
         }
     }
 

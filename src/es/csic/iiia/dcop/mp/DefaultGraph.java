@@ -38,6 +38,7 @@
 package es.csic.iiia.dcop.mp;
 
 import es.csic.iiia.dcop.mp.AbstractNode.Modes;
+import es.csic.iiia.dcop.util.BytesSent;
 import es.csic.iiia.dcop.util.ConstraintChecks;
 
 /**
@@ -82,17 +83,21 @@ public abstract class DefaultGraph<N extends Node, E extends Edge, R extends Res
             }
 
             // Clique operation
-            long mcc = 0, tcc = 0;
+            long mcc = 0, tcc = 0, mbytes = 0, tbytes = 0;
             for (Node n : getNodes()) {
                 if (n.isUpdated()) {
                     ConstraintChecks.addTracker(n);
+                    BytesSent.addTracker(n);
                     n.run();
                     long cc = ConstraintChecks.removeTracker(n);
+                    long bytes = BytesSent.removeTracker(n);
                     tcc += cc;
+                    tbytes += bytes;
                     mcc = Math.max(mcc, cc);
+                    mbytes = Math.max(mbytes, bytes);
                 }
             }
-            results.addCycle(mcc, tcc);
+            results.addCycle(mcc, tcc, mbytes, tbytes);
 
             // Check for convergence
             converged = true;
