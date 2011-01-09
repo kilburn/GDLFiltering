@@ -47,8 +47,8 @@ import es.csic.iiia.dcop.util.metrics.Norm0;
 import es.csic.iiia.dcop.util.metrics.Norm1;
 import es.csic.iiia.dcop.util.metrics.Norm2;
 import es.csic.iiia.dcop.util.metrics.NormInf;
+import gnu.trove.iterator.TLongIterator;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -78,7 +78,7 @@ public class CostFunctionStats {
         double min = Double.POSITIVE_INFINITY;
         double max = Double.NEGATIVE_INFINITY;
         double sum = 0;
-        for (Iterator<Long> i = f.iterator(); i.hasNext(); ) {
+        for (TLongIterator i = f.iterator(); i.hasNext(); ) {
             final double v = f.getValue(i.next());
             min = Math.min(min, v);
             max = Math.max(max, v);
@@ -88,7 +88,7 @@ public class CostFunctionStats {
         final double avg = size == 0 ? 0 : sum/size;
 
         // Output them
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("Min: ").append(formatValue(min));
         buf.append(", Avg: ").append(formatValue(avg));
         buf.append(", Max: ").append(formatValue(max));
@@ -113,7 +113,7 @@ public class CostFunctionStats {
     public static double getRank(CostFunction f) {
         double min = Double.POSITIVE_INFINITY;
         double max = Double.NEGATIVE_INFINITY;
-        for (Iterator<Long> i = f.iterator(); i.hasNext();) {
+        for (TLongIterator i = f.iterator(); i.hasNext();) {
             final double v = f.getValue(i.next());
             min = Math.min(min, v);
             max = Math.max(max, v);
@@ -137,7 +137,7 @@ public class CostFunctionStats {
         // Compute entropy
         final double log2 = Math.log(2);
         double e = 0;
-        for (Iterator<Long> i = f2.iterator(); i.hasNext();) {
+        for (TLongIterator i = f2.iterator(); i.hasNext();) {
             double p = f2.getValue(i.next());
             if (p != 0) {
                 e += p * (Math.log(p)/log2);
@@ -150,7 +150,7 @@ public class CostFunctionStats {
     
     public static double getSum(CostFunction f) {
         double s = 0;
-        for (Iterator<Long> i = f.iterator(); i.hasNext();) {
+        for (TLongIterator i = f.iterator(); i.hasNext();) {
             s += f.getValue(i.next());
         }
         return s;
@@ -322,7 +322,7 @@ public class CostFunctionStats {
 
         while(!cfs.isEmpty()) {
             VariableAssignment map = null;
-            for(Iterator<Long> i = f.iterator(); i.hasNext();) {
+            for(TLongIterator i = f.iterator(); i.hasNext();) {
                 final long idx = i.next();
                 final double v = f.getValue(idx);
                 if (Math.abs(v) < 1e-3) {
@@ -333,7 +333,7 @@ public class CostFunctionStats {
 
                         // Check if we can remove this cf
                         boolean remove = true;
-                        for (Iterator<Long> i2 = cf.iterator(); i2.hasNext();) {
+                        for (TLongIterator i2 = cf.iterator(); i2.hasNext();) {
                             if (cf.getValue(i2.next()) != 0) {
                                 remove = false;
                                 break;
@@ -378,7 +378,7 @@ public class CostFunctionStats {
         int ncfs = 0;
         while(!cfs.isEmpty()) {
             VariableAssignment map = null;
-            for(Iterator<Long> i = f.iterator(); i.hasNext();) {
+            for(TLongIterator i = f.iterator(); i.hasNext();) {
                 final long idx = i.next();
                 final double v = f.getValue(idx);
                 if (Math.abs(v) < 1e-3) {

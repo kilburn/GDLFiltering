@@ -38,8 +38,8 @@
 
 package es.csic.iiia.dcop;
 
+import gnu.trove.iterator.TLongIterator;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -449,15 +449,7 @@ public interface CostFunction {
      *
      * @return Iterator over the indices of this cost function.
      */
-    public Iterator<Long> iterator();
-
-    /**
-     * Obtains an iterator over the linearized indices of infinity (nogood)
-     * elements of this cost function.
-     *
-     * @return Iterator over the indices of this cost function.
-     */
-    public Iterator<Long> noGoodIterator();
+    public TLongIterator iterator();
 
     public void setFactory(CostFunctionFactory factory);
 

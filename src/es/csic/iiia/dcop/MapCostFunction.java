@@ -40,10 +40,10 @@ package es.csic.iiia.dcop;
 
 import es.csic.iiia.dcop.util.ConstraintChecks;
 import es.csic.iiia.dcop.util.CostFunctionStats;
+import gnu.trove.iterator.TLongIterator;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import gnu.trove.map.hash.TLongDoubleHashMap;
+import gnu.trove.procedure.TLongDoubleProcedure;
 
 /**
  * Cost Function implementation that stores the whole hypercube of values in
@@ -59,10 +59,10 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
     /**
      * Configuration -> value mapping.
      */
-    private HashMap<Long, Double> map;
+    private TLongDoubleHashMap map;
 
     /**
-     * "Zero" value (value of the missing elements)
+     * "Zero" value of this map.
      */
     private double zero;
 
@@ -73,9 +73,9 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
      */
     protected MapCostFunction(Variable[] variables, double zeroValue) {
         super(variables);
-        
-        map = new HashMap<Long,Double>();
+
         zero = zeroValue;
+        map = new TLongDoubleHashMap(16, .75f, Long.MIN_VALUE, zero);
     }
 
     /**
@@ -88,11 +88,12 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
         
         if (factor instanceof MapCostFunction) {
             final MapCostFunction f = (MapCostFunction)factor;
-            map = new HashMap<Long,Double>(f.map);
+            map = new TLongDoubleHashMap(f.map);
             zero = f.zero;
         } else {
-            map = new HashMap<Long,Double>((int)(factor.getSize() - factor.getNumberOfNoGoods()));
+            final int capacity = (int)(factor.getSize() - factor.getNumberOfNoGoods());
             zero = getFactory().getSummarizeOperation().getNoGood();
+            map = new TLongDoubleHashMap(capacity, .75f, Long.MIN_VALUE, zero);
             setValues(factor.getValues());
         }
     }
@@ -101,7 +102,7 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
      * Resets the costFunction to "zero" values
      */
     private void reset() {
-        map = new HashMap<Long, Double>();
+        map.clear();
     }
 
     /** {@inheritDoc} */
@@ -127,13 +128,8 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
     }
 
     /** {@inheritDoc} */
-    public Iterator<Long> iterator() {
+    @Override public TLongIterator iterator() {
         return map.keySet().iterator();
-    }
-
-    /** {@inheritDoc} */
-    public Iterator<Long> noGoodIterator() {
-        return new NoGoodIterator();
     }
 
     /** {@inheritDoc} */
@@ -143,7 +139,7 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
 
         final Double v = map.get(index);
         ConstraintChecks.inc();
-        return v == null ? zero : v;
+        return v;
     }
 
     /** {@inheritDoc} */
@@ -152,7 +148,7 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
             throw new IndexOutOfBoundsException(Long.toString(index) + " out of "
                     + size);
 
-        if (value == zero) {
+        if (value == map.getNoEntryValue()) {
             map.remove(index);
         } else {
             map.put(index, value);
@@ -175,12 +171,7 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
         StringBuilder buf = new StringBuilder();
         buf.append(getName());
         buf.append(" {");
-        for(long i : map.keySet()) {
-            buf.append(i);
-            buf.append(":");
-            buf.append(CostFunctionStats.formatValue(map.get(i)));
-            buf.append(", ");
-        }
+        map.forEachEntry(new ValueWriter(buf));
         if (map.size()>0)
             buf.delete(buf.length()-2, buf.length());
         buf.append("}");
@@ -188,41 +179,17 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
         return buf.toString();
     }
 
-    private class NoGoodIterator implements Iterator<Long> {
-        Iterator<Long> it = map.keySet().iterator();
-        private long nextGood = it.hasNext() ? it.next() : -1;
-        private long currentNoGood = -1;
-
-        public NoGoodIterator() {
-            findNextNoGood();
+    private class ValueWriter implements TLongDoubleProcedure {
+        StringBuilder buf;
+        public ValueWriter(StringBuilder buf) {
+            this.buf = buf;
         }
-
-        private void findNextNoGood() {
-            currentNoGood++;
-            while (currentNoGood == nextGood) {
-                currentNoGood++;
-                nextGood = it.hasNext() ? it.next() : -1;
-            }
-            if (currentNoGood >= size) {
-                currentNoGood = -1;
-            }
-        }
-
-        public boolean hasNext() {
-            return currentNoGood >= 0;
-        }
-
-        public Long next() {
-            if (currentNoGood < 0) {
-                throw new NoSuchElementException();
-            }
-            final Long res = currentNoGood;
-            findNextNoGood();
-            return res;
-        }
-
-        public void remove() {
-            throw new UnsupportedOperationException("Not supported yet.");
+        public boolean execute(long l, double d) {
+            buf.append(l);
+            buf.append(":");
+            buf.append(CostFunctionStats.formatValue(d));
+            buf.append(", ");
+            return true;
         }
     }
 

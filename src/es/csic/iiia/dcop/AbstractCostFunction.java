@@ -39,13 +39,13 @@
 package es.csic.iiia.dcop;
 
 import es.csic.iiia.dcop.util.CostFunctionStats;
+import gnu.trove.iterator.TLongIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
@@ -157,14 +157,6 @@ public abstract class AbstractCostFunction implements CostFunction {
         }
     }
 
-    /**
-     * Obtains an iterator over the linearized indices of non-infinity elements of this
-     * cost function.
-     * 
-     * @return Iterator over the indices of this cost function.
-     */
-    public abstract Iterator<Long> iterator();
-
     /** {@inheritDoc} */
     public VariableAssignment getOptimalConfiguration(VariableAssignment mapping) {
         if (mapping == null) {
@@ -233,7 +225,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         Summarize operation = factory.getSummarizeOperation();
         ArrayList<Long> idx = new ArrayList<Long>();
         double optimal = operation.getNoGood();
-        Iterator<Long> it = iterator();
+        TLongIterator it = iterator();
         while(it.hasNext()) {
             final long i = it.next();
             final double value = getValue(i);
@@ -470,7 +462,7 @@ public abstract class AbstractCostFunction implements CostFunction {
     public CostFunction negate() {
         Combine operation = factory.getCombineOperation();
         CostFunction result = factory.buildCostFunction(this);
-        Iterator<Long> it = iterator();
+        TLongIterator it = iterator();
         while(it.hasNext()) {
             final long i = it.next();
             result.setValue(i, operation.invert(getValue(i)));
@@ -512,7 +504,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         CostFunction left  = ratio1 > ratio2 ? this : factor;
         CostFunction right = left == this ? factor : this;
 
-        Iterator<Long> it = left.iterator();
+        TLongIterator it = left.iterator();
         VariableAssignment map2 = null;
         while(it.hasNext()) {
             final long i = it.next();
@@ -657,7 +649,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         CostFunction result = factory.buildCostFunction(this);
 
         // Calculate aggregation
-        Iterator<Long> it = iterator();
+        TLongIterator it = iterator();
         double sum = 0;
         while(it.hasNext()) {
             sum += getValue(it.next());
@@ -730,7 +722,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         // Perform the actual filtering
         //Iterator<Integer> it = result.iterator();
         boolean allNogoods = true;
-        Iterator<Long> it = iterator();
+        TLongIterator it = iterator();
         while(it.hasNext()) {
             final long i = it.next();
             if (combi.getValue(i) != operation.getNoGood()) {
@@ -768,7 +760,7 @@ public abstract class AbstractCostFunction implements CostFunction {
 
         // Perform the actual filtering (only on "good" tuples)
         boolean allNogoods = true; VariableAssignment map = null;
-        Iterator<Long> it = iterator();
+        TLongIterator it = iterator();
         while(it.hasNext()) {
             final long i = it.next();
             map = getMapping(i, map);
@@ -837,7 +829,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         }
 
         VariableAssignment map = null;
-        Iterator<Long> it = iterator();
+        TLongIterator it = iterator();
         while (it.hasNext()) {
             final long i = it.next();
             map = getMapping(i, map);
@@ -852,7 +844,7 @@ public abstract class AbstractCostFunction implements CostFunction {
     /** {@inheritDoc} */
     @Override public long getNumberOfZeros() {
         int zeros = 0;
-        for(Iterator<Long> it = iterator(); it.hasNext();){
+        for(TLongIterator it = iterator(); it.hasNext();){
             if (getValue(it.next()) == 0) {
                 zeros++;
             }

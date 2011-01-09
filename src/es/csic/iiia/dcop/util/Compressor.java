@@ -42,13 +42,11 @@ import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.MapCostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.cli.CliApp;
-import java.io.ByteArrayOutputStream;
+import gnu.trove.iterator.TLongIterator;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.Deflater;
 
 /**
  *
@@ -144,7 +142,7 @@ public class Compressor {
             // Values next
             if (f instanceof MapCostFunction) {
                 // Sparse functions are handled by key/value!
-                Iterator<Long> iter = f.iterator();
+                TLongIterator iter = f.iterator();
                 while (iter.hasNext()) {
                     c.write(toByteArray(iter.next()));
                 }

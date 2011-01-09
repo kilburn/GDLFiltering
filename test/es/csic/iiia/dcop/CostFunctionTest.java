@@ -38,8 +38,9 @@
 
 package es.csic.iiia.dcop;
 
+import java.util.Arrays;
+import gnu.trove.iterator.TLongIterator;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -963,11 +964,20 @@ public abstract class CostFunctionTest {
         // Testing missing initial, existing end
         f1.setValue(0, ng);
         f1.setValue(1, ng);
-        long idx = 1;
-        Iterator<Long> it = f1.iterator();
-        while (++idx < f1.getSize()) {
+        int len      = (int)(f1.getSize()-2);
+        long offset  = 2;
+        long[] idxs1 = new long[len];
+        long[] idxs2 = new long[len];
+        TLongIterator it = f1.iterator();
+        for (int i=0; i<len; i++) {
             assertTrue(it.hasNext());
-            assertEquals(idx, (long)it.next());
+            idxs1[i] = i+offset;
+            idxs2[i] = it.next();
+        }
+        Arrays.sort(idxs1);
+        Arrays.sort(idxs2);
+        for (int i=0; i<len; i++) {
+            assertEquals(idxs1[i], idxs2[i]);
         }
         try {
             assertFalse(it.hasNext());
@@ -979,49 +989,22 @@ public abstract class CostFunctionTest {
         f1.setValue(0, 0);
         f1.setValue(f1.getSize()-1, ng);
         it = f1.iterator();
-        assertTrue(it.hasNext());
-        assertEquals((long)it.next(), 0);
-        idx = 1;
-        while (++idx < f1.getSize()-1) {
+        offset = 1;
+        idxs1  = new long[len];
+        idxs2  = new long[len];
+        it = f1.iterator();
+        idxs1[0] = 0;
+        idxs2[0] = it.next();
+        for (int i=1; i<len; i++) {
             assertTrue(it.hasNext());
-            assertEquals((long)it.next(), idx);
+            idxs1[i] = i+offset;
+            idxs2[i] = it.next();
         }
-        try {
-            assertFalse(it.hasNext());
-            it.next();
-            fail("Calling next() should raise NoSuchElementException at this point.");
-        } catch (NoSuchElementException e) {}
-    }
-
-    /**
-     * Test of noGoodIterator method, of class CostFunction.
-     */
-    @Test
-    public void testNoGoodIterator() {
-        final double ng = factory.getSummarizeOperation().getNoGood();
-
-        // Testing missing initial, existing end
-        f1.setValue(0, ng);
-        f1.setValue(1, ng);
-        Iterator<Long> it = f1.noGoodIterator();
-        assertTrue(it.hasNext());
-        assertEquals(0, (long)it.next());
-        assertTrue(it.hasNext());
-        assertEquals(1, (long)it.next());
-        try {
-            assertFalse(it.hasNext());
-            it.next();
-            fail("Calling next() should raise NoSuchElementException at this point.");
-        } catch (NoSuchElementException e) {}
-
-        // Testing existing initial, missing end
-        f1.setValue(0, 0);
-        f1.setValue(f1.getSize()-1, ng);
-        it = f1.noGoodIterator();
-        assertTrue(it.hasNext());
-        assertEquals(1, (long)it.next());
-        assertTrue(it.hasNext());
-        assertEquals(f1.getSize()-1, (long)it.next());
+        Arrays.sort(idxs1);
+        Arrays.sort(idxs2);
+        for (int i=1; i<len; i++) {
+            assertEquals(idxs1[i], idxs2[i]);
+        }
         try {
             assertFalse(it.hasNext());
             it.next();

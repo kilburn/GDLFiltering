@@ -39,8 +39,8 @@
 package es.csic.iiia.dcop;
 
 import es.csic.iiia.dcop.util.ConstraintChecks;
+import gnu.trove.iterator.TLongIterator;
 import java.io.Serializable;
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
@@ -108,13 +108,8 @@ public final class HypercubeCostFunction extends AbstractCostFunction implements
     }
 
     /** {@inheritDoc} */
-    @Override public Iterator<Long> iterator() {
+    @Override public TLongIterator iterator() {
         return new HypercubeIterator();
-    }
-
-    /** {@inheritDoc} */
-    @Override public Iterator<Long> noGoodIterator() {
-        return new NoGoodIterator();
     }
 
     /** {@inheritDoc} */
@@ -167,7 +162,7 @@ public final class HypercubeCostFunction extends AbstractCostFunction implements
      * Implements the Iterator interface for an hypercube, allowing to iterate
      * over its elements using the common java conventions.
      */
-    protected class HypercubeIterator implements Iterator<Long> {
+    protected class HypercubeIterator implements TLongIterator {
         private long idx;
         private double ng = getFactory().getSummarizeOperation().getNoGood();
 
@@ -192,56 +187,13 @@ public final class HypercubeCostFunction extends AbstractCostFunction implements
         }
 
         @Override
-        public Long next() {
+        public long next() {
             if (idx < 0) {
                 throw new NoSuchElementException();
             }
 
-            final Long res = idx;
+            final long res = idx;
             findNextGood();
-            return res;
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException("You can not remove elements from an hypercube.");
-        }
-
-    }
-
-    /**
-     * Implements the Iterator interface for an hypercube, allowing to iterate
-     * over its elements using the common java conventions.
-     */
-    protected class NoGoodIterator implements Iterator<Long> {
-        private long idx;
-        private double ng = getFactory().getSummarizeOperation().getNoGood();
-
-        public NoGoodIterator() {
-            idx = -1;
-            findNextNoGood();
-        }
-
-        private void findNextNoGood() {
-            idx++;
-            while (idx < size && getValue(idx) != ng) {
-                idx++;
-            }
-        }
-
-        @Override
-        public boolean hasNext() {
-            return idx < size;
-        }
-
-        @Override
-        public Long next() {
-            if (!hasNext()) {
-                throw new NoSuchElementException();
-            }
-
-            final Long res = idx;
-            findNextNoGood();
             return res;
         }
 
