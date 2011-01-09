@@ -39,6 +39,7 @@
 package es.csic.iiia.dcop;
 
 import gnu.trove.iterator.TLongIterator;
+import gnu.trove.list.TLongList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -312,7 +313,7 @@ public interface CostFunction {
      * @param mapping of the desired configuration.
      * @return corresponding linearized index(es).
      */
-    public List<Long> getIndexes(VariableAssignment mapping);
+    public TLongList getIndexes(VariableAssignment mapping);
 
     /**
      * Returns the variable/value mapping corresponding to the specified

@@ -38,10 +38,7 @@
 
 package es.csic.iiia.dcop;
 
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -50,7 +47,6 @@ import java.util.TreeMap;
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
 public class VariableAssignment extends HashMap<Variable, Integer> {
-    private HashMap<Variable, Integer> assignment;
 
     public VariableAssignment() {
         super();

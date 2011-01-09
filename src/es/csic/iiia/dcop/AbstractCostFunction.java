@@ -40,6 +40,8 @@ package es.csic.iiia.dcop;
 
 import es.csic.iiia.dcop.util.CostFunctionStats;
 import gnu.trove.iterator.TLongIterator;
+import gnu.trove.list.TLongList;
+import gnu.trove.list.array.TLongArrayList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -279,8 +281,9 @@ public abstract class AbstractCostFunction implements CostFunction {
      * @param mapping of the desired configuration.
      * @return corresponding linearized index.
      */
-    public ArrayList<Long> getIndexes(VariableAssignment mapping) {
-        ArrayList<Long> idxs = new ArrayList<Long>();
+    @Override
+    public TLongList getIndexes(VariableAssignment mapping) {
+        TLongList idxs = new TLongArrayList();
 
         final int len = variables.length;
         if (len == 0) {
@@ -326,9 +329,12 @@ public abstract class AbstractCostFunction implements CostFunction {
         } else {
             mapping.clear();
         }
-        int[] sub = indexToSubindex(index);
-        for (int i = 0, len = variables.length; i < len; i++) {
-            mapping.put(variables[i], sub[i]);
+
+        final int len = variables.length;
+        for (int i = 0; i < len; i++) {
+            final int ii = len - 1 - i;
+            mapping.put(variables[i], (int)(index / sizes[ii]));
+            index = index % sizes[ii];
         }
         return mapping;
     }
@@ -513,7 +519,9 @@ public abstract class AbstractCostFunction implements CostFunction {
 
             map = left.getMapping(i, map);
 
-            for (long fidx : right.getIndexes(map)) {
+            TLongIterator idxit = right.getIndexes(map).iterator();
+            while (idxit.hasNext()) {
+                final long fidx = idxit.next();
                 map2 = right.getMapping(fidx, map2);
                 map2.putAll(map);
 
@@ -834,7 +842,9 @@ public abstract class AbstractCostFunction implements CostFunction {
             final long i = it.next();
             map = getMapping(i, map);
             // This value is lost during the summarization
-            for (long idx : result.getIndexes(map)) {
+            TLongIterator idxit = result.getIndexes(map).iterator();
+            while (idxit.hasNext()) {
+                final long idx = idxit.next();
                 result.setValue(idx, operation.eval(getValue(i), result.getValue(idx)));
             }
         }
