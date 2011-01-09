@@ -99,6 +99,9 @@ public class OptimalSolvingStrategy implements SolvingStrategy {
         public CandidateSolution next() {
             belief.setValue(belief.getIndex(assignment),
                     belief.getFactory().getSummarizeOperation().getNoGood());
+            if (belief.getNumberOfNoGoods() == belief.getSize()) {
+                return null;
+            }
             return new OptimalCandidateSolution(belief, parentIndex, parentAssignment);
         }
 

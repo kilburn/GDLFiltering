@@ -40,7 +40,6 @@ package es.csic.iiia.dcop.vp.strategy.expansion;
 
 import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.figdl.FIGdlNode;
-import es.csic.iiia.dcop.up.UPNode;
 import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.strategy.VPStrategy;
 import java.util.ArrayList;
@@ -55,14 +54,9 @@ public class InformationLossExpansion implements ExpansionStrategy {
 
     private static Logger log = LoggerFactory.getLogger(VPGraph.class);
 
-    public int getNumberOfSolutionsToExpand(ArrayList<VariableAssignment> mappings, UPNode upnode) {
-        if (!(upnode instanceof FIGdlNode)) {
-            throw new RuntimeException("Information loss expansion can only be used with the FIGDL algorithm.");
-        }
-
-        FIGdlNode finode = (FIGdlNode)upnode;
-        double informationLoss = finode.getInformationLoss();
-        double maxInformationLoss = finode.getMaxInformationLoss();
+    public int getNumberOfSolutionsToExpand(ArrayList<VariableAssignment> mappings, FIGdlNode node) {
+        double informationLoss = node.getInformationLoss();
+        double maxInformationLoss = node.getMaxInformationLoss();
         int remainingSlots = VPStrategy.numberOfSolutions - mappings.size();
 
         int solutions = 0;

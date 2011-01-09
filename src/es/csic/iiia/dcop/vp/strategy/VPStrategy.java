@@ -42,6 +42,7 @@ import es.csic.iiia.dcop.vp.strategy.expansion.ExpansionStrategy;
 import es.csic.iiia.dcop.vp.strategy.solving.SolvingStrategy;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.VariableAssignment;
+import es.csic.iiia.dcop.figdl.FIGdlNode;
 import es.csic.iiia.dcop.up.UPNode;
 import es.csic.iiia.dcop.vp.MappingResults;
 import es.csic.iiia.dcop.vp.VPGraph;
@@ -74,7 +75,17 @@ public class VPStrategy {
             mappings.add(new VariableAssignment());
         }
 
-        int solutionsToExpand = expansion.getNumberOfSolutionsToExpand(mappings, upnode);
+
+        int solutionsToExpand = 0;
+        if (upnode instanceof FIGdlNode) {
+            FIGdlNode finode = (FIGdlNode)upnode;
+            if (finode.hasStartedFiltering() && !finode.isEndingFiltering()) {
+                solutionsToExpand = expansion.getNumberOfSolutionsToExpand(mappings, finode);
+            }
+        }
+//        if (solutionsToExpand > 0) {
+//            System.out.println("Node " + this + " expanding " + solutionsToExpand + " solutions.");
+//        }
         
         SolutionExplorer solExplorer = new SolutionExplorer(upnode, mappings, solutionsToExpand);
         if (log.isTraceEnabled()) {
@@ -114,7 +125,9 @@ public class VPStrategy {
                     if (candidates == null) {
                         candidates = new TreeSet<CandidateSolution>(new SolutionComparator(sum));
                     }
-                    candidates.add(candidate.next());
+                    final CandidateSolution nextCandidate = candidate.next();
+                    if (nextCandidate != null)
+                        candidates.add(nextCandidate);
                 }
 
                 parent++;
@@ -122,6 +135,10 @@ public class VPStrategy {
 
             // And then we need to open new solutions
             for (int j=0; j<expand; j++) {
+                if (candidates.isEmpty()) {
+                    break;
+                }
+
                 // Fetch the best alternative
                 CandidateSolution candidate = candidates.first();
                 candidates.remove(candidate);
@@ -133,7 +150,9 @@ public class VPStrategy {
                 }
 
                 // Re-introduce the subsequent alternative
-                candidates.add(candidate.next());
+                final CandidateSolution nextCandidate = candidate.next();
+                if (nextCandidate != null)
+                    candidates.add(nextCandidate);
             }
 
         }

@@ -89,6 +89,18 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, FIGdlMessage>, UPResult
     private double maxInformationLoss = 0;
 
     /**
+     * Boolean flag that indicates if the algorithm has started filtering
+     * some tuples.
+     */
+    private boolean startedFiltering;
+    
+    /**
+     * Boolean flag that indicates if the algorithm is filtering more than
+     * 90% of the tuples.
+     */
+    private boolean endingFiltering;
+
+    /**
      * Constructs a new clique with the specified member variable and null
      * potential.
      *
@@ -149,6 +161,7 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, FIGdlMessage>, UPResult
     @Override
     public void initialize() {
         super.initialize();
+        startedFiltering = false;
         localInformationLoss = 0;
 
         // Tree-based operation
@@ -186,6 +199,8 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, FIGdlMessage>, UPResult
                     informationLoss += msg.getInformationLoss();
                     maxInformationLoss = Math.max(maxInformationLoss, msg.getMaxInformationLoss());
                 }
+                startedFiltering = startedFiltering || msg.hasStartedFiltering();
+                endingFiltering = endingFiltering || msg.isEndingFiltering();
             }
         }
 
@@ -247,7 +262,17 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, FIGdlMessage>, UPResult
             if (isParent(e)) {
                 localInformationLoss = msg.getInformationLoss();
                 msg.setMaxInformationLoss(maxInformationLoss + localInformationLoss);
+                if (!startedFiltering && msg.hasFilteredFunctions()) {
+                    msg.setStartedFiltering();
+                    startedFiltering = true;
+                }
+                if (!endingFiltering && msg.isEndingFiltering()) {
+                    msg.setEndingFiltering();
+                    endingFiltering = true;
+                }
             }
+            if (startedFiltering) msg.setStartedFiltering();
+            if (endingFiltering) msg.setEndingFiltering();
 
             e.sendMessage(this, msg);
         }
@@ -306,6 +331,14 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, FIGdlMessage>, UPResult
 
     void setOptimumValue(double optimum) {
         strategy.setOptimumValue(optimum);
+    }
+
+    public boolean isEndingFiltering() {
+        return endingFiltering;
+    }
+
+    public boolean hasStartedFiltering() {
+        return startedFiltering;
     }
 
 }

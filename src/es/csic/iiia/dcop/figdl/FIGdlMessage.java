@@ -58,6 +58,8 @@ public class FIGdlMessage implements UPMessage {
     public long cc = 0;
     private double informationLoss = 0;
     private double maxInformationLoss = 0;
+    private boolean startedFiltering = false;
+    private boolean endingFiltering = false;
 
     public FIGdlMessage(ArrayList<CostFunction> factors) {
         this.factors = factors;
@@ -132,6 +134,31 @@ public class FIGdlMessage implements UPMessage {
 
     public void setMaxInformationLoss(double maxInformationLoss) {
         this.maxInformationLoss = maxInformationLoss;
+    }
+
+    boolean hasStartedFiltering() {
+        return startedFiltering;
+    }
+
+    void setStartedFiltering() {
+        startedFiltering = true;
+    }
+
+    boolean hasFilteredFunctions() {
+        for (CostFunction f : factors) {
+            if (f.getNumberOfNoGoods() > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    boolean isEndingFiltering() {
+        return endingFiltering;
+    }
+
+    void setEndingFiltering() {
+        endingFiltering = true;
     }
 
 }
