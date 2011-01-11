@@ -116,10 +116,9 @@ public class JunctionTree extends DefaultGraph<JTNode, JTEdge, JTResults> {
 
         ArrayList<JTNode> ns = getNodes();
         for (int i=0, len=ns.size(); i<len; i++) {
-            final JTNode n = ns.get(i);
-            if (n.getEdges().size() < 2) continue;
+            if (getNodes().get(i).getEdges().size() < 2) continue;
 
-            int dv = getNumberOfDecisionVariables(n);
+            int dv = getNumberOfDecisionVariables(i);
 
             log.info("Root " + i + ": " + dv + " decision variables.");
             if (dv < minDecisionVariables) {
@@ -131,8 +130,39 @@ public class JunctionTree extends DefaultGraph<JTNode, JTEdge, JTResults> {
         return node;
     }
 
-    private int getNumberOfDecisionVariables(JTNode n) {
-        return dfs(null, n, -1, new HashSet<Variable>());
+    public int getNumberOfDecisionVariables(int n) {
+        return dfs(null, getNodes().get(n), -1, new HashSet<Variable>());
+    }
+
+    public String getTreeOfDecisionVariables(int n) {
+        StringBuilder buf = new StringBuilder();
+        dfs_string(buf, 1, null, getNodes().get(n), -1, new HashSet<Variable>());
+        return buf.toString();
+    }
+
+    private void dfs_string(StringBuilder buf, int depth, JTNode root, JTNode node, int maxVars, HashSet<Variable> assignedVars) {
+        HashSet<Variable> vars = new HashSet<Variable>(node.getNode().getVariables());
+        vars.removeAll(assignedVars);
+        for (int i=0; i<depth-1; i++) {
+            buf.append("-");
+        }
+        if (depth>0)
+            buf.append("-");
+        buf.append(vars.size());
+        buf.append(" ");
+        buf.append(node.getNode());
+        buf.append("\n");
+
+        vars = new HashSet<Variable>(node.getNode().getVariables());
+        for (JTEdge edge : node.getEdges()) {
+            // Skip the parent
+            JTNode child = edge.getDestination(node);
+            if (child == root)
+                continue;
+
+            // Recursion call
+            dfs_string(buf, depth+1, node, child, maxVars, vars);
+        }
     }
 
     private int dfs(JTNode root, JTNode node, int maxVars, HashSet<Variable> assignedVars) {

@@ -48,6 +48,7 @@ import es.csic.iiia.dcop.vp.MappingResults;
 import es.csic.iiia.dcop.vp.VPGraph;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.PriorityQueue;
 import java.util.TreeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,12 +92,16 @@ public class VPStrategy {
         if (log.isTraceEnabled()) {
             log.trace(solExplorer.toString());
         }
+        
+        MappingResults results = new MappingResults(solExplorer.maps, solExplorer.upper);
+        //int expandedSols = results.getMappings().size() - mappings.size();
+        //System.out.println("[Info] Node " + upnode + " expanded " + expandedSols + " solutions");
 
-        return new MappingResults(solExplorer.maps, solExplorer.upper);
+        return results;
     }
 
     private class SolutionExplorer {
-        private TreeSet<CandidateSolution> candidates = null;
+        private PriorityQueue<CandidateSolution> candidates = null;
         private ArrayList<VariableAssignment> maps;
         private ArrayList<Integer> upper;
 
@@ -117,13 +122,14 @@ public class VPStrategy {
                 
                 
                 candidate = solving.getCandidateSolution(rb, parent, map);
-
                 maps.add(candidate.getAssignment());
-                upper.add(parent);
+                upper.add(candidate.getParentIndex());
 
                 if (expand > 0) {
                     if (candidates == null) {
-                        candidates = new TreeSet<CandidateSolution>(new SolutionComparator(sum));
+                        candidates = new PriorityQueue<CandidateSolution>(
+                                upMaps.size(), new SolutionComparator(sum)
+                        );
                     }
                     final CandidateSolution nextCandidate = candidate.next();
                     if (nextCandidate != null)
@@ -140,8 +146,7 @@ public class VPStrategy {
                 }
 
                 // Fetch the best alternative
-                CandidateSolution candidate = candidates.first();
-                candidates.remove(candidate);
+                CandidateSolution candidate = candidates.poll();
 
                 // Add the corresponding mapping
                 if (!maps.contains(candidate.getAssignment())) {

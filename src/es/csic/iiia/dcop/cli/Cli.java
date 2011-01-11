@@ -149,7 +149,8 @@ public class Cli {
         System.err.println("      - max : summarizes using the maximum value (for utilites).");
         System.err.println("  --solution-expansion=strategy (root)");
         System.err.println("    Uses the specified solution expansion strategy, where strategy is one of: ");
-        System.err.println("      - root        : root expands all solutions");
+        System.err.println("      - root        : root expands all solutions (up to its own maximum)");
+        System.err.println("      - greedy      : each node expands as much solutions as possible");
         System.err.println("      - stochastic  : each solution is expanded with a probability (p=0.9)");
         System.err.println("      - information : expansion based on the information loss observed during utility propagation.");
         System.err.println("  --solution-solving=strategy (optimal)");
@@ -268,7 +269,9 @@ public class Cli {
                 case 6:
                     arg = g.getOptarg().toLowerCase();
                     if (arg.equals("root"))
-                        cli.setSolutionExpansion(CliApp.SolutionExpansionStrategies.ROOT_EXPANDS);
+                        cli.setSolutionExpansion(CliApp.SolutionExpansionStrategies.ROOT);
+                    else if (arg.equals("greedy"))
+                        cli.setSolutionExpansion(CliApp.SolutionExpansionStrategies.GREEDY);
                     else if (arg.equals("stochastic"))
                         cli.setSolutionExpansion(CliApp.SolutionExpansionStrategies.STOCHASTIC);
                     else if (arg.equals("information"))
@@ -305,13 +308,13 @@ public class Cli {
                 case 'a':
                     arg = g.getOptarg().toLowerCase();
                     if (arg.equals("gdl"))
-                        cli.setAlgorithm(CliApp.ALGO_GDL);
+                        cli.setAlgorithm(CliApp.Algorithm.GDL);
                     else if (arg.equals("maxsum"))
-                        cli.setAlgorithm(CliApp.ALGO_MAX_SUM);
+                        cli.setAlgorithm(CliApp.Algorithm.MAX_SUM);
                     else if (arg.equals("figdl"))
-                        cli.setAlgorithm(CliApp.ALGO_FIGDL);
+                        cli.setAlgorithm(CliApp.Algorithm.FIGDL);
                     else if (arg.equals("dsa"))
-                        cli.setAlgorithm(CliApp.ALGO_DSA);
+                        cli.setAlgorithm(CliApp.Algorithm.DSA);
                     else {
                         System.err.println("Error: invalid algorithm \"" + arg + "\"");
                         System.exit(0);

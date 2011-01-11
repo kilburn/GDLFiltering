@@ -38,7 +38,7 @@
 
 package es.csic.iiia.dcop.vp;
 
-import es.csic.iiia.dcop.vp.strategy.expansion.RootExpandsAll;
+import es.csic.iiia.dcop.vp.strategy.expansion.GreedyExpansion;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
@@ -112,7 +112,7 @@ public class VPTest {
         UPFactory fac = new GdlFactory();
         cg = JunctionTreeAlgo.buildGraph(fac, mcs.getFactorDistribution(), mcs.getAdjacency());
 
-        solvingStrategy = new VPStrategy(new RootExpandsAll(), new OptimalSolvingStrategy());
+        solvingStrategy = new VPStrategy(new GreedyExpansion(), new OptimalSolvingStrategy());
     }
 
     @After

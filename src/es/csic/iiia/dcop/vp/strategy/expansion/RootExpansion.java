@@ -40,41 +40,20 @@ package es.csic.iiia.dcop.vp.strategy.expansion;
 
 import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.figdl.FIGdlNode;
-import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.strategy.VPStrategy;
 import java.util.ArrayList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class InformationLossExpansion implements ExpansionStrategy {
+public class RootExpansion implements ExpansionStrategy {
 
-    private static Logger log = LoggerFactory.getLogger(VPGraph.class);
-
-    public int getNumberOfSolutionsToExpand(ArrayList<VariableAssignment> mappings, FIGdlNode node) {
-        double informationLoss = node.getInformationLoss();
-        double maxInformationLoss = node.getMaxInformationLoss();
-        int remainingSlots = VPStrategy.numberOfSolutions - mappings.size();
-
-        int solutions = 0;
-        double ns = informationLoss/((double)maxInformationLoss)*remainingSlots;
-        solutions = (int)ns;
-        ns -= (double)solutions;
-        if (log.isTraceEnabled()) {
-            log.trace("bl: " + informationLoss + ", cb: " + maxInformationLoss
-                    + ", rs: " + remainingSlots + ", ns: " + ns);
+    public int getNumberOfSolutionsToExpand(ArrayList<VariableAssignment> mappings, FIGdlNode upnode) {
+        if (upnode.isRoot()) {
+            return VPStrategy.numberOfSolutions - mappings.size();
         }
-        if (Math.random() < ns) {
-            solutions++;
-        }
-
-        if (log.isDebugEnabled()) {
-            log.debug("Solutions to expand: " + solutions);
-        }
-
-        return solutions;
+        return 0;
     }
+
 }

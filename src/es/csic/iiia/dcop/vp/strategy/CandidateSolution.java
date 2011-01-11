@@ -38,11 +38,7 @@
 
 package es.csic.iiia.dcop.vp.strategy;
 
-import es.csic.iiia.dcop.CostFunction;
-import es.csic.iiia.dcop.FactorGraph;
 import es.csic.iiia.dcop.VariableAssignment;
-import es.csic.iiia.dcop.dsa.DSA;
-import es.csic.iiia.dcop.dsa.DSAResults;
 
 /**
  *

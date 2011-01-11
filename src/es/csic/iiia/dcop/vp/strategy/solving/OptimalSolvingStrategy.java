@@ -93,6 +93,7 @@ public class OptimalSolvingStrategy implements SolvingStrategy {
             this.belief = belief;
             this.assignment = belief.getOptimalConfiguration(null);
             this.assignment.putAll(parentAssignment);
+            this.cost = belief.getValue(assignment);
         }
 
         @Override

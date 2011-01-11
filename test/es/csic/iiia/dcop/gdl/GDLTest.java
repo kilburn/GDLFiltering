@@ -64,7 +64,7 @@ import es.csic.iiia.dcop.util.CostFunctionStats;
 import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.VPResults;
 import es.csic.iiia.dcop.vp.strategy.VPStrategy;
-import es.csic.iiia.dcop.vp.strategy.expansion.RootExpandsAll;
+import es.csic.iiia.dcop.vp.strategy.expansion.GreedyExpansion;
 import es.csic.iiia.dcop.vp.strategy.solving.OptimalSolvingStrategy;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -97,7 +97,7 @@ public class GDLTest {
     @Before
     public void setUp() {
         factory = new CostFunctionFactory();
-        solvingStrategy = new VPStrategy(new RootExpandsAll(), new OptimalSolvingStrategy());
+        solvingStrategy = new VPStrategy(new GreedyExpansion(), new OptimalSolvingStrategy());
     }
 
     @After

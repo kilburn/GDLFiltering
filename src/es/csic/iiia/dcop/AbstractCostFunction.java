@@ -776,10 +776,11 @@ public abstract class AbstractCostFunction implements CostFunction {
 
             for (CostFunction f : fs) {
                 v = com.eval(v, f.getValue(map));
+                if (sum.isBetter(bound, v)) break;
             }
             
             if (sum.isBetter(bound, v)) {
-                result.setValue(i, sum.getNoGood());
+                result.setValue(i, ng);
             } else {
                 allNogoods = false;
             }

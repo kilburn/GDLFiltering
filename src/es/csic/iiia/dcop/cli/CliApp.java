@@ -67,7 +67,6 @@ import es.csic.iiia.dcop.io.TreeReader;
 import es.csic.iiia.dcop.jt.JTResults;
 import es.csic.iiia.dcop.jt.JunctionTree;
 import es.csic.iiia.dcop.mp.AbstractNode.Modes;
-import es.csic.iiia.dcop.mp.Result;
 import es.csic.iiia.dcop.up.UPFactory;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.util.Compressor;
@@ -76,6 +75,7 @@ import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.VPResults;
 import es.csic.iiia.dcop.vp.strategy.VPStrategy;
 import es.csic.iiia.dcop.vp.strategy.expansion.ExpansionStrategy;
+import es.csic.iiia.dcop.vp.strategy.expansion.StochasticalExpansion;
 import es.csic.iiia.dcop.vp.strategy.solving.SolvingStrategy;
 import java.io.BufferedReader;
 import java.io.File;
@@ -87,7 +87,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -105,22 +104,25 @@ public class CliApp {
 
     private static Logger log = LoggerFactory.getLogger(CliApp.class);
 
-    /**
-     * Use GDL as solving algorithm.
-     */
-    public static final int ALGO_GDL = 0;
-    /**
-     * Use max-sum as solving algorithm.
-     */
-    public static final int ALGO_MAX_SUM = 1;
-    /**
-     * Use Filtered-IGDL as solving algorithm.
-     */
-    public static final int ALGO_FIGDL = 3;
-    /**
-     * Use Filtered-IGDL as solving algorithm.
-     */
-    public static final int ALGO_DSA = 4;
+    private void printInformation() {
+        System.out.println("[Info] Algorithm: " + algorithm.toString());
+        System.out.println("[Info] Summarize: " + summarizeOperation.toString());
+        System.out.println("[Info] Combine: " + combineOperation.toString());
+        System.out.println("[Info] Normalize: " + normalization.toString());
+        if (algorithm == Algorithm.FIGDL) {
+            System.out.println("[Info] Approximation: " + approximationStrategy.toString());
+            System.out.println("[Info] Number-of-solutions: " + VPStrategy.numberOfSolutions);
+            System.out.println("[Info] Solution-expansion: " + expansionStrategy.toString());
+            if (expansionStrategy == SolutionExpansionStrategies.STOCHASTIC) {
+                System.out.println("[Info] Expansion-probability: " + StochasticalExpansion.p);
+            }
+            System.out.println("[Info] Solution-exploration: " + solvingStrategy.toString());
+        }
+    }
+
+    public enum Algorithm {
+        GDL, MAX_SUM, FIGDL, DSA
+    }
 
     /**
      * MCS junction tree building heuristic.
@@ -174,7 +176,8 @@ public class CliApp {
      * Solution expansion strategies
      */
     public enum SolutionExpansionStrategies {
-        ROOT_EXPANDS (es.csic.iiia.dcop.vp.strategy.expansion.RootExpandsAll.class),
+        ROOT (es.csic.iiia.dcop.vp.strategy.expansion.RootExpansion.class),
+        GREEDY (es.csic.iiia.dcop.vp.strategy.expansion.GreedyExpansion.class),
         STOCHASTIC (es.csic.iiia.dcop.vp.strategy.expansion.StochasticalExpansion.class),
         INFORMATION_LOSS (es.csic.iiia.dcop.vp.strategy.expansion.InformationLossExpansion.class),
         ;
@@ -225,7 +228,7 @@ public class CliApp {
     public static final int CO_NONE     = 2;
     public static final int CO_SPARSE   = 3;
 
-    private int algorithm = ALGO_GDL;
+    private Algorithm algorithm = Algorithm.GDL;
     private int heuristic = JT_HEURISTIC_MCS;
     private CostFunction.Summarize summarizeOperation = CostFunction.Summarize.MIN;
     private CostFunction.Combine combineOperation = CostFunction.Combine.SUM;
@@ -250,7 +253,7 @@ public class CliApp {
     private String traceFile = "trace.txt";
     private int IGdlR = 2;
     private ApproximationStrategies approximationStrategy = ApproximationStrategies.RANKUP;
-    private SolutionExpansionStrategies expansionStrategy = SolutionExpansionStrategies.ROOT_EXPANDS;
+    private SolutionExpansionStrategies expansionStrategy = SolutionExpansionStrategies.GREEDY;
     private SolutionSolvingStrategies solvingStrategy = SolutionSolvingStrategies.OPTIMAL;
 
     private String optimalFile = null;
@@ -436,7 +439,7 @@ public class CliApp {
         setupLogHandling();
 
         // Parameter combination checks
-        if (algorithm == ALGO_MAX_SUM && normalization == CostFunction.Normalize.NONE) {
+        if (algorithm == Algorithm.MAX_SUM && normalization == CostFunction.Normalize.NONE) {
             System.err.println("Warning: maxsum doesn't converge without normalization, using sum0.");
             normalization = CostFunction.Normalize.SUM0;
         }
@@ -449,10 +452,12 @@ public class CliApp {
         factory.setSummarizeOperation(summarizeOperation);
         CostFunction[] factors = r.read(input, factory);
 
+        printInformation();
+
         // Filter out unary variables
         VariableAssignment unaries = UnaryVariableFilterer.filterVariables(factors);
         if (unaries.size() > 0) {
-            System.out.println(unaries.size() + " unary variables found.");
+            System.out.println("[Info] " + unaries.size() + " unary variables found.");
         }
 
         // Output factor graph
@@ -464,7 +469,7 @@ public class CliApp {
         // DSA Can solve from here
         VariableAssignment map = null;
 
-        if (algorithm == ALGO_DSA) {
+        if (algorithm == Algorithm.DSA) {
 
             DSA dsa = new DSA(fg);
             DSAResults res = dsa.run(10000);
@@ -481,7 +486,7 @@ public class CliApp {
                     expansionStrategy.getInstance(),
                     solvingStrategy.getInstance()
             );
-            if (algorithm == ALGO_FIGDL && cg instanceof FIGdlGraph) {
+            if (algorithm == Algorithm.FIGDL && cg instanceof FIGdlGraph) {
                 FIGdlGraph.setSolutionStrategy(sStrategy);
             }
 
@@ -509,7 +514,7 @@ public class CliApp {
             UPResults results = cg.run(1000);
             UBResults ubres = null;
 
-            if (algorithm == ALGO_FIGDL && cg instanceof FIGdlGraph) {
+            if (algorithm == Algorithm.FIGDL && cg instanceof FIGdlGraph) {
                 ubres = ((FIGdlGraph)cg).getUBResults();
             } else {
                 VPGraph st = new VPGraph(cg, sStrategy);
@@ -613,10 +618,10 @@ public class CliApp {
         UPGraph cg = null;
         switch(algorithm) {
 
-            case ALGO_GDL:
-            case ALGO_FIGDL:
+            case GDL:
+            case FIGDL:
                 UPFactory factory = null;
-                if (algorithm == ALGO_GDL) {
+                if (algorithm == Algorithm.GDL) {
                     factory = new GdlFactory();
                     ((GdlFactory)factory).setMode(Modes.TREE_UP);
                 } else {
@@ -662,8 +667,6 @@ public class CliApp {
                             minVariables = variables;
                             cg = candidateCg;
                             results = candidateResults;
-                            int newRoot = jt.getLowestDecisionRoot();
-                            cg.setRoot(newRoot);
                         }
                     }
                 }
@@ -671,6 +674,15 @@ public class CliApp {
                 System.out.println("MAX_CLIQUE_VARIABLES " + results.getMaxVariables());
                 System.out.println("MAX_CLIQUE_SIZE " + results.getMaxSize());
                 System.out.println("MAX_EDGE_VARIABLES " + results.getMaxEdgeVariables());
+
+                JunctionTree jt = new JunctionTree(cg);
+                results = jt.run(1000);
+                variables = results.getMaxVariables();
+                int newRoot = jt.getLowestDecisionRoot();
+                cg.setRoot(newRoot);
+                System.out.println("[Info] Maximum-decision-variables: " + jt.getNumberOfDecisionVariables(newRoot));
+                //System.out.println(jt.getTreeOfDecisionVariables(newRoot));
+
                 createCliqueGraphFile(cg);
                 createCliqueTreeFile(cg);
                 if (results.getMaxVariables() >= maxCliqueVariables) {
@@ -679,7 +691,7 @@ public class CliApp {
                 }
                 break;
 
-            case ALGO_MAX_SUM:
+            case MAX_SUM:
                 cg = MaxSum.buildGraph(factors);
                 createCliqueGraphFile(cg);
                 break;
@@ -689,7 +701,7 @@ public class CliApp {
         return cg;
     }
 
-    void setAlgorithm(int algo) {
+    void setAlgorithm(Algorithm algo) {
         algorithm = algo;
     }
 
