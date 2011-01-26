@@ -119,7 +119,10 @@ public abstract class AbstractGraph<N extends Node,E extends Edge,R extends Resu
     }
 
     public void setRoot(int root) {
+        if (this.root >= 0)
+            nodes.get(this.root).unsetRoot();
         this.root = root;
+        nodes.get(root).setRoot();
     }
 
     @Override

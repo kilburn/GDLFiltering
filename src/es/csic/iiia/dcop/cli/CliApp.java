@@ -70,6 +70,7 @@ import es.csic.iiia.dcop.mp.AbstractNode.Modes;
 import es.csic.iiia.dcop.up.UPFactory;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.util.Compressor;
+import es.csic.iiia.dcop.util.MemoryTracker;
 import es.csic.iiia.dcop.util.UnaryVariableFilterer;
 import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.VPResults;
@@ -110,6 +111,11 @@ public class CliApp {
         System.out.println("[Info] Combine: " + combineOperation.toString());
         System.out.println("[Info] Normalize: " + normalization.toString());
         if (algorithm == Algorithm.FIGDL) {
+            System.out.println("[Info] Filtering style: " + 
+                    (ApproximationStrategy.filteringMethod == ApproximationStrategy.FILTER_IMPROVED
+                    ? "two-sides"
+                    : "one-side")
+            );
             System.out.println("[Info] Approximation: " + approximationStrategy.toString());
             System.out.println("[Info] Number-of-solutions: " + VPStrategy.numberOfSolutions);
             System.out.println("[Info] Solution-expansion: " + expansionStrategy.toString());
@@ -550,6 +556,7 @@ public class CliApp {
             cost += f.getValue(map);
         }
         System.out.println("COST " + cost);
+        System.out.println("MAX_NODE_MEMORY " + MemoryTracker.asString() + " Mb");
     }
 
     void setCreateCliqueGraph(boolean create) {

@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  * 
- * Copyright (c) 2010, IIIA-CSIC, Artificial Intelligence Research Institute
+ * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
  * All rights reserved.
  * 
  * Redistribution and use of this software in source and binary forms, with or
@@ -36,21 +36,23 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.vp.strategy.expansion;
-
-import es.csic.iiia.dcop.VariableAssignment;
-import es.csic.iiia.dcop.figdl.FIGdlNode;
-import es.csic.iiia.dcop.vp.strategy.VPStrategy;
-import java.util.ArrayList;
+package es.csic.iiia.dcop.util;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class RootExpandsAll implements ExpansionStrategy {
+public class MemoryTracker {
 
-    public int getNumberOfSolutionsToExpand(ArrayList<VariableAssignment> mappings, FIGdlNode upnode) {
-        return VPStrategy.numberOfSolutions - mappings.size();
+    static long max = 0;
+
+    public static void track(long bytes) {
+        max = Math.max(max, bytes);
+    }
+
+    public static String asString() {
+        double mbs = max/(1024*1024f);
+        return Double.toString(mbs);
     }
 
 }

@@ -38,14 +38,18 @@
 
 package es.csic.iiia.dcop.figdl.strategy;
 
+import ch.qos.logback.core.rolling.helper.Compressor;
 import es.csic.iiia.dcop.CostFunction;
+import es.csic.iiia.dcop.MapCostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.figdl.FIGdlNode;
 import es.csic.iiia.dcop.figdl.FIGdlMessage;
 import es.csic.iiia.dcop.up.IUPNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
+import es.csic.iiia.dcop.util.MemoryTracker;
 import java.util.ArrayList;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -151,6 +155,25 @@ public abstract class ApproximationStrategy {
         return res;
     }
 
+    private long getRequiredMemory(CostFunction f) {
+        long header = f.getVariableSet().size() * 4L;
+        long payload;
+        if (f instanceof MapCostFunction)
+            payload = (f.getSize() - f.getNumberOfNoGoods()) * 16L;
+        else
+            payload = f.getSize() * 8L;
+
+        return header+payload;
+    }
+
+    private long getRequiredMemory(List<CostFunction> fs) {
+        long sum = 0;
+        for (CostFunction f : fs) {
+            sum += getRequiredMemory(f);
+        }
+        return sum;
+    }
+
     protected FIGdlMessage filterMessage(UPEdge<? extends IUPNode, FIGdlMessage> e,
             FIGdlMessage msg) {
 
@@ -162,9 +185,15 @@ public abstract class ApproximationStrategy {
         FIGdlMessage prev = fetchPreviousMessage(e);
         ArrayList<CostFunction> fs = prev.getFactors();
 
+        // Memory consumed, including:
+        // 1. Problem's belief 
+        long mem = getRequiredMemory(node.getBelief());
+
         // 1. Every previously incoming factor is used to filter the outgoing factor.
         // 2. Other outgoing factors can *also* aid in filtering.
         ArrayList<CostFunction> outFunctions = msg.getFactors();
+        mem += getRequiredMemory(outFunctions);
+        long max = 0;
         for (int i=0, len=outFunctions.size(); i<len; i++) {
             ArrayList<CostFunction> filterers;
             if (filteringMethod == FILTER_IMPROVED) {
@@ -175,7 +204,9 @@ public abstract class ApproximationStrategy {
             } else {
                 filterers = fs;
             }
-            
+
+            max = Math.max(getRequiredMemory(outFunctions.get(i)), max);
+
             final CostFunction outf = outFunctions.get(i);
             final CostFunction filtered = outf.filter(filterers, bound);
             if (log.isTraceEnabled()) {
@@ -184,6 +215,8 @@ public abstract class ApproximationStrategy {
             }
             res.addFactor(filtered);
         }
+        mem += max;
+        MemoryTracker.track(mem);
 
         res.cc = msg.cc;
         return res;

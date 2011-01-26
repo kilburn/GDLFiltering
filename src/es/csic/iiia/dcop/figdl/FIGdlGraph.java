@@ -49,6 +49,7 @@ import es.csic.iiia.dcop.up.UPResults;
 import es.csic.iiia.dcop.util.BytesSent;
 import es.csic.iiia.dcop.util.ConstraintChecks;
 import es.csic.iiia.dcop.util.FunctionCounter;
+import es.csic.iiia.dcop.util.MemoryTracker;
 import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.VPResults;
 import es.csic.iiia.dcop.vp.strategy.VPStrategy;
@@ -171,6 +172,7 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, FIGdlMessage
                 System.out.println("ITERBYTES " + iterBytes);
                 System.out.println("ITERCCS " + iterCCs);
                 System.out.println("ITERSPARSITY " + FunctionCounter.getRatio());
+                System.out.println("ITERMAX_NODE_MEMORY " + MemoryTracker.asString() + " Mb");
 
                 System.out.println("THIS_ITER_LB " + ubResults.getBound());
                 System.out.println("THIS_ITER_UB " + ubResults.getCost());

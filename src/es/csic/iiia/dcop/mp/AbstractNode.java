@@ -288,6 +288,10 @@ public abstract class AbstractNode<E extends Edge, R extends Result> implements 
     public void setRoot() {
         this.root = true;
     }
+    /** {@inheritDoc} */
+    public void unsetRoot() {
+        this.root = false;
+    }
 
 
 }
