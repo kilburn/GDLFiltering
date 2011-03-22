@@ -51,12 +51,16 @@ import java.io.FileNotFoundException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryUsage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
 public class Cli {
+
+    private static Logger log = LoggerFactory.getLogger(Cli.class);
 
     private static final String programName = "dcop";
 
@@ -80,7 +84,7 @@ public class Cli {
         System.err.println("    Uses the specified combining operator, where operator is one of: ");
         System.err.println("      - sum : combine using addition.");
         System.err.println("      - prod : combine using product.");
-        System.err.println("  --compress=method (arith)");
+        System.err.println("  --compress=method (none)");
         System.err.println("    Uses the specified compression method for sent messages, method iis one of: ");
         System.err.println("      - arith  : compress using an arithmetic compressor with a 8-byte PPM model.");
         System.err.println("      - bz2    : compress using a bzip2 compressor.");
@@ -108,7 +112,7 @@ public class Cli {
         System.err.println("    Use the tree definition found in <file>.");
         System.err.println("  -m variables, --max-clique-size=variables (14)");
         System.err.println("    Don not try to solve problems with cliques of more than <variables> variables.");
-        System.err.println("  -j tries, --jt-tries tries (1)");
+        System.err.println("  -j tries, --jt-tries tries (30)");
         System.err.println("    Number of junction trees to build trying to minimize the maximum clique size.");
         System.err.println("  -n mode, --normalize=mode (none)");
         System.err.println("    Uses the specified normalization mode, where it is one of: ");
@@ -121,6 +125,10 @@ public class Cli {
         System.err.println("    Sets figdl's minimum r to <number>.");
         System.err.println("  --max-s=<number> (inf)");
         System.err.println("    Sets figdl to operate with s_max = number >= r.");
+        System.err.println("  -o format, --output-format=format (uai)");
+        System.err.println("    Uses the specified output format, where format is one of: ");
+        System.err.println("      - uai        : uses the UAI competition output format.");
+        System.err.println("      - custom     : uses the custom output format.");
         System.err.println("  --optimal-file=<file>");
         System.err.println("    Uses the value stored in <file> as a previously-known optimal (for testing).");
         System.err.println("  --old-style-filtering");
@@ -143,7 +151,7 @@ public class Cli {
         System.err.println("    Sets the probability parameter of both DSA algorithm and stochastical solution expansion.");
         System.err.println("  -r [variance], --random-noise[=variance]");
         System.err.println("    Adds random noise with <variance> variance, or 0.001 if unspecified.");
-        System.err.println("  -s operation, --summarize=operation (min)");
+        System.err.println("  -s operation, --summarize=operation (max)");
         System.err.println("    Uses the specified summarizing operator, where operator is one of: ");
         System.err.println("      - min : summarizes using the minimum value (for costs).");
         System.err.println("      - max : summarizes using the maximum value (for utilites).");
@@ -188,6 +196,7 @@ public class Cli {
             new LongOpt("max-s", LongOpt.REQUIRED_ARGUMENT, null, 3),
             new LongOpt("normalize", LongOpt.REQUIRED_ARGUMENT, null, 'n'),
             new LongOpt("nsols", LongOpt.REQUIRED_ARGUMENT, null, 1),
+            new LongOpt("output-format", LongOpt.REQUIRED_ARGUMENT, null, 'o'),
             new LongOpt("old-style-filtering", LongOpt.NO_ARGUMENT, null, 8),
             new LongOpt("optimal-file", LongOpt.REQUIRED_ARGUMENT, null, 5),
             new LongOpt("partition-strategy", LongOpt.REQUIRED_ARGUMENT, null, 'p'),
@@ -198,7 +207,7 @@ public class Cli {
             new LongOpt("solution-solving", LongOpt.REQUIRED_ARGUMENT, null, 7),
             new LongOpt("trace", LongOpt.OPTIONAL_ARGUMENT, null, 't'),
         };
-        Getopt g = new Getopt(programName, argv, "a:c:e:f::g::hi:j:l:m:n:p:r::s:t::", longopts);
+        Getopt g = new Getopt(programName, argv, "a:c:e:f::g::hi:j:l:m:n:o:p:r::s:t::", longopts);
 
         CliApp cli = new CliApp();
         int c=0;
@@ -408,7 +417,7 @@ public class Cli {
                     break;
 
                 case 'n':
-                    arg = g.getOptarg();
+                    arg = g.getOptarg().toLowerCase();
                     if (arg.equals("none"))
                         cli.setNormalization(CostFunction.Normalize.NONE);
                     else if (arg.equals("sum1"))
@@ -416,13 +425,25 @@ public class Cli {
                     else if (arg.equals("sum0"))
                         cli.setNormalization(CostFunction.Normalize.SUM0);
                     else {
-                        System.err.println("Error: invalid heuristic \"" + arg + "\"");
+                        System.err.println("Error: invalid normalization \"" + arg + "\"");
+                        System.exit(0);
+                    }
+                    break;
+
+                case 'o':
+                    arg = g.getOptarg().toLowerCase();
+                    if (arg.equals("uai"))
+                        cli.setOutputFormat(CliApp.OutputFormat.UAI);
+                    else if (arg.equals("custom"))
+                        cli.setOutputFormat(CliApp.OutputFormat.CUSTOM);
+                    else {
+                        System.err.println("Error: invalid output format \"" + arg + "\"");
                         System.exit(0);
                     }
                     break;
 
                 case 'p':
-                    arg = g.getOptarg();
+                    arg = g.getOptarg().toLowerCase();
                     if (arg.equals("scp-c"))
                         cli.setPartitionStrategy(CliApp.ApproximationStrategies.SCP_C);
                     else if (arg.equals("scp-cc"))
@@ -529,7 +550,7 @@ public class Cli {
             long t1 = ManagementFactory.getThreadMXBean().getCurrentThreadUserTime();
             cli.run();
             t1 = ManagementFactory.getThreadMXBean().getCurrentThreadUserTime() - t1;
-            System.out.println("TIME " + t1/(float)1000000000 + "s");
+            log.info("TIME " + t1/(float)1000000000 + "s");
 
             t.interrupt();
             t.join();
@@ -541,7 +562,7 @@ public class Cli {
             t.interrupt();
         }
         long bytes = mw.maxBytes;
-        System.out.println("MEM " + bytes/(1024*1024) + "Mb");
+        log.info("MEM " + bytes/(1024*1024) + "Mb");
     }
 
     public class MemoryWatcher implements Runnable {

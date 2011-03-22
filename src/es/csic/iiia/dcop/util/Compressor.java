@@ -54,7 +54,7 @@ import java.util.logging.Logger;
  */
 public class Compressor {
 
-    public static int METHOD = CliApp.CO_ARITH;
+    public static int METHOD = CliApp.CO_NONE;
 
     public static long getCompressedSizeF(CostFunction f) {
         switch(METHOD) {

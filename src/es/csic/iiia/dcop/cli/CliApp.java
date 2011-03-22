@@ -103,31 +103,45 @@ import org.slf4j.LoggerFactory;
  */
 public class CliApp {
 
-    private static Logger log = LoggerFactory.getLogger(CliApp.class);
+    private static Logger log = LoggerFactory.getLogger(Cli.class);
 
     private void printInformation() {
-        System.out.println("[Info] Algorithm: " + algorithm.toString());
-        System.out.println("[Info] Summarize: " + summarizeOperation.toString());
-        System.out.println("[Info] Combine: " + combineOperation.toString());
-        System.out.println("[Info] Normalize: " + normalization.toString());
+        log.info("[Info] Algorithm: " + algorithm.toString());
+        log.info("[Info] Summarize: " + summarizeOperation.toString());
+        log.info("[Info] Combine: " + combineOperation.toString());
+        log.info("[Info] Normalize: " + normalization.toString());
         if (algorithm == Algorithm.FIGDL) {
-            System.out.println("[Info] Filtering style: " + 
+            log.info("[Info] Filtering style: " +
                     (ApproximationStrategy.filteringMethod == ApproximationStrategy.FILTER_IMPROVED
                     ? "two-sides"
                     : "one-side")
             );
-            System.out.println("[Info] Approximation: " + approximationStrategy.toString());
-            System.out.println("[Info] Number-of-solutions: " + VPStrategy.numberOfSolutions);
-            System.out.println("[Info] Solution-expansion: " + expansionStrategy.toString());
+            log.info("[Info] Approximation: " + approximationStrategy.toString());
+            log.info("[Info] Number-of-solutions: " + VPStrategy.numberOfSolutions);
+            log.info("[Info] Solution-expansion: " + expansionStrategy.toString());
             if (expansionStrategy == SolutionExpansionStrategies.STOCHASTIC) {
-                System.out.println("[Info] Expansion-probability: " + StochasticalExpansion.p);
+                log.info("[Info] Expansion-probability: " + StochasticalExpansion.p);
             }
-            System.out.println("[Info] Solution-exploration: " + solvingStrategy.toString());
+            log.info("[Info] Solution-exploration: " + solvingStrategy.toString());
         }
     }
 
     public enum Algorithm {
         GDL, MAX_SUM, FIGDL, DSA
+    }
+
+    public enum OutputFormat {
+        UAI, CUSTOM
+    }
+
+    private OutputFormat outputFormat = OutputFormat.UAI;
+
+    public OutputFormat getOutputFormat() {
+        return outputFormat;
+    }
+
+    public void setOutputFormat(OutputFormat outputFormat) {
+        this.outputFormat = outputFormat;
     }
 
     /**
@@ -236,11 +250,11 @@ public class CliApp {
 
     private Algorithm algorithm = Algorithm.GDL;
     private int heuristic = JT_HEURISTIC_MCS;
-    private CostFunction.Summarize summarizeOperation = CostFunction.Summarize.MIN;
+    private CostFunction.Summarize summarizeOperation = CostFunction.Summarize.MAX;
     private CostFunction.Combine combineOperation = CostFunction.Combine.SUM;
     private CostFunction.Normalize normalization = CostFunction.Normalize.NONE;
     private int maxCliqueVariables = 14;
-    private int maxJunctionTreeTries = 1;
+    private int maxJunctionTreeTries = 30;
     private double randomVariance = 0;
 
     /**
@@ -434,10 +448,10 @@ public class CliApp {
         avg /= (double)varSet.size();
 
         // Output stats
-        System.out.println("VARIABLES " + varSet.size());
-        System.out.println("MIN_DOMAIN " + min);
-        System.out.println("AVG_DOMAIN " + avg);
-        System.out.println("MAX_DOMAIN " + max);
+        log.info("VARIABLES " + varSet.size());
+        log.info("MIN_DOMAIN " + min);
+        log.info("AVG_DOMAIN " + avg);
+        log.info("MAX_DOMAIN " + max);
     }
 
     void run() {
@@ -463,7 +477,7 @@ public class CliApp {
         // Filter out unary variables
         VariableAssignment unaries = UnaryVariableFilterer.filterVariables(factors);
         if (unaries.size() > 0) {
-            System.out.println("[Info] " + unaries.size() + " unary variables found.");
+            log.info("[Info] " + unaries.size() + " unary variables found.");
         }
 
         // Output factor graph
@@ -480,7 +494,7 @@ public class CliApp {
             DSA dsa = new DSA(fg);
             DSAResults res = dsa.run(10000);
             map = res.getGlobalAssignment();
-            System.out.println("ITERATIONS " + res.getIterations());
+            log.info("ITERATIONS " + res.getIterations());
             
         } else {
 
@@ -532,31 +546,36 @@ public class CliApp {
             }
 
             map = ubres.getMap();
-            System.out.println("ITERATIONS " + results.getIterations());
-            System.out.println("CBR " + results.getCBR(communicationCost));
-            System.out.println("TOTAL_CCS " + results.getTotalCcc());
-            System.out.println("CYCLE_CCS " + results.getMaximalCcc());
-            System.out.println("TOTAL_BYTES " + results.getTotalBytesc());
-            System.out.println("CYBLE_BYTES " + results.getMaximalBytesc());
-            System.out.println("LOAD_FACTOR " + results.getLoadFactor());
-            System.out.println("BOUND " + ubres.getBound());
+            log.info("ITERATIONS " + results.getIterations());
+            log.info("CBR " + results.getCBR(communicationCost));
+            log.info("TOTAL_CCS " + results.getTotalCcc());
+            log.info("CYCLE_CCS " + results.getMaximalCcc());
+            log.info("TOTAL_BYTES " + results.getTotalBytesc());
+            log.info("CYBLE_BYTES " + results.getMaximalBytesc());
+            log.info("LOAD_FACTOR " + results.getLoadFactor());
+            log.info("BOUND " + ubres.getBound());
         }
 
         map.putAll(unaries);
         SortedMap<Variable, Integer> foo = new TreeMap<Variable, Integer>(map);
-        System.out.print("SOLUTION");
-        for(Variable v : foo.keySet()) {
-            System.out.print(" " + (map.get(v)));
+        StringBuilder buf = new StringBuilder();
+        if (outputFormat == outputFormat.UAI) {
+            buf.append("MPE\n").append(foo.size());
+        } else {
+            buf.append("SOLUTION ");
         }
-        System.out.println();
+        for(Variable v : foo.keySet()) {
+            buf.append(" ").append(map.get(v));
+        }
+        System.out.println(buf.toString());
 
         // Evaluate solution
         double cost = 0;
         for (CostFunction f : factors) {
-            cost += f.getValue(map);
+            cost = combineOperation.eval(cost, f.getValue(map));
         }
-        System.out.println("COST " + cost);
-        System.out.println("MAX_NODE_MEMORY " + MemoryTracker.asString() + " Mb");
+        log.info("COST " + cost);
+        log.info("MAX_NODE_MEMORY " + MemoryTracker.asString() + " Mb");
     }
 
     void setCreateCliqueGraph(boolean create) {
@@ -678,16 +697,16 @@ public class CliApp {
                     }
                 }
                 
-                System.out.println("MAX_CLIQUE_VARIABLES " + results.getMaxVariables());
-                System.out.println("MAX_CLIQUE_SIZE " + results.getMaxSize());
-                System.out.println("MAX_EDGE_VARIABLES " + results.getMaxEdgeVariables());
+                log.info("MAX_CLIQUE_VARIABLES " + results.getMaxVariables());
+                log.info("MAX_CLIQUE_SIZE " + results.getMaxSize());
+                log.info("MAX_EDGE_VARIABLES " + results.getMaxEdgeVariables());
 
                 JunctionTree jt = new JunctionTree(cg);
                 results = jt.run(1000);
                 variables = results.getMaxVariables();
                 int newRoot = jt.getLowestDecisionRoot();
                 cg.setRoot(newRoot);
-                System.out.println("[Info] Maximum-decision-variables: " + jt.getNumberOfDecisionVariables(newRoot));
+                log.info("[Info] Maximum-decision-variables: " + jt.getNumberOfDecisionVariables(newRoot));
                 //System.out.println(jt.getTreeOfDecisionVariables(newRoot));
 
                 createCliqueGraphFile(cg);
@@ -776,20 +795,22 @@ public class CliApp {
     }
 
     private void setupLogHandling() {
-        if (!isCreateTraceFile()) {
-            return;
-        }
-
         LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
         try {
             JoranConfigurator configurator = new JoranConfigurator();
             configurator.setContext(lc);
             lc.reset();
+            if (outputFormat == OutputFormat.UAI) {
+                lc.putProperty("log-root-level", "OFF");
+            }
+            URL cURL;
             if (this.createTraceFile) {
                 lc.putProperty("file.name", traceFile);
-                URL cURL = getClass().getClassLoader().getResource("logback-trace.xml");
-                configurator.doConfigure(cURL);
+                cURL = getClass().getClassLoader().getResource("logback-trace.xml");
+            } else {
+                cURL = getClass().getClassLoader().getResource("logback.xml");
             }
+            configurator.doConfigure(cURL);
         } catch (JoranException je) {
             je.printStackTrace();
         }

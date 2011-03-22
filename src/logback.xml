@@ -17,7 +17,7 @@
     </appender>
 
     <root>
-        <level value="OFF" />
+        <level value="${log-root-level:-INFO}" />
         <appender-ref ref="STDOUT" />
     </root>
 

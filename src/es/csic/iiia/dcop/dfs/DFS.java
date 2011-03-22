@@ -253,11 +253,11 @@ public abstract class DFS {
             adjacency[variableIndices.get(root)][variableIndices.get(n)] = 1;
         }
 
-        StringBuilder buf = new StringBuilder("Subtrees: [");
+        /*StringBuilder buf = new StringBuilder("Subtrees: [");
         for(Integer i : subtreeNodes) {
             buf.append(i).append(", ");
         }
-        System.out.println(buf.append("]").toString());
+        System.out.println(buf.append("]").toString());*/
     }
 
     private void chosenVariable(Variable variable) {

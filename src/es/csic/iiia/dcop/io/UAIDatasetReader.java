@@ -44,12 +44,16 @@ import es.csic.iiia.dcop.Variable;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StreamTokenizer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
 public class UAIDatasetReader {
+    private static Logger log = LoggerFactory.getLogger(UAIDatasetReader.class);
+
     private CostFunctionFactory factory;
 
     public CostFunction[] read(BufferedReader input, CostFunctionFactory factory) {
@@ -146,11 +150,11 @@ public class UAIDatasetReader {
                         // The input values are probabilities, so we have to
                         // log them, and negating makes the costs positive
                         // (so we have to minimize instead of maximize)
-                        factorValues[j++] = -Math.log(v);
+                        factorValues[j++] = v;
                         if (j == nFactorStates) {
                             factors[i++].setValues(factorValues);
                             if (i == nfactors) {
-                                System.out.println("Done reading");
+                                log.info("Done reading");
                             }
                             state = 5;
                         }
