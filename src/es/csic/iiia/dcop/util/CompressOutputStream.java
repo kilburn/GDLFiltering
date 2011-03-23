@@ -59,10 +59,10 @@ public class CompressOutputStream extends OutputStream {
     public CompressOutputStream() {
         byteCounter = new CountOutputStream();
         switch(Compressor.METHOD) {
-            case CliApp.CO_ARITH:
+            case ARITH:
                 compressor = new ArithCodeOutputStream(byteCounter, new PPMModel(8));
                 break;
-            case CliApp.CO_BZIP2:
+            case BZIP2:
                 try {
                     compressor = new CBZip2OutputStream(compressor);
                 } catch (IOException ex) {

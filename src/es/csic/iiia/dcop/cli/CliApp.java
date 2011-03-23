@@ -53,8 +53,6 @@ import es.csic.iiia.dcop.bb.UBGraph;
 import es.csic.iiia.dcop.bb.UBResults;
 import es.csic.iiia.dcop.up.UPResults;
 import es.csic.iiia.dcop.dfs.DFS;
-import es.csic.iiia.dcop.dfs.MCN;
-import es.csic.iiia.dcop.dfs.MCS;
 import es.csic.iiia.dcop.dsa.DSA;
 import es.csic.iiia.dcop.dsa.DSAResults;
 import es.csic.iiia.dcop.figdl.FIGdlFactory;
@@ -75,9 +73,7 @@ import es.csic.iiia.dcop.util.UnaryVariableFilterer;
 import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.VPResults;
 import es.csic.iiia.dcop.vp.strategy.VPStrategy;
-import es.csic.iiia.dcop.vp.strategy.expansion.ExpansionStrategy;
 import es.csic.iiia.dcop.vp.strategy.expansion.StochasticalExpansion;
-import es.csic.iiia.dcop.vp.strategy.solving.SolvingStrategy;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -126,136 +122,23 @@ public class CliApp {
         }
     }
 
-    public enum Algorithm {
-        GDL, MAX_SUM, FIGDL, DSA
-    }
-
-    public enum OutputFormat {
-        UAI, CUSTOM
-    }
-
+    /**
+     * Output formatting choser
+     */
     private OutputFormat outputFormat = OutputFormat.UAI;
 
-    public OutputFormat getOutputFormat() {
-        return outputFormat;
-    }
-
-    public void setOutputFormat(OutputFormat outputFormat) {
-        this.outputFormat = outputFormat;
-    }
-
-    /**
-     * MCS junction tree building heuristic.
-     */
-    public static final int JT_HEURISTIC_MCS = 0;
-    /**
-     * MCN junction tree building heuristic.
-     */
-    public static final int JT_HEURISTIC_MCN = 1;
-
-    void setSolutionExpansion(SolutionExpansionStrategies solutionExpansionStrategy) {
-        this.expansionStrategy = solutionExpansionStrategy;
-    }
-    void setSolutionSolving(SolutionSolvingStrategies solutionSolvingStrategy) {
-        this.solvingStrategy = solutionSolvingStrategy;
-    }
-
-    public enum ApproximationStrategies {
-        SCP_C (es.csic.iiia.dcop.figdl.strategy.scp.SCPcStrategy.class),
-        SCP_CC (es.csic.iiia.dcop.figdl.strategy.scp.SCPccStrategy.class),
-        SCP_FLEX (es.csic.iiia.dcop.figdl.strategy.scp.SCPFlexibleStrategy.class),
-        RANKUP (es.csic.iiia.dcop.figdl.strategy.RankUpStrategy.class),
-        RANKDOWN (es.csic.iiia.dcop.figdl.strategy.RankDownStrategy.class),
-        LRE_D (es.csic.iiia.dcop.figdl.strategy.gd.LREGreedyStrategy.class),
-        LMRE_D (es.csic.iiia.dcop.figdl.strategy.gd.LMREGreedyStrategy.class),
-        ZEROS_D (es.csic.iiia.dcop.figdl.strategy.ZerosDecompositionStrategy.class),
-        ZEROS_FLEX (es.csic.iiia.dcop.figdl.strategy.FlexibleZerosDecompositionStrategy.class),
-        LRE_C (es.csic.iiia.dcop.figdl.strategy.cbp.LREcStrategy.class),
-        LRE_CC (es.csic.iiia.dcop.figdl.strategy.cbp.LREccStrategy.class),
-        LMRE_C (es.csic.iiia.dcop.figdl.strategy.cbp.LMREcStrategy.class),
-        LMRE_CC (es.csic.iiia.dcop.figdl.strategy.cbp.LMREccStrategy.class),
-        SUPERSET (es.csic.iiia.dcop.figdl.strategy.scp.SCPSuperSetStrategy.class),
-        ;
-
-        private ApproximationStrategy instance;
-        ApproximationStrategies(Class<? extends ApproximationStrategy> c) {
-            try {
-                instance = c.newInstance();
-            } catch (InstantiationException ex) {
-                java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IllegalAccessException ex) {
-                java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        ApproximationStrategy getInstance() {
-            return instance;
-        }
-    }
-
-    /**
-     * Solution expansion strategies
-     */
-    public enum SolutionExpansionStrategies {
-        ROOT (es.csic.iiia.dcop.vp.strategy.expansion.RootExpansion.class),
-        GREEDY (es.csic.iiia.dcop.vp.strategy.expansion.GreedyExpansion.class),
-        STOCHASTIC (es.csic.iiia.dcop.vp.strategy.expansion.StochasticalExpansion.class),
-        INFORMATION_LOSS (es.csic.iiia.dcop.vp.strategy.expansion.InformationLossExpansion.class),
-        ;
-
-        private ExpansionStrategy instance;
-        SolutionExpansionStrategies(Class<? extends ExpansionStrategy> c) {
-            try {
-                instance = c.newInstance();
-            } catch (InstantiationException ex) {
-                java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IllegalAccessException ex) {
-                java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        ExpansionStrategy getInstance() {
-            return instance;
-        }
-    }
-
-    /**
-     * Solution propagation strategies
-     */
-    public enum SolutionSolvingStrategies {
-        OPTIMAL (es.csic.iiia.dcop.vp.strategy.solving.OptimalSolvingStrategy.class),
-        DSA (es.csic.iiia.dcop.vp.strategy.solving.DSASolvingStrategy.class),
-        ;
-
-        private SolvingStrategy instance;
-        SolutionSolvingStrategies(Class<? extends SolvingStrategy> c) {
-            try {
-                instance = c.newInstance();
-            } catch (InstantiationException ex) {
-                java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IllegalAccessException ex) {
-                java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        SolvingStrategy getInstance() {
-            return instance;
-        }
-    }
-
-    /**
-     * Compession methods
-     */
-    public static final int CO_ARITH    = 0;
-    public static final int CO_BZIP2    = 1;
-    public static final int CO_NONE     = 2;
-    public static final int CO_SPARSE   = 3;
-
     private Algorithm algorithm = Algorithm.GDL;
-    private int heuristic = JT_HEURISTIC_MCS;
     private CostFunction.Summarize summarizeOperation = CostFunction.Summarize.MAX;
     private CostFunction.Combine combineOperation = CostFunction.Combine.SUM;
     private CostFunction.Normalize normalization = CostFunction.Normalize.NONE;
     private int maxCliqueVariables = 14;
-    private int maxJunctionTreeTries = 30;
     private double randomVariance = 0;
+
+    /**
+     * Junction Tree building parameters
+     */
+    private JTBuildingHeuristic heuristic = JTBuildingHeuristic.MCS;
+    private int maxJunctionTreeTries = 30;
 
     /**
      * Tree/Graph import/export options
@@ -269,166 +152,26 @@ public class CliApp {
     private String cliqueTreeFile  = "problem.tree";
 
 
+    /**
+     * Algorithm tracing options
+     */
     private boolean createTraceFile = false;
     private String traceFile = "trace.txt";
-    private int IGdlR = 2;
+
+
+    /**
+     * Strategies to use for GDL with filtering
+     */
     private ApproximationStrategies approximationStrategy = ApproximationStrategies.RANKUP;
     private SolutionExpansionStrategies expansionStrategy = SolutionExpansionStrategies.GREEDY;
     private SolutionSolvingStrategies solvingStrategy = SolutionSolvingStrategies.OPTIMAL;
 
+    private int IGdlR = 2;
     private String optimalFile = null;
-
-    public String getOptimalFile() {
-        return optimalFile;
-    }
-
-    public void setOptimalFile(String optimalFile) {
-        this.optimalFile = optimalFile;
-    }
-
-    public String getCliqueTreeFile() {
-        return cliqueTreeFile;
-    }
-
-    public void setCliqueTreeFile(String cliqueTreeFile) {
-        this.cliqueTreeFile = cliqueTreeFile;
-    }
-
-    public boolean isCreateCliqueTree() {
-        return createCliqueTree;
-    }
-
-    public void setCreateCliqueTree(boolean createCliqueTree) {
-        this.createCliqueTree = createCliqueTree;
-    }
-
-    /**
-     * Get the maximum number of junction tree's built trying to minimize the
-     * maximal clique size.
-     *
-     * @return maximum number of junction tree building tries.
-     */
-    public int getMaxJunctionTreeTries() {
-        return maxJunctionTreeTries;
-    }
-
-    /**
-     * Set the maximum number of junction tree's built trying to minimize the
-     * maximal clique size.
-     *
-     * @param maxJunctionTreeTries number of junction tree building tries.
-     */
-    public void setMaxJunctionTreeTries(int maxJunctionTreeTries) {
-        this.maxJunctionTreeTries = maxJunctionTreeTries;
-    }
-
-    /**
-     * Get the variance of the random gaussian noise adder.
-     *
-     * @return random noise variance.
-     */
-    public double getRandomVariance() {
-        return randomVariance;
-    }
-
-    /**
-     * Set the variance of the random gaussian noise adder.
-     *
-     * @param randomVariance random noise variance.
-     */
-    public void setRandomVariance(double randomVariance) {
-        this.randomVariance = randomVariance;
-    }
-
-    /**
-     * Get the hard maximum of variables in one clique.
-     * 
-     * If no junction tree with less than this maximum is found in the
-     *
-     * @return
-     */
-    public int getMaxCliqueVariables() {
-        return maxCliqueVariables;
-    }
-
-    /**
-     *
-     * @param maxCliqueVariables
-     */
-    public void setMaxCliqueVariables(int maxCliqueVariables) {
-        this.maxCliqueVariables = maxCliqueVariables;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public int getCommunicationCost() {
-        return communicationCost;
-    }
-
-    /**
-     *
-     * @param communicationCost
-     */
-    public void setCommunicationCost(int communicationCost) {
-        this.communicationCost = communicationCost;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public CostFunction.Normalize getNormalization() {
-        return normalization;
-    }
-
-    /**
-     *
-     * @param normalization
-     */
-    public void setNormalization(CostFunction.Normalize normalization) {
-        this.normalization = normalization;
-    }
-    private int communicationCost = 0;
-
-    /**
-     *
-     * @return
-     */
-    public CostFunction.Combine getCombineOperation() {
-        return combineOperation;
-    }
-
-    /**
-     *
-     * @param combineOperation
-     */
-    public void setCombineOperation(CostFunction.Combine combineOperation) {
-        this.combineOperation = combineOperation;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public CostFunction.Summarize getSummarizeOperation() {
-        return summarizeOperation;
-    }
-
-    /**
-     *
-     * @param summarizeOperation
-     */
-    public void setSummarizeOperation(CostFunction.Summarize summarizeOperation) {
-        this.summarizeOperation = summarizeOperation;
-    }
-    
     private InputStream input = System.in;
 
 
     private void outputVariableStatistics(CostFunction[] factors) {
-
         // Collect all variables
         HashSet<Variable> varSet = new HashSet<Variable>();
         for (CostFunction f : factors) {
@@ -586,7 +329,7 @@ public class CliApp {
         createFactorGraph = create;
     }
 
-    void setHeuristic(int heuristic) {
+    void setHeuristic(JTBuildingHeuristic heuristic) {
         this.heuristic = heuristic;
     }
 
@@ -670,18 +413,8 @@ public class CliApp {
                 } else {
                     int minVariables = Integer.MAX_VALUE;
                     for(int i=0; i < maxJunctionTreeTries; i++) {
-                        DFS dfs = null;
-                        switch(heuristic) {
-                            case JT_HEURISTIC_MCS:
-                                dfs = new MCS(factors);
-                                break;
-                            default:
-                                System.err.println("Warning: invalid junction tree heuristic chosen, falling back to MCN.");
-                            case JT_HEURISTIC_MCN:
-                                dfs = new MCN(factors);
-                                break;
-                        }
-
+                        DFS dfs = heuristic.getInstance();
+                        dfs.build(factors);
                         UPGraph candidateCg = null;
                         candidateCg = JunctionTreeAlgo.buildGraph(factory, dfs.getFactorDistribution(), dfs.getAdjacency());
                         candidateCg.setRoot(dfs.getRoot());
@@ -820,8 +553,169 @@ public class CliApp {
         this.approximationStrategy = partitionStrategy;
     }
 
-    void setCompressionMethod(int method) {
+    void setCompressionMethod(CompressionMethod method) {
         Compressor.METHOD = method;
     }
 
+    public OutputFormat getOutputFormat() {
+        return outputFormat;
+    }
+
+    public void setOutputFormat(OutputFormat outputFormat) {
+        this.outputFormat = outputFormat;
+    }
+
+    void setSolutionExpansion(SolutionExpansionStrategies solutionExpansionStrategy) {
+        this.expansionStrategy = solutionExpansionStrategy;
+    }
+    void setSolutionSolving(SolutionSolvingStrategies solutionSolvingStrategy) {
+        this.solvingStrategy = solutionSolvingStrategy;
+    }
+
+    public String getOptimalFile() {
+        return optimalFile;
+    }
+
+    public void setOptimalFile(String optimalFile) {
+        this.optimalFile = optimalFile;
+    }
+
+    public String getCliqueTreeFile() {
+        return cliqueTreeFile;
+    }
+
+    public void setCliqueTreeFile(String cliqueTreeFile) {
+        this.cliqueTreeFile = cliqueTreeFile;
+    }
+
+    public boolean isCreateCliqueTree() {
+        return createCliqueTree;
+    }
+
+    public void setCreateCliqueTree(boolean createCliqueTree) {
+        this.createCliqueTree = createCliqueTree;
+    }
+
+    /**
+     * Get the maximum number of junction tree's built trying to minimize the
+     * maximal clique size.
+     *
+     * @return maximum number of junction tree building tries.
+     */
+    public int getMaxJunctionTreeTries() {
+        return maxJunctionTreeTries;
+    }
+
+    /**
+     * Set the maximum number of junction tree's built trying to minimize the
+     * maximal clique size.
+     *
+     * @param maxJunctionTreeTries number of junction tree building tries.
+     */
+    public void setMaxJunctionTreeTries(int maxJunctionTreeTries) {
+        this.maxJunctionTreeTries = maxJunctionTreeTries;
+    }
+
+    /**
+     * Get the variance of the random gaussian noise adder.
+     *
+     * @return random noise variance.
+     */
+    public double getRandomVariance() {
+        return randomVariance;
+    }
+
+    /**
+     * Set the variance of the random gaussian noise adder.
+     *
+     * @param randomVariance random noise variance.
+     */
+    public void setRandomVariance(double randomVariance) {
+        this.randomVariance = randomVariance;
+    }
+
+    /**
+     * Get the hard maximum of variables in one clique.
+     *
+     * If no junction tree with less than this maximum is found in the
+     *
+     * @return
+     */
+    public int getMaxCliqueVariables() {
+        return maxCliqueVariables;
+    }
+
+    /**
+     *
+     * @param maxCliqueVariables
+     */
+    public void setMaxCliqueVariables(int maxCliqueVariables) {
+        this.maxCliqueVariables = maxCliqueVariables;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public int getCommunicationCost() {
+        return communicationCost;
+    }
+
+    /**
+     *
+     * @param communicationCost
+     */
+    public void setCommunicationCost(int communicationCost) {
+        this.communicationCost = communicationCost;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public CostFunction.Normalize getNormalization() {
+        return normalization;
+    }
+
+    /**
+     *
+     * @param normalization
+     */
+    public void setNormalization(CostFunction.Normalize normalization) {
+        this.normalization = normalization;
+    }
+    private int communicationCost = 0;
+
+    /**
+     *
+     * @return
+     */
+    public CostFunction.Combine getCombineOperation() {
+        return combineOperation;
+    }
+
+    /**
+     *
+     * @param combineOperation
+     */
+    public void setCombineOperation(CostFunction.Combine combineOperation) {
+        this.combineOperation = combineOperation;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public CostFunction.Summarize getSummarizeOperation() {
+        return summarizeOperation;
+    }
+
+    /**
+     *
+     * @param summarizeOperation
+     */
+    public void setSummarizeOperation(CostFunction.Summarize summarizeOperation) {
+        this.summarizeOperation = summarizeOperation;
+    }
+    
 }

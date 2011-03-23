@@ -52,6 +52,8 @@ public class MCN extends DFS {
         super(factors);
     }
 
+    public MCN() {}
+
     protected HashSet<Variable> selectCandidates(HashSet<Variable> next) {
         return getMostConnectedNodes(next);
     }

@@ -42,6 +42,7 @@ import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.MapCostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.cli.CliApp;
+import es.csic.iiia.dcop.cli.CompressionMethod;
 import gnu.trove.iterator.TLongIterator;
 import java.io.IOException;
 import java.util.Collection;
@@ -54,14 +55,14 @@ import java.util.logging.Logger;
  */
 public class Compressor {
 
-    public static int METHOD = CliApp.CO_NONE;
+    public static CompressionMethod METHOD = CompressionMethod.NONE;
 
     public static long getCompressedSizeF(CostFunction f) {
         switch(METHOD) {
-            case CliApp.CO_BZIP2:
-            case CliApp.CO_ARITH:
+            case BZIP2:
+            case ARITH:
                 return arithmeticCompress(f);
-            case CliApp.CO_SPARSE:
+            case SPARSE:
                 final long size = f.getSize();
                 final long nGoods = size - f.getNumberOfNoGoods();
                 if (12*nGoods < 8*size) {
@@ -77,11 +78,11 @@ public class Compressor {
         long sum = 0;
         for (CostFunction f : fs) {
             switch(METHOD) {
-                case CliApp.CO_BZIP2:
-                case CliApp.CO_ARITH:
+                case BZIP2:
+                case ARITH:
                     sum += arithmeticCompressWithHeader(f);
                     break;
-                case CliApp.CO_SPARSE:
+                case SPARSE:
                     final long size = f.getSize();
 //                    final int zeros = f.getNumberOfZeros();
                     final long nGoods = size - f.getNumberOfNoGoods();

@@ -70,6 +70,12 @@ public abstract class DFS {
     private int rootIndex = -1;
 
     public DFS(CostFunction[] factors) {
+        build(factors);
+    }
+
+    public DFS() {}
+
+    public final void build(CostFunction[] factors) {
         this.factors = factors;
         this.initialize();
         random = new Random(System.nanoTime());

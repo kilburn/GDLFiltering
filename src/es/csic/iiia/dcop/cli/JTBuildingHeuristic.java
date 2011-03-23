@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  * 
- * Copyright (c) 2010, IIIA-CSIC, Artificial Intelligence Research Institute
+ * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
  * All rights reserved.
  * 
  * Redistribution and use of this software in source and binary forms, with or
@@ -36,27 +36,33 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.dfs;
+package es.csic.iiia.dcop.cli;
 
-import es.csic.iiia.dcop.CostFunction;
-import es.csic.iiia.dcop.Variable;
-import java.util.HashSet;
+import es.csic.iiia.dcop.dfs.DFS;
+import es.csic.iiia.dcop.dfs.MCN;
+import es.csic.iiia.dcop.dfs.MCS;
+import java.util.logging.Level;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class MCS extends DFS {
+public enum JTBuildingHeuristic {
+    MCS (MCS.class),
+    MCN (MCN.class),
+    ;
 
-    public MCS(CostFunction[] factors) {
-        super(factors);
+    private DFS instance;
+    JTBuildingHeuristic(Class<? extends DFS> c) {
+        try {
+            instance = c.newInstance();
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
-
-    public MCS() {}
-
-    protected HashSet<Variable> selectCandidates(HashSet<Variable> next) {
-        HashSet<Variable> selectedCandidates = getMostPlacedNeighsNodes(next);
-        return getMostConnectedNodes(selectedCandidates);
+    DFS getInstance() {
+        return instance;
     }
-
 }

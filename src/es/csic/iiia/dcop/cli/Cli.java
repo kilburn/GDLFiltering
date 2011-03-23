@@ -78,7 +78,7 @@ public class Cli {
         System.err.println("    Uses the specified algorithm, where algorithm is one of: ");
         System.err.println("      - gdl : GDL over junction tree optimal solver.");
         System.err.println("      - figdl : Filtered IGDL over junction tree solver.");
-        System.err.println("      - maxsum : max-sum approximation.");
+        System.err.println("      - max-sum : max-sum approximation.");
         System.err.println("      - dsa : dsa approximation (p=0.9).");
         System.err.println("  -c operation, --combine=operation (sum)");
         System.err.println("    Uses the specified combining operator, where operator is one of: ");
@@ -117,7 +117,7 @@ public class Cli {
         System.err.println("  -n mode, --normalize=mode (none)");
         System.err.println("    Uses the specified normalization mode, where it is one of: ");
         System.err.println("      - none : do not perform any normalization (default for junction tree algorithm).");
-        System.err.println("      - sum0 : values are normalized to sum zero (default for maxsum).");
+        System.err.println("      - sum0 : values are normalized to sum zero (default for max-sum).");
         System.err.println("      - sum1 : values are normalized to sum one.");
         System.err.println("  --nsols=<number> (1)");
         System.err.println("    Sets figdl to test <number> number of possible solutions at each iteration");
@@ -215,16 +215,10 @@ public class Cli {
         while ((c = g.getopt()) != -1) {
             switch(c) {
                 case 0:
-                    arg = g.getOptarg().toLowerCase();
-                    if (arg.equals("arith"))
-                        cli.setCompressionMethod(CliApp.CO_ARITH);
-                    else if (arg.equals("bz2"))
-                        cli.setCompressionMethod(CliApp.CO_BZIP2);
-                    else if (arg.equals("sparse"))
-                        cli.setCompressionMethod(CliApp.CO_SPARSE);
-                    else if (arg.equals("none"))
-                        cli.setCompressionMethod(CliApp.CO_NONE);
-                    else {
+                    arg = g.getOptarg().toUpperCase().replace('-','_');
+                    try {
+                        cli.setCompressionMethod(CompressionMethod.valueOf(arg));
+                    } catch (IllegalArgumentException e) {
                         System.err.println("Error: invalid compression method \"" + arg + "\"");
                         System.exit(0);
                     }
@@ -276,28 +270,20 @@ public class Cli {
                     break;
 
                 case 6:
-                    arg = g.getOptarg().toLowerCase();
-                    if (arg.equals("root"))
-                        cli.setSolutionExpansion(CliApp.SolutionExpansionStrategies.ROOT);
-                    else if (arg.equals("greedy"))
-                        cli.setSolutionExpansion(CliApp.SolutionExpansionStrategies.GREEDY);
-                    else if (arg.equals("stochastic"))
-                        cli.setSolutionExpansion(CliApp.SolutionExpansionStrategies.STOCHASTIC);
-                    else if (arg.equals("information"))
-                        cli.setSolutionExpansion(CliApp.SolutionExpansionStrategies.INFORMATION_LOSS);
-                    else {
+                    arg = g.getOptarg().toUpperCase().replace('-','_');
+                    try {
+                        cli.setSolutionExpansion(SolutionExpansionStrategies.valueOf(arg));
+                    } catch (IllegalArgumentException e) {
                         System.err.println("Error: invalid solution expansion strategy \"" + arg + "\"");
                         System.exit(0);
                     }
                     break;
 
                 case 7:
-                    arg = g.getOptarg().toLowerCase();
-                    if (arg.equals("optimal"))
-                        cli.setSolutionSolving(CliApp.SolutionSolvingStrategies.OPTIMAL);
-                    else if (arg.equals("dsa"))
-                        cli.setSolutionSolving(CliApp.SolutionSolvingStrategies.DSA);
-                    else {
+                    arg = g.getOptarg().toUpperCase().replace('-','_');
+                    try {
+                        cli.setSolutionSolving(SolutionSolvingStrategies.valueOf(arg));
+                    } catch (IllegalArgumentException e) {
                         System.err.println("Error: invalid solution solving strategy \"" + arg + "\"");
                         System.exit(0);
                     }
@@ -315,16 +301,10 @@ public class Cli {
                     break;
 
                 case 'a':
-                    arg = g.getOptarg().toLowerCase();
-                    if (arg.equals("gdl"))
-                        cli.setAlgorithm(CliApp.Algorithm.GDL);
-                    else if (arg.equals("maxsum"))
-                        cli.setAlgorithm(CliApp.Algorithm.MAX_SUM);
-                    else if (arg.equals("figdl"))
-                        cli.setAlgorithm(CliApp.Algorithm.FIGDL);
-                    else if (arg.equals("dsa"))
-                        cli.setAlgorithm(CliApp.Algorithm.DSA);
-                    else {
+                    arg = g.getOptarg().toUpperCase().replace('-','_');
+                    try {
+                        cli.setAlgorithm(Algorithm.valueOf(arg));
+                    } catch (IllegalArgumentException e) {
                         System.err.println("Error: invalid algorithm \"" + arg + "\"");
                         System.exit(0);
                     }
@@ -345,9 +325,9 @@ public class Cli {
                 case 'e':
                     arg = g.getOptarg();
                     if (arg.equals("mcn"))
-                        cli.setHeuristic(CliApp.JT_HEURISTIC_MCN);
+                        cli.setHeuristic(JTBuildingHeuristic.MCN);
                     else if (arg.equals("mcs"))
-                        cli.setHeuristic(CliApp.JT_HEURISTIC_MCS);
+                        cli.setHeuristic(JTBuildingHeuristic.MCS);
                     else {
                         System.err.println("Error: invalid heuristic \"" + arg + "\"");
                         System.exit(0);
@@ -433,9 +413,9 @@ public class Cli {
                 case 'o':
                     arg = g.getOptarg().toLowerCase();
                     if (arg.equals("uai"))
-                        cli.setOutputFormat(CliApp.OutputFormat.UAI);
+                        cli.setOutputFormat(OutputFormat.UAI);
                     else if (arg.equals("custom"))
-                        cli.setOutputFormat(CliApp.OutputFormat.CUSTOM);
+                        cli.setOutputFormat(OutputFormat.CUSTOM);
                     else {
                         System.err.println("Error: invalid output format \"" + arg + "\"");
                         System.exit(0);
@@ -443,36 +423,10 @@ public class Cli {
                     break;
 
                 case 'p':
-                    arg = g.getOptarg().toLowerCase();
-                    if (arg.equals("scp-c"))
-                        cli.setPartitionStrategy(CliApp.ApproximationStrategies.SCP_C);
-                    else if (arg.equals("scp-cc"))
-                        cli.setPartitionStrategy(CliApp.ApproximationStrategies.SCP_CC);
-                    else if (arg.equals("scp-flex"))
-                        cli.setPartitionStrategy(CliApp.ApproximationStrategies.SCP_FLEX);
-                    else if (arg.equals("rankup"))
-                        cli.setPartitionStrategy(CliApp.ApproximationStrategies.RANKUP);
-                    else if (arg.equals("rankdown"))
-                        cli.setPartitionStrategy(CliApp.ApproximationStrategies.RANKDOWN);
-                    else if (arg.equals("lre-d"))
-                        cli.setPartitionStrategy(CliApp.ApproximationStrategies.LRE_D);
-                    else if (arg.equals("lmre-d"))
-                        cli.setPartitionStrategy(CliApp.ApproximationStrategies.LMRE_D);
-                    else if (arg.equals("zeros-d"))
-                        cli.setPartitionStrategy(CliApp.ApproximationStrategies.ZEROS_D);
-                    else if (arg.equals("zeros-flex"))
-                        cli.setPartitionStrategy(CliApp.ApproximationStrategies.ZEROS_FLEX);
-                    else if (arg.equals("lre-cc"))
-                        cli.setPartitionStrategy(CliApp.ApproximationStrategies.LRE_CC);
-                    else if (arg.equals("lmre-cc"))
-                        cli.setPartitionStrategy(CliApp.ApproximationStrategies.LMRE_CC);
-                    else if (arg.equals("lre-c"))
-                        cli.setPartitionStrategy(CliApp.ApproximationStrategies.LRE_C);
-                    else if (arg.equals("lmre-c"))
-                        cli.setPartitionStrategy(CliApp.ApproximationStrategies.LMRE_C);
-                    else if (arg.equals("superset"))
-                        cli.setPartitionStrategy(CliApp.ApproximationStrategies.SUPERSET);
-                    else {
+                    arg = g.getOptarg().toUpperCase().replace('-','_');
+                    try {
+                        cli.setPartitionStrategy(ApproximationStrategies.valueOf(arg));
+                    } catch (IllegalArgumentException e) {
                         System.err.println("Error: invalid heuristic \"" + arg + "\"");
                         System.exit(0);
                     }

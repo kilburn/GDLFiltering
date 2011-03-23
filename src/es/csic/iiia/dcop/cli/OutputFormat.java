@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  * 
- * Copyright (c) 2010, IIIA-CSIC, Artificial Intelligence Research Institute
+ * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
  * All rights reserved.
  * 
  * Redistribution and use of this software in source and binary forms, with or
@@ -36,27 +36,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.dfs;
-
-import es.csic.iiia.dcop.CostFunction;
-import es.csic.iiia.dcop.Variable;
-import java.util.HashSet;
+package es.csic.iiia.dcop.cli;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class MCS extends DFS {
-
-    public MCS(CostFunction[] factors) {
-        super(factors);
-    }
-
-    public MCS() {}
-
-    protected HashSet<Variable> selectCandidates(HashSet<Variable> next) {
-        HashSet<Variable> selectedCandidates = getMostPlacedNeighsNodes(next);
-        return getMostConnectedNodes(selectedCandidates);
-    }
-
+public enum OutputFormat {
+    UAI, CUSTOM
 }
