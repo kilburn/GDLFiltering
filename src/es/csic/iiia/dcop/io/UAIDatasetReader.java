@@ -90,8 +90,16 @@ public class UAIDatasetReader {
 
                 if (sTokenizer.ttype == StreamTokenizer.TT_NUMBER) {
                     v = sTokenizer.nval;
+                } else if (sTokenizer.ttype == StreamTokenizer.TT_WORD) {
+                    if (sTokenizer.sval.equalsIgnoreCase("inf")) {
+                        v = Double.POSITIVE_INFINITY;
+                    } else if (sTokenizer.sval.equalsIgnoreCase("-inf")) {
+                        v = Double.NEGATIVE_INFINITY;
+                    } else {
+                        throw new UnsupportedOperationException("Unrecognized token: " + sTokenizer.sval);
+                    }
                 } else {
-                    System.err.println("Unrecognized token: " + sTokenizer.sval);
+                    throw new UnsupportedOperationException("Unrecognized token: " + sTokenizer.sval);
                 }
 
                 switch(state) {
