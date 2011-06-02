@@ -60,7 +60,10 @@ public interface CostFunction {
         PRODUCT {
             public double getNeutralValue() {return 1;}
             public double eval(double x, double y) {return x*y;}
-            public double invert(double x) {return Double.isInfinite(x) ? 0 : 1/x;}
+            public double negate(double x) {return Double.isInfinite(x) ? 0 : 1/x;}
+            public double invert(double x) {
+                throw new UnsupportedOperationException("Product has no inverse");
+            }
         },
         /**
          * Perform the combine operator using addition.
@@ -68,7 +71,8 @@ public interface CostFunction {
         SUM {
             public double getNeutralValue() {return 0;}
             public double eval(double x, double y) {return x+y;}
-            public double invert(double x) {return Double.isInfinite(x) ? x : -x;}
+            public double negate(double x) {return Double.isInfinite(x) ? x : -x;}
+            public double invert(double x) {return -x;}
         };
 
         /**
@@ -95,11 +99,35 @@ public interface CostFunction {
          * Returns the inverse of the given value.
          *
          * Given {@link #eval(x, y)} and {@link #getNeutralValue()}, this function
-         * returns the value such that:
+         * returns the value such that
+         * <code>
+         * eval(x, negate(x)) == getNeutralValue()
+         * </code>
+         * with the exception of nogoods, where:
+         * <code>
+         * negate(nogood) == nogood
+         * </code>
          *
+         * @param x value.
+         * @return the inverse of the given value.
+         */
+        public abstract double negate(double x);
+        
+        /**
+         * Returns the inverse of the given value.
+         *
+         * Given {@link #eval(x, y)} and {@link #getNeutralValue()}, this function
+         * returns the value such that
          * <code>
          * eval(x, inverse(x)) == getNeutralValue()
          * </code>
+         * with the exception of nogoods, where:
+         * <code>
+         * negate(nogood) == -nogood
+         * </code>
+         * 
+         * This function should only be used to turn maximization problems
+         * into minimization ones, or vice-versa.
          *
          * @param x value.
          * @return the inverse of the given value.
@@ -221,12 +249,24 @@ public interface CostFunction {
     CostFunction combine(List<CostFunction> fs);
 
     /**
-     * Negates this factor, applying the inverse of the given operation to
-     * all it's values.
+     * Negates this factor, converting all its values into their negative
+     * counterparts.
      *
-     * @see #combine(es.csic.iiia.iea.ddm.CostFunction, int)
+     * @see Combine#negate(double)
+     * @see #combine(es.csic.iiia.dcop.CostFunction) 
      */
     CostFunction negate();
+    
+    /**
+     * Inverts this factor, applying the inverse of the given operation to
+     * all it's values.
+     * 
+     * This function is intended to convert a minimization problem CostFunction 
+     * into a maximization one, or vice-versa.
+     *
+     * @see Combine#invert(double)
+     */
+    CostFunction invert();
 
     /**
      * Normalizes this factor in the specified mode.

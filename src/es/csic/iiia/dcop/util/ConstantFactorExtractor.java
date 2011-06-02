@@ -91,5 +91,11 @@ public class ConstantFactorExtractor {
         
         return constant;
     }
+
+    public static void invert(List<CostFunction> factors) {
+        for (int i=0, len=factors.size(); i<len; i++) {
+            factors.set(i, factors.get(i).invert());
+        }
+    }
     
 }

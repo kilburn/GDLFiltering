@@ -152,7 +152,7 @@ public class ValuesArray extends ArrayList<Double> {
         final int size = size();
         final ValuesArray res = new ValuesArray(this);
         for (int i=0; i<size; i++) {
-            res.set(i, com.invert(get(i)));
+            res.set(i, com.negate(get(i)));
         }
         return res;
     }

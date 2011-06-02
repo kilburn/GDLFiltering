@@ -1011,5 +1011,5 @@ public abstract class CostFunctionTest {
             fail("Calling next() should raise NoSuchElementException at this point.");
         } catch (NoSuchElementException e) {}
     }
-
+    
 }

@@ -471,6 +471,18 @@ public abstract class AbstractCostFunction implements CostFunction {
         TLongIterator it = iterator();
         while(it.hasNext()) {
             final long i = it.next();
+            result.setValue(i, operation.negate(getValue(i)));
+        }
+        return result;
+    }
+    
+    /** {@inheritDoc} */
+    public CostFunction invert() {
+        Combine operation = factory.getCombineOperation();
+        CostFunction result = factory.buildCostFunction(this);
+        TLongIterator it = iterator();
+        while(it.hasNext()) {
+            final long i = it.next();
             result.setValue(i, operation.invert(getValue(i)));
         }
         return result;

@@ -208,10 +208,6 @@ public class CliApp {
             System.err.println("Warning: maxsum doesn't converge without normalization, using sum0.");
             normalization = CostFunction.Normalize.SUM0;
         }
-        if (algorithm == Algorithm.FIGDL && summarizeOperation != CostFunction.Summarize.MIN) {
-            System.err.println("Error: figdl only works with minimization.");
-            System.exit(1);
-        }
 
         // Read the input file into factors
         DatasetReader r = new DatasetReader();
@@ -248,12 +244,19 @@ public class CliApp {
             
         } else {
             
-            // Remove constant factors
-            constant = ConstantFactorExtractor.extract(factors, constant);
             // Positivize if figdl
             if (algorithm == Algorithm.FIGDL) {
+                // Invert the problem (max -> min)
+                if (summarizeOperation == CostFunction.Summarize.MAX) {
+                    log.warn("Warning: figdl can not maximize, so the problem will be inverted.");
+                    factory.setSummarizeOperation(CostFunction.Summarize.MIN);
+                    ConstantFactorExtractor.invert(factors);
+                    constant = constant.invert();
+                }
                 constant = ConstantFactorExtractor.positivize(factors, constant);
             }
+            // Remove constant factors
+            constant = ConstantFactorExtractor.extract(factors, constant);
 
             // Create the clique graph, using the specified algorithm
             UPGraph cg = createCliqueGraph(factors);
@@ -329,6 +332,9 @@ public class CliApp {
         // Evaluate solution
         double cost = 0;
         factors.add(constant);
+        if (algorithm == Algorithm.FIGDL && summarizeOperation == CostFunction.Summarize.MAX) {
+            ConstantFactorExtractor.invert(factors);
+        }
         for (CostFunction f : factors) {
             cost = combineOperation.eval(cost, f.getValue(map));
         }
