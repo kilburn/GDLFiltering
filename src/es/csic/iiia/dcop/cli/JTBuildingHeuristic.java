@@ -52,17 +52,19 @@ public enum JTBuildingHeuristic {
     MCN (MCN.class),
     ;
 
-    private DFS instance;
+    private Class<? extends DFS> clazz;
     JTBuildingHeuristic(Class<? extends DFS> c) {
+        clazz = c;
+    }
+    DFS getInstance() {
+        DFS instance = null;
         try {
-            instance = c.newInstance();
+            instance = clazz.newInstance();
         } catch (InstantiationException ex) {
             java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
             java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-    DFS getInstance() {
         return instance;
     }
 }

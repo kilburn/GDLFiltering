@@ -124,7 +124,7 @@ public class Cli {
         System.err.println("  -g [graphFile], --clique-graph[=graphFile]");
         System.err.println("    Outputs the clique graph representation in .dot format to [graphFile],");
         System.err.println("    or \"cgraph.dot\" if unspecified.");
-        System.err.println("  -o format, --output-format=format (uai)");
+        System.err.println("  -o format, --output-format=format (custom)");
         System.err.println("    Uses the specified output format, where format is one of: ");
         System.err.println("      - uai        : uses the UAI competition output format.");
         System.err.println("      - custom     : uses the custom output format.");
@@ -159,7 +159,7 @@ public class Cli {
         System.err.println("    Uses the value stored in <file> as a previously-known optimal (for testing).");
         System.err.println("  --old-style-filtering");
         System.err.println("    Uses the old-style filtering method (filter using outgoing functions only).");
-        System.err.println("  -p strategy, --partition-strategy=strategy (rank)");
+        System.err.println("  -p strategy, --partition-strategy=strategy (scp-cc)");
         System.err.println("    Uses the specified approximation strategy, where strategy is one of: ");
         System.err.println("      - scp-cc     : scope-based partitioning communication & computation bounded");
         System.err.println("      - scp-c      : scope-based partitioning communication bounded");

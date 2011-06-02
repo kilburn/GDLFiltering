@@ -36,28 +36,60 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.dfs;
+package es.csic.iiia.dcop.util;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
-import java.util.HashSet;
+import es.csic.iiia.dcop.VariableAssignment;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class MCS extends DFS {
 
-    public MCS(List<CostFunction> factors) {
-        super(factors);
+public class ConstantFactorExtractor {
+    
+    private static Logger log = LoggerFactory.getLogger(ConstantFactorExtractor.class);
+
+    public static CostFunction extract(List<CostFunction> factors, CostFunction constant) {
+
+        for (int i=factors.size()-1; i>=0; i--) {
+            final CostFunction f = factors.get(i);
+            if (f.getVariableSet().isEmpty()) {
+                constant = constant.combine(f);
+                factors.remove(i);
+            }
+        }
+        
+        if (log.isWarnEnabled() && constant.getValue(0) != 0) {
+            log.warn("Extracted constant: " + constant);
+        }
+        
+        return constant;
     }
 
-    public MCS() {}
-
-    protected HashSet<Variable> selectCandidates(HashSet<Variable> next) {
-        HashSet<Variable> selectedCandidates = getMostPlacedNeighsNodes(next);
-        return getMostConnectedNodes(selectedCandidates);
+    public static CostFunction positivize(List<CostFunction> factors, CostFunction constant) {
+        
+        VariableAssignment map = null;
+        for (int i=factors.size()-1; i>=0; i--) {
+            final CostFunction f = factors.get(i);
+            map = f.getOptimalConfiguration(map);
+            double v = f.getValue(map);
+            if (v < 0) {
+                CostFunction minf = f.getFactory().buildCostFunction(new Variable[0], v);
+                factors.set(i, f.combine(minf.negate()));
+                constant = constant.combine(minf);
+            }
+        }
+        
+        if (log.isWarnEnabled()) {
+            log.warn("Positivized problem constant: " + constant);
+        }
+        
+        return constant;
     }
-
+    
 }

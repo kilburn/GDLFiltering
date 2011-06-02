@@ -97,7 +97,7 @@ public class MaxSumTest {
         CostFunction f3 = factory.buildCostFunction(new Variable[]{a,d});
 
         CostFunction[] factors = new CostFunction[]{f1,f2,f3};
-        GdlGraph cg = MaxSum.buildGraph(factors);
+        GdlGraph cg = MaxSum.buildGraph(Arrays.asList(factors));
 
         assertEquals(cg.getNodes().size(), 6);
         assertEquals(cg.getEdges().size(), 6);
@@ -135,7 +135,7 @@ public class MaxSumTest {
         CostFunction solution = EnumerateSolutions.enumerateSolutions(factors);
 
         // Initialize using max-sum
-        GdlGraph cg = MaxSum.buildGraph(factors);
+        GdlGraph cg = MaxSum.buildGraph(Arrays.asList(factors));
         cg.setFactory(factory);
         DefaultResults<UPResult> results = cg.run(100);
         System.out.println(results);
@@ -183,7 +183,7 @@ public class MaxSumTest {
         CostFunction solution = EnumerateSolutions.enumerateSolutions(factors);
 
         // Initialize using max-sum
-        GdlGraph cg = MaxSum.buildGraph(factors);
+        GdlGraph cg = MaxSum.buildGraph(Arrays.asList(factors));
         cg.setFactory(factory);
         DefaultResults<UPResult> results = cg.run(100);
         assertEquals(4, results.getIterations());
@@ -231,7 +231,7 @@ public class MaxSumTest {
         CostFunction[] factors = new CostFunction[] {f1,f2,f3,f0};
 
         // Initialize using max-sum
-        GdlGraph cg = MaxSum.buildGraph(factors);
+        GdlGraph cg = MaxSum.buildGraph(Arrays.asList(factors));
         cg.setFactory(factory);
         DefaultResults<UPResult> results = cg.run(100);
         System.out.println(results);
@@ -301,7 +301,7 @@ public class MaxSumTest {
         CostFunction[] factors = new CostFunction[] {f1,f2,f3,f0};
 
         // Initialize using max-sum
-        GdlGraph cg = MaxSum.buildGraph(factors);
+        GdlGraph cg = MaxSum.buildGraph(Arrays.asList(factors));
         cg.setFactory(factory);
         DefaultResults<UPResult> results = cg.run(100);
         //assertEquals(4, results.getIterations());

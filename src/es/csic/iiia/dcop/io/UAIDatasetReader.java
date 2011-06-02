@@ -44,6 +44,8 @@ import es.csic.iiia.dcop.Variable;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StreamTokenizer;
+import java.util.ArrayList;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +58,7 @@ public class UAIDatasetReader {
 
     private CostFunctionFactory factory;
 
-    public CostFunction[] read(BufferedReader input, CostFunctionFactory factory) {
+    public List<CostFunction> read(BufferedReader input, CostFunctionFactory factory) {
         this.factory = factory;
         StreamTokenizer sTokenizer = null;
 
@@ -64,7 +66,7 @@ public class UAIDatasetReader {
         int nvars = 0;
         Variable[] vars = null;
         int nfactors = 0;
-        CostFunction[] factors = null;
+        List<CostFunction> factors = null;
 
         /**
          * FSM States:
@@ -82,6 +84,7 @@ public class UAIDatasetReader {
 
             //use buffering, reading one line at a time
             sTokenizer = new StreamTokenizer(input);
+            sTokenizer.parseNumbers();
             double v=0; int i=0; int j=0; int nFactorVars = 0;
             Variable[] factorVars = null; int nFactorStates = 0;
             double[] factorValues = null;
@@ -90,14 +93,13 @@ public class UAIDatasetReader {
 
                 if (sTokenizer.ttype == StreamTokenizer.TT_NUMBER) {
                     v = sTokenizer.nval;
-                } else if (sTokenizer.ttype == StreamTokenizer.TT_WORD) {
-                    if (sTokenizer.sval.equalsIgnoreCase("inf")) {
-                        v = Double.POSITIVE_INFINITY;
-                    } else if (sTokenizer.sval.equalsIgnoreCase("-inf")) {
-                        v = Double.NEGATIVE_INFINITY;
-                    } else {
-                        throw new UnsupportedOperationException("Unrecognized token: " + sTokenizer.sval);
-                    }
+                } else if (sTokenizer.ttype == StreamTokenizer.TT_WORD
+                        && sTokenizer.sval.equalsIgnoreCase("inf")) {
+                    v = Double.POSITIVE_INFINITY;
+                } else if (sTokenizer.ttype == 45
+                        && sTokenizer.nextToken() == StreamTokenizer.TT_WORD
+                        && sTokenizer.sval.equalsIgnoreCase("inf")) {
+                    v = Double.NEGATIVE_INFINITY;
                 } else {
                     throw new UnsupportedOperationException("Unrecognized token: " + sTokenizer.sval);
                 }
@@ -119,7 +121,7 @@ public class UAIDatasetReader {
 
                     case 2:
                         nfactors = (int)v;
-                        factors = new CostFunction[nfactors];
+                        factors = new ArrayList<CostFunction>(nfactors);
                         i=0;
                         state = 3;
                         break;
@@ -134,7 +136,7 @@ public class UAIDatasetReader {
                     case 4:
                         factorVars[j++] = vars[(int)v];
                         if (j == nFactorVars) {
-                            factors[i++] = factory.buildCostFunction(factorVars);
+                            factors.add(i++, factory.buildCostFunction(factorVars));
                             if (i == nfactors) {
                                 state = 5;
                                 i=0;
@@ -146,7 +148,7 @@ public class UAIDatasetReader {
 
                     case 5:
                         nFactorStates = (int)v;
-                        if (nFactorStates != factors[i].getSize()) {
+                        if (nFactorStates != factors.get(i).getSize()) {
                             System.err.println("Mismatch in number of tuples for a factor");
                             System.exit(0);
                         }
@@ -160,7 +162,7 @@ public class UAIDatasetReader {
                         // (so we have to minimize instead of maximize)
                         factorValues[j++] = v;
                         if (j == nFactorStates) {
-                            factors[i++].setValues(factorValues);
+                            factors.get(i++).setValues(factorValues);
                             if (i == nfactors) {
                                 log.info("Done reading");
                             }

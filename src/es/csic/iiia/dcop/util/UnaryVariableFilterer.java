@@ -42,6 +42,7 @@ import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.VariableAssignment;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  *
@@ -49,12 +50,12 @@ import java.util.HashSet;
  */
 public class UnaryVariableFilterer {
 
-    public static VariableAssignment filterVariables(CostFunction[] factors) {
+    public static VariableAssignment filterVariables(List<CostFunction> factors) {
 
         VariableAssignment assignment = new VariableAssignment();
 
-        for (int i=0, len=factors.length; i<len; i++) {
-            final CostFunction f = factors[i];
+        for (int i=0, len=factors.size(); i<len; i++) {
+            final CostFunction f = factors.get(i);
 
             // Remove the unary variables from the variable set
             boolean changed = false;
@@ -69,7 +70,7 @@ public class UnaryVariableFilterer {
 
             // Summarize to the remaining variables
             if (changed) {
-                factors[i] = f.summarize(remainingVars.toArray(new Variable[0]));
+                factors.set(i, f.summarize(remainingVars.toArray(new Variable[0])));
             }
         }
 

@@ -38,6 +38,8 @@
 
 package es.csic.iiia.dcop.dfs;
 
+import java.util.List;
+import java.util.Arrays;
 import java.util.HashMap;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunctionFactory;
@@ -58,7 +60,7 @@ import static org.junit.Assert.*;
 public class MCSTest {
 
     private Variable[] v;
-    private CostFunction[] f;
+    private List<CostFunction> f;
     private CostFunctionFactory factory;
 
     public MCSTest() {
@@ -82,7 +84,7 @@ public class MCSTest {
         }
 
         // And now factors
-        f = new CostFunction[]{
+        CostFunction[] fs = new CostFunction[]{
             factory.buildCostFunction( new Variable[]{v[0],v[1]} ),
             factory.buildCostFunction( new Variable[]{v[0],v[1]} ),
             factory.buildCostFunction( new Variable[]{v[0],v[1]} ),
@@ -94,6 +96,7 @@ public class MCSTest {
             factory.buildCostFunction( new Variable[]{v[1],v[3]} ),
             factory.buildCostFunction( new Variable[]{v[3],v[4]} ),
         };
+        f = Arrays.asList(fs);
     }
 
     @After
@@ -122,10 +125,10 @@ public class MCSTest {
     public void testAssignFactors() {
         HashMap<Variable, CostFunction[]> expectedResult = new HashMap<Variable, CostFunction[]>();
         expectedResult.put(v[0], new CostFunction[]{});
-        expectedResult.put(v[1], new CostFunction[]{f[0], f[1], f[2]});
-        expectedResult.put(v[2], new CostFunction[]{f[3], f[4], f[7]});
-        expectedResult.put(v[3], new CostFunction[]{f[5], f[8]});
-        expectedResult.put(v[4], new CostFunction[]{f[6], f[9]});
+        expectedResult.put(v[1], new CostFunction[]{f.get(0), f.get(1), f.get(2)});
+        expectedResult.put(v[2], new CostFunction[]{f.get(3), f.get(4), f.get(7)});
+        expectedResult.put(v[3], new CostFunction[]{f.get(5), f.get(8)});
+        expectedResult.put(v[4], new CostFunction[]{f.get(6), f.get(9)});
 
         MCS mcs = new MCS(f);
         HashMap<Variable, CostFunction[]> result = mcs.getFactorAssignments();

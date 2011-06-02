@@ -44,8 +44,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.List;
 
 /**
  *
@@ -53,7 +52,7 @@ import java.util.logging.Logger;
  */
 public class DatasetReader {
 
-    public CostFunction[] read(InputStream problem, CostFunctionFactory factory) {
+    public List<CostFunction> read(InputStream problem, CostFunctionFactory factory) {
 
         BufferedReader input = new BufferedReader(new InputStreamReader(problem));
 

@@ -108,7 +108,7 @@ public class TreeReader {
         rootCandidates.remove(nodes.get(link.group(2)));
     }
 
-    public void read(InputStream problem, CostFunction[] factors) {
+    public void read(InputStream problem, List<CostFunction> factors) {
 
         // Start by reading the files contents
         parse(problem);

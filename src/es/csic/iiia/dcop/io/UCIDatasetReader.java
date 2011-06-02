@@ -48,6 +48,7 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -73,7 +74,7 @@ public class UCIDatasetReader {
         this.factors = new ArrayList<CostFunction>();
     }
 
-    public CostFunction[] read(BufferedReader input, CostFunctionFactory factory, String line) {
+    public List<CostFunction> read(BufferedReader input, CostFunctionFactory factory, String line) {
         this.factory = factory;
 
         try {
@@ -100,7 +101,7 @@ public class UCIDatasetReader {
         }
 
         this.factory = null;
-        return factors.toArray(new CostFunction[]{});
+        return factors;
     }
 
     private void parseLine(String line) {

@@ -40,10 +40,13 @@ package es.csic.iiia.dcop.algo;
 
 import es.csic.iiia.dcop.*;
 import es.csic.iiia.dcop.gdl.GdlGraph;
+import es.csic.iiia.dcop.gdl.GdlMessage;
 import es.csic.iiia.dcop.gdl.GdlNode;
 import es.csic.iiia.dcop.up.UPEdge;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Max-Sum initialization algorithm.
@@ -65,9 +68,18 @@ public abstract class MaxSum {
      * @param factors List of factors describing the problem.
      * @return 
      */
-    public static GdlGraph buildGraph(CostFunction[] factors) {
+    public static GdlGraph buildGraph(List<CostFunction> factors) {
 
         GdlGraph cg = new GdlGraph();
+
+        // Remove constant factors
+        CostFunction constant = factors.get(0).getFactory().buildCostFunction(new Variable[]{});
+        for (CostFunction f : factors) {
+            if (f.getVariableSet().isEmpty()) {
+                constant = constant.combine(f);
+            }
+        }
+
 
         // Build a clique for each factor;
         ArrayList<GdlNode> cliques = new ArrayList<GdlNode>();
@@ -82,9 +94,15 @@ public abstract class MaxSum {
         for(Variable v : varSet) {
             GdlNode cv = new GdlNode(v);
             cg.addNode(cv);
-            for (GdlNode c : cliques) {
+            for (int i=cliques.size()-1; i>=0; i--) {
+                GdlNode c = cliques.get(i);
                 if (c.contains(v)) {
-                    cg.addEdge(new UPEdge(c, cv, v));
+                    if (c.getVariables().size() == 1) {
+                        cv.addRelation(c.getRelations().get(0));
+                        cliques.remove(i);
+                    } else {
+                        cg.addEdge(new UPEdge(c, cv, v));
+                    }
                 }
             }
         }
@@ -94,7 +112,41 @@ public abstract class MaxSum {
             cg.addNode(c);
         }
 
+        enforceConnectedness(cg);
         return cg;
+    }
+
+    private static void enforceConnectedness(GdlGraph cg) {
+        HashSet<GdlNode> unvisitedNodes = new HashSet<GdlNode>(cg.getNodes());
+
+        GdlNode previousRoot = null;
+        while(!unvisitedNodes.isEmpty()) {
+            // Get an initial node to work with
+            GdlNode root = unvisitedNodes.iterator().next();
+
+            // If there was a previous root, then this is another connected
+            // component -> add a link between them
+            if (previousRoot != null) {
+                cg.addEdge(new UPEdge(root, previousRoot));
+            }
+            previousRoot = root;
+
+            // Perform a dfs from this node
+            dfs(root, unvisitedNodes);
+        }
+
+    }
+
+    private static void dfs(GdlNode node, Set<GdlNode> unvisitedNodes) {
+        unvisitedNodes.remove(node);
+        
+        for (UPEdge<GdlNode,GdlMessage> e : node.getEdges()) {
+            GdlNode child = e.getDestination(node);
+            if (unvisitedNodes.contains(child)) {
+                dfs(child, unvisitedNodes);
+            }
+        }
+
     }
 
 }

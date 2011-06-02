@@ -41,6 +41,7 @@ package es.csic.iiia.dcop.dfs;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  *
@@ -48,7 +49,7 @@ import java.util.HashSet;
  */
 public class MCN extends DFS {
 
-    public MCN(CostFunction[] factors) {
+    public MCN(List<CostFunction> factors) {
         super(factors);
     }
 

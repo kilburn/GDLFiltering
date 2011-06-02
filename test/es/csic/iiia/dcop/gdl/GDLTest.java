@@ -43,6 +43,7 @@ import es.csic.iiia.dcop.CostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.algo.JunctionTreeAlgo;
+import es.csic.iiia.dcop.algo.MaxSum;
 import es.csic.iiia.dcop.bb.UBGraph;
 import es.csic.iiia.dcop.bb.UBResult;
 import es.csic.iiia.dcop.bb.UBResults;
@@ -66,6 +67,7 @@ import es.csic.iiia.dcop.vp.VPResults;
 import es.csic.iiia.dcop.vp.strategy.VPStrategy;
 import es.csic.iiia.dcop.vp.strategy.expansion.GreedyExpansion;
 import es.csic.iiia.dcop.vp.strategy.solving.OptimalSolvingStrategy;
+import java.util.Arrays;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -105,7 +107,7 @@ public class GDLTest {
     }
 
     @Test
-    public void testGdlGraphMode() {
+    public void testActionGdlMaxSum() {
         // Set operating mode
         CostFunction.Summarize summarize = CostFunction.Summarize.MAX;
         CostFunction.Combine combine = CostFunction.Combine.SUM;
@@ -127,7 +129,7 @@ public class GDLTest {
         CostFunction[] factors = new CostFunction[] {f0,f1,f2};
 
         // Build a junction tree
-        MCS mcs = new MCS(factors);
+        MCS mcs = new MCS(Arrays.asList(factors));
         UPFactory f = new GdlFactory();
         UPGraph g = JunctionTreeAlgo.buildGraph(f, mcs.getFactorDistribution(), mcs.getAdjacency());
         JunctionTree jt = new JunctionTree(g);
@@ -158,11 +160,10 @@ public class GDLTest {
     }
 
     @Test
-    @Ignore
-    public void testThings() {
+    public void testMinSum() {
         CostFunction.Summarize summarize = CostFunction.Summarize.MIN;
         CostFunction.Combine combine = CostFunction.Combine.SUM;
-        CostFunction.Normalize normalize = CostFunction.Normalize.NONE;
+        CostFunction.Normalize normalize = CostFunction.Normalize.SUM0;
         factory.setMode(summarize, combine, normalize);
 
         Variable x,y,z,t,u,v;
@@ -174,17 +175,56 @@ public class GDLTest {
         v = new Variable("v", 2);
         Variable[] variables = new Variable[] {x, y, z, t, u, v};
 
-        CostFunction fxy = factory.buildCostFunction(new Variable[] {x, y});
-        fxy.setValues(new double[] {10, 5, 2, 8});
-        CostFunction res = fxy.summarize(new Variable[]{x})
-                .combine(fxy.summarize(new Variable[]{y}));
-        System.out.println(fxy);
-        System.out.println(res);
+        // Simple cycle with unique solution
+        CostFunction f0 = factory.buildCostFunction(new Variable[] {x, y});
+        f0.setValues(new double[] {20, 10, 10, 0});
+        CostFunction f1 = factory.buildCostFunction(new Variable[] {y, t});
+        f1.setValues(new double[] {0, 4, 4, 12});
+        CostFunction f2 = factory.buildCostFunction(new Variable[] {z, t});
+        f2.setValues(new double[] {14, 10, 14, 10});
+        CostFunction f3 = factory.buildCostFunction(new Variable[] {t, u});
+        f3.setValues(new double[] {3, 2, 2, 0});
+        CostFunction f4 = factory.buildCostFunction(new Variable[] {z, v});
+        f4.setValues(new double[] {3, 2, 2, 0});
+        CostFunction f5 = factory.buildCostFunction(new Variable[] {u, v});
+        f5.setValues(new double[] {0, 10, 10, 0});
+        CostFunction[] factors = new CostFunction[] {f0,f1,f2,f3,f4,f5};
+
+        // Build a junction tree
+        UPGraph g = MaxSum.buildGraph(Arrays.asList(factors));
+
+        // Run the UtilityPropagation phase
+        g.setFactory(factory);
+        g.setMode(Modes.GRAPH);
+        DefaultResults<UPResult> results = g.run(100);
+        System.out.println(results);
+
+        // Extract a solution
+        VPGraph vp = new VPGraph(g, solvingStrategy);
+        VPResults res = vp.run(100);
+        UBGraph ub = new UBGraph(vp);
+        UBResults ubres = ub.run(100);
+        VariableAssignment map = ubres.getMap();
+
+        // The solution should be 1 1 1 0 1 1
+        assertEquals((int)map.get(x), 1);
+        assertEquals((int)map.get(y), 1);
+        assertEquals((int)map.get(z), 1);
+        assertEquals((int)map.get(t), 0);
+        assertEquals((int)map.get(u), 1);
+        assertEquals((int)map.get(v), 1);
+
+
+        // With a total utility of 20
+        double cost = 0;
+        for (CostFunction fn : factors) {
+            cost += fn.getValue(map);
+        }
+        assertEquals(cost, 20, 0.0001);
     }
 
     @Test
     public void testFIGdlExample() {
-        System.out.println("RUNNING FIGDL");
         // Set operating mode
         CostFunction.Summarize summarize = CostFunction.Summarize.MIN;
         CostFunction.Combine combine = CostFunction.Combine.SUM;
@@ -215,7 +255,7 @@ public class GDLTest {
         CostFunction[] factors = new CostFunction[] {f0,f1,f2,f3,f4,f5};
 
         // Build a junction tree
-        DFS dfs = new MCN(factors);
+        DFS dfs = new MCN(Arrays.asList(factors));
         UPFactory f = new FIGdlFactory(Integer.MAX_VALUE, new ZerosDecompositionStrategy());
         UPGraph g = JunctionTreeAlgo.buildGraph(f, dfs.getFactorDistribution(), dfs.getAdjacency());
         JunctionTree jt = new JunctionTree(g);
@@ -228,16 +268,10 @@ public class GDLTest {
         FIGdlGraph.setMinR(1);
         FIGdlGraph.setSolutionStrategy(solvingStrategy);
         DefaultResults<UPResult> results = g.run(100);
-        System.out.println(results);
-
-        // Extract a solution
-        VPGraph vp = new VPGraph(g, solvingStrategy);
-        VPResults res = vp.run(100);
-        UBGraph ub = new UBGraph(vp);
-        UBResults ubres = ub.run(100);
+        UBResults ubres = ((FIGdlGraph)g).getUBResults();
         VariableAssignment map = ubres.getMap();
 
-        // The solution should be 0 0 1
+        // The solution should be 1 1 1 0 1 1
         assertEquals(1, (int)map.get(x));
         assertEquals(1, (int)map.get(y));
         assertEquals(1, (int)map.get(z));
@@ -246,27 +280,22 @@ public class GDLTest {
         assertEquals(1, (int)map.get(v));
 
 
-        // With a total utility of 4
+        // With a total utility of 20
         double cost = 0;
         for (CostFunction fn : factors) {
             cost += fn.getValue(map);
         }
         assertEquals(cost, 20, 0.0001);
 
-        // Extract the UB
-        ub = new UBGraph(vp);
-        UBResults rs = ub.run(100);
-        System.out.println(rs);
-
         // UB must be 20
-        for (UBResult r : rs.getResults()) {
+        for (UBResult r : ubres.getResults()) {
             assertEquals(20, r.getUB(), 0.0001);
         }
     }
 
     @Test
-    public void testGdlExample() {
-        System.out.println("RUNNING GDL");
+    @Ignore
+    public void testGraphGdlMinSum() {
         // Set operating mode
         CostFunction.Summarize summarize = CostFunction.Summarize.MIN;
         CostFunction.Combine combine = CostFunction.Combine.SUM;
@@ -298,19 +327,16 @@ public class GDLTest {
         CostFunction[] factors = new CostFunction[] {f0,f1,f2,f3,f4,f5};
 
         // Build a junction tree
-        DFS dfs = new MCN(factors);
+        DFS dfs = new MCN(Arrays.asList(factors));
         GdlFactory f = new GdlFactory();
         f.setMode(Modes.GRAPH);
         UPGraph g = JunctionTreeAlgo.buildGraph(f, dfs.getFactorDistribution(), dfs.getAdjacency());
         JunctionTree jt = new JunctionTree(g);
         jt.run(100);
-        System.out.println(g);
 
         // Run the UtilityPropagation phase
         g.setFactory(factory);
-        //((IGdlGraph)g).setR(2);
         DefaultResults<UPResult> results = g.run(100);
-        System.out.println(results);
 
         // Extract a solution
         VPGraph vp = new VPGraph(g, solvingStrategy);
@@ -328,7 +354,7 @@ public class GDLTest {
         assertEquals((int)map.get(v), 1);
 
 
-        // With a total utility of 4
+        // With a total utility of 20
         double cost = 0;
         for (CostFunction fn : factors) {
             cost += fn.getValue(map);

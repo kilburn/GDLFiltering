@@ -135,9 +135,6 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
                     System.out.println("Variables: " + vars);
                 }
             }
-            if (!fail) {
-                System.out.println("Checking map completeness: ok");
-            }
         }
         return new VPResult(this);
     }
@@ -163,6 +160,7 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
     public ValuesArray getGlobalValues() {
         final ValuesArray values = new ValuesArray(mappings.size());
         final CostFunction.Combine op = upnode.getFactory().getCombineOperation();
+        
         Collection<CostFunction> fs = upnode.getRelations();
 
         for (VariableAssignment map : mappings) {
@@ -172,6 +170,9 @@ public class VPNode extends AbstractNode<VPEdge, VPResult> {
             
             double value = 0;
             for (CostFunction f : fs) {
+                if (log.isTraceEnabled()) {
+                    log.trace(f.toString());
+                }
                 final double v = f.getValue(map);
                 value = op.eval(value, v);
             }

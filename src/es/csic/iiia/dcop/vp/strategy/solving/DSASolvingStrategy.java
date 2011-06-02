@@ -74,8 +74,7 @@ public class DSASolvingStrategy implements SolvingStrategy {
             // TODO: Implement something.
         }
 
-        CostFunction[] factors = fs.toArray(new CostFunction[0]);
-        FactorGraph fg = new FactorGraph(factors);
+        FactorGraph fg = new FactorGraph(fs);
         return new DSACandidateSolution(fg, parentIndex, parentAssignment);
     }
 

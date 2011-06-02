@@ -120,7 +120,7 @@ public class JunctionTree extends DefaultGraph<JTNode, JTEdge, JTResults> {
 
             int dv = getNumberOfDecisionVariables(i);
 
-            log.info("Root " + i + ": " + dv + " decision variables.");
+            log.debug("Root " + i + ": " + dv + " decision variables.");
             if (dv < minDecisionVariables) {
                 node = i;
                 minDecisionVariables = dv;

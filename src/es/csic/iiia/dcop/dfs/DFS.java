@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -56,7 +57,7 @@ public abstract class DFS {
 
     private static Logger log = LoggerFactory.getLogger(DFS.class);
 
-    private CostFunction[] factors;
+    private List<CostFunction> factors;
     private Variable[] variables;
     private HashSet<Variable> remainingVariables;
     private int[] nPlacedNeighs;
@@ -69,13 +70,13 @@ public abstract class DFS {
     private VariableAssignment variableDepths;
     private int rootIndex = -1;
 
-    public DFS(CostFunction[] factors) {
+    public DFS(List<CostFunction> factors) {
         build(factors);
     }
 
     public DFS() {}
 
-    public final void build(CostFunction[] factors) {
+    public final void build(List<CostFunction> factors) {
         this.factors = factors;
         this.initialize();
         random = new Random(System.nanoTime());
@@ -305,8 +306,8 @@ public abstract class DFS {
         while (next.size() > 0) {
 
             // Choose one child amongst candidates
-            HashSet<Variable> selectedCandidates = selectCandidates(next);
-            Variable v = pickRandomly(selectedCandidates);
+            //HashSet<Variable> selectedCandidates = selectCandidates(next);
+            Variable v = pickRandomly(next);
 
             // Link both nodes
             adjacency[variableIndices.get(v)][variableIndices.get(currentNode)] = 1;
@@ -365,6 +366,13 @@ public abstract class DFS {
 
             // Now assign the factor
             ArrayList<CostFunction> fl = factorList.get(mv);
+            if (fl == null) {
+                fl = new ArrayList<CostFunction>();
+                factorList.put(mv, fl);
+            }
+            if (f==null) {
+                System.out.println("Wot?!");
+            }
             fl.add(f);
         }
 

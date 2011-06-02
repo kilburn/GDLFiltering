@@ -52,6 +52,7 @@ import es.csic.iiia.dcop.up.UPFactory;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.vp.strategy.VPStrategy;
 import es.csic.iiia.dcop.vp.strategy.solving.OptimalSolvingStrategy;
+import java.util.Arrays;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -108,7 +109,7 @@ public class VPTest {
             fac.setValues(new double[]{2, 1, 1, 0});
         }
 
-        MCS mcs = new MCS(f);
+        MCS mcs = new MCS(Arrays.asList(f));
         UPFactory fac = new GdlFactory();
         cg = JunctionTreeAlgo.buildGraph(fac, mcs.getFactorDistribution(), mcs.getAdjacency());
 

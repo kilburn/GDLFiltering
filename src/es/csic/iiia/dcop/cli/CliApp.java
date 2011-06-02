@@ -68,6 +68,7 @@ import es.csic.iiia.dcop.mp.AbstractNode.Modes;
 import es.csic.iiia.dcop.up.UPFactory;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.util.Compressor;
+import es.csic.iiia.dcop.util.ConstantFactorExtractor;
 import es.csic.iiia.dcop.util.MemoryTracker;
 import es.csic.iiia.dcop.util.UnaryVariableFilterer;
 import es.csic.iiia.dcop.vp.VPGraph;
@@ -85,6 +86,7 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.URL;
 import java.util.HashSet;
+import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -125,7 +127,7 @@ public class CliApp {
     /**
      * Output formatting choser
      */
-    private OutputFormat outputFormat = OutputFormat.UAI;
+    private OutputFormat outputFormat = OutputFormat.CUSTOM;
 
     private Algorithm algorithm = Algorithm.GDL;
     private CostFunction.Summarize summarizeOperation = CostFunction.Summarize.MAX;
@@ -162,7 +164,7 @@ public class CliApp {
     /**
      * Strategies to use for GDL with filtering
      */
-    private ApproximationStrategies approximationStrategy = ApproximationStrategies.RANKUP;
+    private ApproximationStrategies approximationStrategy = ApproximationStrategies.SCP_CC;
     private SolutionExpansionStrategies expansionStrategy = SolutionExpansionStrategies.GREEDY;
     private SolutionSolvingStrategies solvingStrategy = SolutionSolvingStrategies.OPTIMAL;
 
@@ -171,7 +173,7 @@ public class CliApp {
     private InputStream input = System.in;
 
 
-    private void outputVariableStatistics(CostFunction[] factors) {
+    private void outputVariableStatistics(List<CostFunction> factors) {
         // Collect all variables
         HashSet<Variable> varSet = new HashSet<Variable>();
         for (CostFunction f : factors) {
@@ -206,6 +208,10 @@ public class CliApp {
             System.err.println("Warning: maxsum doesn't converge without normalization, using sum0.");
             normalization = CostFunction.Normalize.SUM0;
         }
+        if (algorithm == Algorithm.FIGDL && summarizeOperation != CostFunction.Summarize.MIN) {
+            System.err.println("Error: figdl only works with minimization.");
+            System.exit(1);
+        }
 
         // Read the input file into factors
         DatasetReader r = new DatasetReader();
@@ -213,7 +219,7 @@ public class CliApp {
         factory.setCombineOperation(combineOperation);
         factory.setNormalizationType(normalization);
         factory.setSummarizeOperation(summarizeOperation);
-        CostFunction[] factors = r.read(input, factory);
+        List<CostFunction> factors = r.read(input, factory);
 
         printInformation();
 
@@ -231,6 +237,7 @@ public class CliApp {
 
         // DSA Can solve from here
         VariableAssignment map = null;
+        CostFunction constant = factory.buildCostFunction(new Variable[0]);
 
         if (algorithm == Algorithm.DSA) {
 
@@ -240,6 +247,13 @@ public class CliApp {
             log.info("ITERATIONS " + res.getIterations());
             
         } else {
+            
+            // Remove constant factors
+            constant = ConstantFactorExtractor.extract(factors, constant);
+            // Positivize if figdl
+            if (algorithm == Algorithm.FIGDL) {
+                constant = ConstantFactorExtractor.positivize(factors, constant);
+            }
 
             // Create the clique graph, using the specified algorithm
             UPGraph cg = createCliqueGraph(factors);
@@ -314,6 +328,7 @@ public class CliApp {
 
         // Evaluate solution
         double cost = 0;
+        factors.add(constant);
         for (CostFunction f : factors) {
             cost = combineOperation.eval(cost, f.getValue(map));
         }
@@ -382,7 +397,7 @@ public class CliApp {
         }
     }
 
-    private UPGraph createCliqueGraph(CostFunction[] factors) {
+    private UPGraph createCliqueGraph(List<CostFunction> factors) {
         
         UPGraph cg = null;
         switch(algorithm) {
@@ -408,8 +423,10 @@ public class CliApp {
                     JunctionTree jt = new JunctionTree(cg);
                     results = jt.run(1000);
                     variables = results.getMaxVariables();
-                    int newRoot = jt.getLowestDecisionRoot();
-                    cg.setRoot(newRoot);
+                    if (algorithm == Algorithm.FIGDL) {
+                        int newRoot = jt.getLowestDecisionRoot();
+                        cg.setRoot(newRoot);
+                    }
                 } else {
                     int minVariables = Integer.MAX_VALUE;
                     for(int i=0; i < maxJunctionTreeTries; i++) {
@@ -421,7 +438,8 @@ public class CliApp {
                         JunctionTree jt = new JunctionTree(candidateCg);
                         JTResults candidateResults = jt.run(10000);
                         variables = candidateResults.getMaxVariables();
-
+                        log.warn("Generated junction tree (tw=" + (variables-1) + ")");
+                        
                         if (variables < minVariables) {
                             minVariables = variables;
                             cg = candidateCg;
@@ -437,9 +455,11 @@ public class CliApp {
                 JunctionTree jt = new JunctionTree(cg);
                 results = jt.run(1000);
                 variables = results.getMaxVariables();
-                int newRoot = jt.getLowestDecisionRoot();
-                cg.setRoot(newRoot);
-                log.info("[Info] Maximum-decision-variables: " + jt.getNumberOfDecisionVariables(newRoot));
+                if (algorithm == Algorithm.FIGDL) {
+                    int newRoot = jt.getLowestDecisionRoot();
+                    cg.setRoot(newRoot);
+                }
+                log.info("[Info] Maximum-decision-variables: " + jt.getNumberOfDecisionVariables(cg.getRoot()));
                 //System.out.println(jt.getTreeOfDecisionVariables(newRoot));
 
                 createCliqueGraphFile(cg);

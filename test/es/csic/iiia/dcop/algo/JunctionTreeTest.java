@@ -45,6 +45,7 @@ import es.csic.iiia.dcop.dfs.MCS;
 import es.csic.iiia.dcop.gdl.GdlFactory;
 import es.csic.iiia.dcop.up.UPFactory;
 import es.csic.iiia.dcop.up.UPGraph;
+import java.util.Arrays;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -149,7 +150,7 @@ public class JunctionTreeTest {
             factory.buildCostFunction( new Variable[]{v[3],v[4]} ),
         };
 
-        MCS mcs = new MCS(factors);
+        MCS mcs = new MCS(Arrays.asList(factors));
         UPFactory f = new GdlFactory();
         UPGraph result = JunctionTreeAlgo.buildGraph(f, mcs.getFactorDistribution(), mcs.getAdjacency());
         System.out.println(result);

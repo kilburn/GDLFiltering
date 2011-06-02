@@ -122,8 +122,6 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
         potential = potential.combine(relations);
         
         // And our belief
-        //belief = getFactory().buildCostFunction(variables.toArray(new Variable[0]));
-        //belief = potential.combine(belief);
         belief = potential;
 
         alreadyReceived = new HashSet<UPEdge<GdlNode, GdlMessage>>(getEdges().size());
@@ -169,7 +167,7 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
 
         this.belief = combi.combine(fns);
 
-        if (mode == Modes.GRAPH) {
+        if (this.belief.getFactory().getNormalizationType() != CostFunction.Normalize.NONE) {
             this.belief = this.belief.normalize();
         }
 
@@ -230,6 +228,10 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
         for (UPEdge<GdlNode, GdlMessage> e : getEdges()) {
             // Check if we are ready to send through this edge
             if (!readyToSend(e)) continue;
+
+            if (getMode() == Modes.GRAPH && e.getVariables().length == 0) {
+               continue;
+            }
 
             // Instead of multiplying all incoming messages except the one
             // from e, we "substract" the e message from the belief, which
