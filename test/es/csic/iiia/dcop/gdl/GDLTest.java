@@ -256,7 +256,9 @@ public class GDLTest {
 
         // Build a junction tree
         DFS dfs = new MCN(Arrays.asList(factors));
-        UPFactory f = new FIGdlFactory(Integer.MAX_VALUE, new ZerosDecompositionStrategy());
+        CostFunction constant = factory.buildCostFunction(new Variable[0],0);
+        FIGdlGraph.setMinR(1);
+        UPFactory f = new FIGdlFactory(constant, false, Integer.MAX_VALUE, new ZerosDecompositionStrategy());
         UPGraph g = JunctionTreeAlgo.buildGraph(f, dfs.getFactorDistribution(), dfs.getAdjacency());
         JunctionTree jt = new JunctionTree(g);
         jt.run(100);

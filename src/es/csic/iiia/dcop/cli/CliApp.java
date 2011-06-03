@@ -208,6 +208,10 @@ public class CliApp {
             System.err.println("Warning: maxsum doesn't converge without normalization, using sum0.");
             normalization = CostFunction.Normalize.SUM0;
         }
+        if (algorithm == Algorithm.FIGDL && summarizeOperation == CostFunction.Summarize.SUM) {
+            System.err.println("Error: figdl can not work with sum summarization.");
+            System.exit(1);
+        }
 
         // Read the input file into factors
         DatasetReader r = new DatasetReader();
@@ -248,7 +252,6 @@ public class CliApp {
             if (algorithm == Algorithm.FIGDL) {
                 // Invert the problem (max -> min)
                 if (summarizeOperation == CostFunction.Summarize.MAX) {
-                    log.warn("Warning: figdl can not maximize, so the problem will be inverted.");
                     factory.setSummarizeOperation(CostFunction.Summarize.MIN);
                     ConstantFactorExtractor.invert(factors);
                     constant = constant.invert();
@@ -259,7 +262,7 @@ public class CliApp {
             constant = ConstantFactorExtractor.extract(factors, constant);
 
             // Create the clique graph, using the specified algorithm
-            UPGraph cg = createCliqueGraph(factors);
+            UPGraph cg = createCliqueGraph(factors, constant);
 
             // Setup the solution propagation strategy
             VPStrategy sStrategy = new VPStrategy(
@@ -403,7 +406,7 @@ public class CliApp {
         }
     }
 
-    private UPGraph createCliqueGraph(List<CostFunction> factors) {
+    private UPGraph createCliqueGraph(List<CostFunction> factors, CostFunction constant) {
         
         UPGraph cg = null;
         switch(algorithm) {
@@ -416,7 +419,9 @@ public class CliApp {
                     ((GdlFactory)factory).setMode(Modes.TREE_UP);
                 } else {
                     ApproximationStrategy pStrategy = approximationStrategy.getInstance();
-                    factory = new FIGdlFactory(this.getIGdlR(), pStrategy);
+                    factory = new FIGdlFactory(constant, 
+                            summarizeOperation == CostFunction.Summarize.MAX,
+                            this.getIGdlR(), pStrategy);
                 }
                 int variables = 0;
                 JTResults results = null;

@@ -38,6 +38,7 @@
 
 package es.csic.iiia.dcop.figdl;
 
+import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunction.Summarize;
 import es.csic.iiia.dcop.bb.UBGraph;
 import es.csic.iiia.dcop.bb.UBResults;
@@ -69,6 +70,15 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, FIGdlMessage
     private static int maxS = Integer.MAX_VALUE;
     private static double optimumValue = Double.NaN;
     private static VPStrategy solutionStrategy;
+    
+    private double constant;
+    private boolean inverted;
+    
+    public FIGdlGraph(CostFunction constant, boolean inverted) {
+        super();
+        this.constant = constant.getValue(0);
+        this.inverted = inverted;
+    }
 
     public static void setMaxS(int max_s) {
         maxS = max_s;
@@ -114,11 +124,14 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, FIGdlMessage
         reportStart();
 
         if (!Double.isNaN(optimumValue)) {
+            optimumValue -= constant;
+            if (inverted)
+                optimumValue = -optimumValue;
             iteration.setOptimumValue(optimumValue);
         }
 
         UPResults globalResults = (UPResults)getResults();
-        double bestCost = Double.NaN, bestBound = Double.NaN;
+        double bestCost = Double.NaN, bestBound = Double.NaN, realBestCost = Double.NaN;
         iteration.setS(maxS);
 
         for (int i=minR; i<=maxR; i++) {
@@ -174,17 +187,25 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, FIGdlMessage
                 System.out.println("ITERSPARSITY " + FunctionCounter.getRatio());
                 System.out.println("ITERMAX_NODE_MEMORY " + MemoryTracker.asString() + " Mb");
 
-                System.out.println("THIS_ITER_LB " + ubResults.getBound());
-                System.out.println("THIS_ITER_UB " + ubResults.getCost());
-
-                final double newCost = ubResults.getCost();
+                double newCost = ubResults.getCost()+constant;
+                double newBound = ubResults.getBound()+constant;
+                
+                if (inverted) {
+                    double tmp = newCost;
+                    newCost = -newBound;
+                    newBound = -tmp;
+                }
+                    
                 if (Double.isNaN(bestCost) || summarize.isBetter(newCost, bestCost)) {
                     bestCost = newCost;
+                    realBestCost = ubResults.getCost();
                 }
-                final double newBound = ubResults.getBound();
                 if (Double.isNaN(bestBound) || !summarize.isBetter(newBound, bestBound)) {
                     bestBound = newBound;
                 }
+                
+                System.out.println("THIS_ITER_LB " + newBound);
+                System.out.println("THIS_ITER_UB " + newCost);
                 System.out.println("ITER_LB " + bestBound);
                 System.out.println("ITER_UB " + bestCost);
 
@@ -199,7 +220,7 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, FIGdlMessage
                 }
 
                 // Build the new iteration
-                iteration.prepareNextIteration(bestCost);
+                iteration.prepareNextIteration(realBestCost);
             }
 
             if (exit) break;
