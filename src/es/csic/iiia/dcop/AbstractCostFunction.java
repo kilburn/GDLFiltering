@@ -514,8 +514,9 @@ public abstract class AbstractCostFunction implements CostFunction {
             result = factory.buildSparseCostFunction(vars.toArray(new Variable[0]),
                 nogood);
         } else {
-            result = factory.buildCostFunction(vars.toArray(new Variable[0]),
-                nogood);
+            result = factory.buildCostFunction(vars.toArray(new Variable[0]));
+            denseCombine(this, factor, result);
+            return result;
         }
 
         VariableAssignment map = null;
@@ -545,18 +546,22 @@ public abstract class AbstractCostFunction implements CostFunction {
             }
         }
 
-        /** Unoptimized implementation!
+        return result;
+    }
+    private static void denseCombine(CostFunction f1, CostFunction f2,
+            CostFunction result)
+    {
+        final Combine operation = f1.getFactory().getCombineOperation();
+        VariableAssignment map = null;
         for (int i=0; i<result.getSize(); i++) {
             map = result.getMapping(i, map);
 
-            final double v = operation.eval(getValue(map), factor.getValue(map));
+            final double v = operation.eval(f1.getValue(map), f2.getValue(map));
             if (Double.isNaN(v)) {
-                throw new RuntimeException("Combination generated a NaN value (" + getValue(map) + "," + factor.getValue(map) + "). Halting.");
+                throw new RuntimeException("Combination generated a NaN value (" + f1.getValue(map) + "," + f2.getValue(map) + "). Halting.");
             }
             result.setValue(i, v);
-        }*/
-
-        return result;
+        }
     }
 
 
