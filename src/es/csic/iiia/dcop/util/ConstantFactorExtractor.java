@@ -64,10 +64,6 @@ public class ConstantFactorExtractor {
             }
         }
         
-        if (log.isWarnEnabled() && constant.getValue(0) != 0) {
-            log.warn("Extracted constant: " + constant);
-        }
-        
         return constant;
     }
 
@@ -83,10 +79,6 @@ public class ConstantFactorExtractor {
                 factors.set(i, f.combine(minf.negate()));
                 constant = constant.combine(minf);
             }
-        }
-        
-        if (log.isWarnEnabled()) {
-            log.warn("Positivized problem constant: " + constant);
         }
         
         return constant;

@@ -38,6 +38,7 @@
 
 package es.csic.iiia.dcop.figdl;
 
+import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.figdl.strategy.ApproximationStrategy;
 import es.csic.iiia.dcop.mp.AbstractNode.Modes;
 import es.csic.iiia.dcop.up.UPResult;
@@ -58,14 +59,18 @@ public class FIGdlFactory implements UPFactory<FIGdlGraph, FIGdlNode, UPEdge<FIG
     private Modes mode = Modes.TREE_UP;
     private int r = Integer.MAX_VALUE;
     private ApproximationStrategy approximationStrategy;
+    private CostFunction constant;
+    private boolean inverted;
 
-    public FIGdlFactory(int r, ApproximationStrategy approximationStrategy) {
+    public FIGdlFactory(CostFunction constant, boolean inverted, int r, ApproximationStrategy approximationStrategy) {
         this.r = r;
         this.approximationStrategy = approximationStrategy;
+        this.constant = constant;
+        this.inverted = inverted;
     }
 
     public FIGdlGraph buildGraph() {
-        FIGdlGraph g = new FIGdlGraph();
+        FIGdlGraph g = new FIGdlGraph(constant, inverted);
         g.setMaxR(r);
         return g;
     }
