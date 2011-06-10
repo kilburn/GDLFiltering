@@ -43,20 +43,23 @@ import es.csic.iiia.dcop.CostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
 public class UCIDatasetReader {
+    
+    private static Logger log = LoggerFactory.getLogger(UCIDatasetReader.class);
     
     Matcher agent = Pattern.compile("(?i)^AGENT\\s+(\\d+)\\s*$").matcher("");
     Matcher variable = Pattern.compile("(?i)^VARIABLE\\s+(\\w+)\\s+(\\w+)\\s+(\\d+)").matcher("");
@@ -81,7 +84,7 @@ public class UCIDatasetReader {
 
             try {
 
-                this.parseLine(line);
+                this.parseLine(line.toLowerCase());
                 /*
                 * readLine is a bit quirky :
                 * it returns the content of a line MINUS the newline.
@@ -89,15 +92,14 @@ public class UCIDatasetReader {
                 * it returns an empty String if two newlines appear in a row.
                 */
                 while (( line = input.readLine()) != null){
-                    this.parseLine(line);
+                    this.parseLine(line.toLowerCase());
                 }
-
             } finally {
                 input.close();
             }
 
         } catch (IOException ex){
-            ex.printStackTrace();
+            throw new RuntimeException(ex.getLocalizedMessage());
         }
 
         this.factory = null;
@@ -113,6 +115,7 @@ public class UCIDatasetReader {
             } catch (Exception ex) {
                 System.err.println("Conflict line: " + line);
                 ex.printStackTrace();
+                System.exit(1);
             }
         } else {
             System.out.println("[WARNING] Ignored line: " + line);
@@ -127,7 +130,6 @@ public class UCIDatasetReader {
         if (!variable.reset(line).find()) {
             return;
         }
-        
         Variable v = new Variable(variable.group(1),
                 Integer.valueOf(variable.group(3)));
         variables.put(variable.group(1), v);
@@ -140,10 +142,12 @@ public class UCIDatasetReader {
 
         String[] parts = line.split("\\s+");
         ArrayList<Variable> vars = new ArrayList<Variable>(parts.length-1);
-        for(int i=1, j=0; i<parts.length; i++) {
+        for(int i=1; i<parts.length; i++) {
             final Variable var = variables.get(parts[i]);
             if (var != null) {
                 vars.add(var);
+            } else {
+                log.warn("Found unknown variable \"" + parts[i] + "\" in constraint line: " + line);
             }
         }
 

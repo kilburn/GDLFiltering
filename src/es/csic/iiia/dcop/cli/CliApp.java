@@ -249,12 +249,14 @@ public class CliApp {
         } else {
             
             // Positivize if figdl
+            boolean inverse = false;
             if (algorithm == Algorithm.FIGDL) {
                 // Invert the problem (max -> min)
                 if (summarizeOperation == CostFunction.Summarize.MAX) {
                     factory.setSummarizeOperation(CostFunction.Summarize.MIN);
                     ConstantFactorExtractor.invert(factors);
                     constant = constant.invert();
+                    inverse = true;
                 }
                 constant = ConstantFactorExtractor.positivize(factors, constant);
             }
@@ -316,7 +318,8 @@ public class CliApp {
             log.info("TOTAL_BYTES " + results.getTotalBytesc());
             log.info("CYBLE_BYTES " + results.getMaximalBytesc());
             log.info("LOAD_FACTOR " + results.getLoadFactor());
-            log.info("BOUND " + ubres.getBound());
+            final double bound = ubres.getBound() + constant.getValue(0);
+            log.info("BOUND " + (inverse ? -bound : bound));
         }
 
         map.putAll(unaries);
