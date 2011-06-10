@@ -408,7 +408,7 @@ public abstract class CostFunctionTest {
         CostFunction sum = f1.summarize(vars);
         CostFunction res = factory.buildCostFunction(vars);
         res.setValues(new double[]{0.2, 0.2});
-        assertEquals(sum, res);
+        assertEquals(res, sum);
         assertSame(sum.getFactory(), res.getFactory());
     }
 

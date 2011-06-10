@@ -491,6 +491,15 @@ public interface CostFunction {
      * @return Iterator over the indices of this cost function.
      */
     public TLongIterator iterator();
+    
+    /**
+     * Obtains an iterator over the linearized indices of this cost function,
+     * following the natural order of the master's CostFunction indices.
+     * 
+     * @parameter master CostFunction whose natural indices will be followed.
+     * @return Iterator over the indices of this cost function.
+     */
+    public ConditionedIterator conditionedIterator(CostFunction master);
 
     public void setFactory(CostFunctionFactory factory);
 

@@ -39,6 +39,7 @@ package es.csic.iiia.dcop;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -49,6 +50,7 @@ public class PerformanceTest {
     
     private static int DOMAIN = 2;
     private static int NVARS = 10;
+    private static int NTIMES = 100;
     
     private CostFunctionFactory factory;
     private CostFunction falseFunction;
@@ -98,9 +100,12 @@ public class PerformanceTest {
         System.err.println("-> Initialization took " + (afterLaunch-preLaunch)/1000000f + " ms");
         
         preLaunch = System.nanoTime();
-        double[] values3 = new double[size];
-        for (int i=0; i<size; i++) {
-            values3[i] = values1[i] + values2[i];
+        
+        for (int j=0; j<NTIMES; j++) {
+            double[] values3 = new double[size];
+            for (int i=0; i<size; i++) {
+                values3[i] = values1[i] + values2[i];
+            }
         }
         afterLaunch = System.nanoTime();
         System.err.println("-> Computation took " + (afterLaunch-preLaunch)/1000000f + " ms");
@@ -125,9 +130,52 @@ public class PerformanceTest {
         System.err.println("-> Initialization took " + (afterLaunch-preLaunch)/1000000f + " ms");
         
         preLaunch = System.nanoTime();
-        final CostFunction f3 = f1.combine(f2);
+        for (int i=0; i<NTIMES; i++) {
+            final CostFunction f3 = f1.combine(f2);
+        }
         afterLaunch = System.nanoTime();
         System.err.println("-> Computation took " + (afterLaunch-preLaunch)/1000000f + " ms");
+    }
+    
+    @Test
+    @Ignore
+    public void testBoth() {
+        int x = 0;
+        int y = 0;
+        int xc = 100;
+        for (int i=0; i<1000000; i++) {
+            if (--xc == 0) {
+                x += 1 % 10;
+                if (++y == 10) x = 0;
+                xc = 100;
+            }
+        }
+    }
+    
+    @Test
+    @Ignore
+    public void testModulus() {
+        int x = 0;
+        int xc = 100;
+        for (int i=0; i<1000000; i++) {
+            if (--xc == 0) {
+                x += 1 % 100;
+                xc = 100;
+            }
+        }
+    }
+    
+    @Test
+    @Ignore
+    public void testConditional() {
+        int x = 0;
+        int xc = 100;
+        for (int i=0; i<1000000; i++) {
+            if (--xc == 0) {
+                if (++x == 100) x=0;
+                xc = 100;
+            }
+        }
     }
     
 }

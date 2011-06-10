@@ -38,6 +38,7 @@
 
 package es.csic.iiia.dcop;
 
+import com.sun.tools.corba.se.idl.InvalidArgument;
 import es.csic.iiia.dcop.util.CostFunctionStats;
 import gnu.trove.iterator.TLongIterator;
 import gnu.trove.list.TLongList;
@@ -52,13 +53,14 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import javax.activation.UnsupportedDataTypeException;
 
 /**
  * Base implementation of a cost function.
  *
  * This class provides some basic methods implementing the operations that can
  * be made over cost functions, while delegating the actual cost/utility values
- * representation/storage to the concrete class that extends it.
+ * representation/storage to the concrete class that extends lit.
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
@@ -463,6 +465,15 @@ public abstract class AbstractCostFunction implements CostFunction {
         }
         return idx;
     }
+    
+    protected void indexToSubindex(long index, int[] idx) {
+        final int len = variables.length;
+        for (int i = 0; i < len; i++) {
+            final int ii = len - 1 - i;
+            idx[i] = (int)(index / sizes[ii]);
+            index = index % sizes[ii];
+        }
+    }
 
     /** {@inheritDoc} */
     public CostFunction negate() {
@@ -490,9 +501,6 @@ public abstract class AbstractCostFunction implements CostFunction {
 
     /** {@inheritDoc} */
     public CostFunction combine(CostFunction factor) {
-        Combine operation = factory.getCombineOperation();
-        Summarize sum = factory.getSummarizeOperation();
-        final double nogood = sum.getNoGood();
 
         // Combination with null factors gives a null / the other factor
         if (factor == null || factor.getSize()==0) {
@@ -503,32 +511,41 @@ public abstract class AbstractCostFunction implements CostFunction {
         }
 
         // Compute the variable set intersection (sets doesn't allow duplicates)
-        LinkedHashSet<Variable> vars = new LinkedHashSet<Variable>(variableSet);
-        vars.addAll(factor.getVariableSet());
+        LinkedHashSet<Variable> varSet = new LinkedHashSet<Variable>(variableSet);
+        varSet.addAll(factor.getVariableSet());
+        Variable[] vars = varSet.toArray(new Variable[0]);
 
         // Choose between sparse and dense functions
         CostFunction result;
         final double ratio1 = getNumberOfNoGoods() / (float)getSize();
         final double ratio2 = factor.getNumberOfNoGoods() / (float)factor.getSize();
         if (ratio1 > 0.8 || ratio2 > 0.8) {
-            result = factory.buildSparseCostFunction(vars.toArray(new Variable[0]),
-                nogood);
+            // Sparse functions pay off
+            CostFunction left  = ratio1 > ratio2 ? this : factor;
+            CostFunction right = left == this ? factor : this;
+            result = factory.buildSparseCostFunction(vars,
+                factory.getSummarizeOperation().getNoGood());
+            sparseCombine(left, right, result);
         } else {
-            result = factory.buildCostFunction(vars.toArray(new Variable[0]));
+            // It is better to use dense functions
+            result = factory.buildCostFunction(vars);
             denseCombine(this, factor, result);
-            return result;
         }
 
+        return result;
+    }
+    
+    private void sparseCombine(CostFunction left, CostFunction right,
+            CostFunction result)
+    {
+        final Combine operation = factory.getCombineOperation();
         VariableAssignment map = null;
-        CostFunction left  = ratio1 > ratio2 ? this : factor;
-        CostFunction right = left == this ? factor : this;
-
+        
         TLongIterator it = left.iterator();
         VariableAssignment map2 = null;
         while(it.hasNext()) {
             final long i = it.next();
             final double lv = left.getValue(i);
-            if (lv == nogood) continue;
 
             map = left.getMapping(i, map);
 
@@ -540,28 +557,33 @@ public abstract class AbstractCostFunction implements CostFunction {
 
                 final double v = operation.eval(lv, right.getValue(fidx));
                 if (Double.isNaN(v)) {
-                    throw new RuntimeException("Combination generated a NaN value (" + getValue(map) + "," + factor.getValue(map) + "). Halting.");
+                    throw new RuntimeException("Combination generated a NaN value (" + left.getValue(map) + "," + right.getValue(fidx) + "). Halting.");
                 }
                 result.setValue(result.getIndex(map2), v);
             }
         }
-
-        return result;
     }
-    private static void denseCombine(CostFunction f1, CostFunction f2,
+    
+    private void denseCombine(CostFunction f1, CostFunction f2,
             CostFunction result)
     {
-        final Combine operation = f1.getFactory().getCombineOperation();
-        VariableAssignment map = null;
-        for (int i=0; i<result.getSize(); i++) {
-            map = result.getMapping(i, map);
-
-            final double v = operation.eval(f1.getValue(map), f2.getValue(map));
+        final Combine operation = factory.getCombineOperation();
+        ConditionedIterator i1 = f1.conditionedIterator(result);
+        ConditionedIterator i2 = f2.conditionedIterator(result);
+        for (long i=0; i<result.getSize(); i++) {
+            final double v1 = f1.getValue(i1.next(i));
+            final double v2 = f2.getValue(i2.next(i));
+            final double v = operation.eval(v1, v2);
             if (Double.isNaN(v)) {
-                throw new RuntimeException("Combination generated a NaN value (" + f1.getValue(map) + "," + f2.getValue(map) + "). Halting.");
+                throw new RuntimeException("Combination generated a NaN value (" + v1 + "," + v2 + "). Halting.");
             }
             result.setValue(i, v);
         }
+    }
+    
+    @Override
+    public ConditionedIterator conditionedIterator(CostFunction f) {
+        return new DefaultConditionedIterator(f);
     }
 
 
@@ -574,7 +596,7 @@ public abstract class AbstractCostFunction implements CostFunction {
             if (fs.get(i) == null) fs.remove(i);
         }
 
-        // If it's a single (or none) function, just fallback to normal combine.
+        // If lit's a single (or none) function, just fallback to normal combine.
         if (fs.isEmpty()) {
             return factory.buildCostFunction(this);
         } else if (fs.size() == 1) {
@@ -593,7 +615,7 @@ public abstract class AbstractCostFunction implements CostFunction {
 
         // Optimized implementation plan:
         //   1. Look at the nogood ratio of each function
-        //   2. If any ratio > 0.5 : Result is sparse, and
+        //   2. If any ratio > 0.8 : Result is sparse, and
         //      -> loop :
         //         - Find the combination with min number of operations
         //         - Remove items from the list, add result
@@ -617,21 +639,15 @@ public abstract class AbstractCostFunction implements CostFunction {
                 public int compare(CostFunction t, CostFunction t1) {
                     final float r1 = t.getNumberOfNoGoods()/(float)t.getSize();
                     final float r2 = t1.getNumberOfNoGoods()/(float)t1.getSize();
-                    return r1 > r2 ? 1 : (r1 == r2 ? 0 : -1);
+                    return r1 < r2 ? 1 : (r1 == r2 ? 0 : -1);
                 }
             });
 
             // Perform the actual combination in decreasing sparsity order
             CostFunction result = fs.remove(fs.size()-1);
             for (int i=fs.size()-1; i>=0; i--) {
-                if (result.getNumberOfNoGoods() == result.getSize()) {
-                    break;
-                }
                 final CostFunction f = fs.remove(i);
                 result = result.combine(f);
-            }
-            if (result.getNumberOfNoGoods() == result.getSize()) {
-                return factory.buildSparseCostFunction(vars.toArray(new Variable[0]));
             }
 
             return result;
@@ -643,22 +659,25 @@ public abstract class AbstractCostFunction implements CostFunction {
         // and all the other factors.
         CostFunction result = factory.buildCostFunction(vars.toArray(new Variable[0]));
 
-        fs.remove(fs.size()-1);
-        VariableAssignment map = null;
-        for (long i=0; i<result.getSize(); i++) {
-            map = result.getMapping(i, map);
+        final int niterators = fs.size();
+        ConditionedIterator[] iterators = new ConditionedIterator[niterators];
+        for (int i=0; i<niterators; i++) {
+            iterators[i] = fs.get(i).conditionedIterator(result);
+        }
+        
+        for (long idx=0, rsize=result.getSize(); idx<rsize; idx++) {
 
-            double v = getValue(map);
-            for (CostFunction f : fs) {
-                v = operation.eval(v, f.getValue(map));
-                if (v == nogood) break;
+            double v = fs.get(0).getValue(iterators[0].next(idx));
+            for (int i=1; i<niterators; i++) {
+                final long idx2 = iterators[i].next(idx);
+                v = operation.eval(v, fs.get(i).getValue(idx2));
             }
 
             if (Double.isNaN(v)) {
                 throw new RuntimeException("Combination generated a NaN value. Halting.");
             }
             
-            result.setValue(i, v);
+            result.setValue(idx, v);
         }
 
         return result;
@@ -720,7 +739,7 @@ public abstract class AbstractCostFunction implements CostFunction {
             return result;
         }
 
-        // Instantiate it
+        // Instantiate lit
         CostFunction result = this.getNumberOfNoGoods() / this.getSize() > 0.8
                 ? factory.buildSparseCostFunction(newVariables.toArray(new Variable[0]))
                 : factory.buildCostFunction(newVariables.toArray(new Variable[0]));
@@ -745,7 +764,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         combi = combi.summarize(this.variables);
 
         // Perform the actual filtering
-        //Iterator<Integer> it = result.iterator();
+        //Iterator<Integer> lit = result.iterator();
         boolean allNogoods = true;
         TLongIterator it = iterator();
         while(it.hasNext()) {
@@ -832,7 +851,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         for (int i = 0; i < subindex.length; i++) {
             // Check domain limits
             if (variables[i].getDomain() <= subindex[i]) {
-                throw new IllegalArgumentException("Invalid index for dimension " + i);
+                throw new IllegalArgumentException("Invalid index " + subindex[i] + " for dimension " + i);
             }
             idx += sizes[subindex.length - i - 1] * subindex[i];
         }
@@ -856,13 +875,14 @@ public abstract class AbstractCostFunction implements CostFunction {
 
         VariableAssignment map = null;
         TLongIterator it = iterator();
+        ConditionedIterator rit = result.conditionedIterator(this);
         while (it.hasNext()) {
             final long i = it.next();
-            map = getMapping(i, map);
+            
             // This value is lost during the summarization
-            TLongIterator idxit = result.getIndexes(map).iterator();
-            while (idxit.hasNext()) {
-                final long idx = idxit.next();
+            rit.next(i);
+            while (rit.hasNextOffset()) {
+                final long idx = rit.nextOffset();
                 result.setValue(idx, operation.eval(getValue(i), result.getValue(idx)));
             }
         }
@@ -932,7 +952,7 @@ public abstract class AbstractCostFunction implements CostFunction {
             map = this.getMapping(i, map);
             final double v1 = getValue(i);
             final double v2 = other.getValue(map);
-            if (Double.isNaN(v1) ^ Double.isNaN(v2)) {
+            if (Double.isNaN(v1) || Double.isNaN(v2)) {
                 return false;
             }
             final double e = getValue(i) - other.getValue(map);
@@ -952,4 +972,114 @@ public abstract class AbstractCostFunction implements CostFunction {
         return hash;
     }
 
+    public class DefaultConditionedIterator implements ConditionedIterator {
+        private int[] referenceIdxs;
+        private int[] idxsToReference;
+        private int len = variables.length;
+        private AbstractCostFunction master;
+        private int noffsets;
+        private long[] offsets;
+        private long idx;
+        private int currentOffset;
+        
+        public DefaultConditionedIterator(CostFunction reference) {
+            if (!(reference instanceof AbstractCostFunction)) {
+                throw new RuntimeException("Unable to build custom iterator for arbitrary CostFunction subtypes");
+            }
+            AbstractCostFunction other = (AbstractCostFunction)reference;
+            master = other;
+                        
+            Set<Variable> vs = other.getVariableSet();
+            idxsToReference = new int[len];
+
+//            int i = 0;
+//            for (Variable v1 : vs)  {
+//                for (int j=0; j<len; j++) {
+//                    final Variable v2 = variables[j];
+//                    if (v1.equals(v2)) {
+//                        idxsToReference[j] = i;
+//                        break;
+//                    }
+//                }
+//                i++;
+//            }
+            
+            ArrayList<Integer> freeVars = new ArrayList<Integer>(len);
+            Arrays.fill(idxsToReference, -1);
+            for (int j=0; j<len; j++) {
+                boolean found = false;
+                
+                for (int i=0, olen=other.variables.length; i<olen; i++) {    
+                    if (variables[j].equals(other.variables[i])) {
+                        idxsToReference[j] = i;
+                        found = true;
+                        break;
+                    }
+                }
+                
+                if (!found) {
+                    freeVars.add(j);
+                }
+            }
+            
+            // Ofsset computation (a single parent index maps to multiple
+            // indices of this function)
+            if  (!freeVars.isEmpty()) {
+                
+                // Compute the number of offsets
+                noffsets = 1;
+                for (int i : freeVars) {
+                    noffsets *= variables[i].getDomain();
+                }
+                
+                // Compute the actual offsets
+                offsets = new long[noffsets];
+                long multiplier = 1;
+                for (int i : freeVars) {
+                    final int domain = variables[i].getDomain();
+                    int oidx = 0;
+                    for (int j=0; j<domain; j++) {
+                        for (int k=0; k<multiplier; k++) {
+                            offsets[oidx++] += sizes[len - i - 1]*j;
+                        }
+                    }
+                    multiplier *= domain;
+                }
+                
+            } else {
+                noffsets = 1;
+                offsets = new long[]{0l};
+            }
+            
+            
+            referenceIdxs = new int[vs.size()];
+            Arrays.fill(referenceIdxs, 0);
+        }
+
+        public long next(long referenceIdx) {
+            master.indexToSubindex(referenceIdx, referenceIdxs);
+            
+            // Compute subindex -> index
+            idx = 0;
+            for (int i = 0; i < len; i++) {
+                final int referenceIdxi = idxsToReference[i];
+                if (referenceIdxi >= 0) {
+                    final int idxv = referenceIdxs[referenceIdxi];
+                    idx += sizes[len - i - 1] * idxv;
+                }
+            }
+            
+            currentOffset = 0;
+            return idx;
+        }
+        
+        public boolean hasNextOffset() {
+            return currentOffset < noffsets;
+        }
+        
+        public long nextOffset() {
+            return idx + offsets[currentOffset++];
+        }
+
+    }
 }
