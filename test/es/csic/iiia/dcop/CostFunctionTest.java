@@ -38,6 +38,8 @@
 
 package es.csic.iiia.dcop;
 
+import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.Arrays;
 import gnu.trove.iterator.TLongIterator;
 import java.util.ArrayList;
@@ -608,20 +610,20 @@ public abstract class CostFunctionTest {
     @Test
     public void testCombineNogoods() {
         factory.setSummarizeOperation(CostFunction.Summarize.MIN);
-        final double v = factory.getSummarizeOperation().getNoGood();
+        final double ng = factory.getSummarizeOperation().getNoGood();
 
         Variable x = new Variable("x", 2);
         Variable y = new Variable("y", 2);
         Variable z = new Variable("z", 2);
 
         CostFunction cf1 = factory.buildCostFunction(new Variable[]{x,y});
-        cf1.setValues(new double[]{v, v, v, v});
+        cf1.setValues(new double[]{ng, ng, ng, ng});
         CostFunction cf2 = factory.buildCostFunction(new Variable[]{y,z});
         cf2.setValues(new double[]{0.3, -0.3, -0.88, -0.12});
 
         CostFunction comb = cf1.combine(cf2);
         CostFunction res = factory.buildCostFunction(new Variable[]{x,y,z});
-        res.setValues(new double[]{v, v, v, v, v, v, v, v});
+        res.setValues(new double[]{ng, ng, ng, ng, ng, ng, ng, ng});
         assertEquals(res, comb);
 
         comb = cf2.combine(cf1);
@@ -631,7 +633,7 @@ public abstract class CostFunctionTest {
     @Test
     public void testSummarizeNogoods() {
         factory.setSummarizeOperation(CostFunction.Summarize.MAX);
-        final double v = CostFunction.Summarize.MAX.getNoGood();
+        final double ng = CostFunction.Summarize.MAX.getNoGood();
         Variable x = new Variable("x", 2);
         Variable y = new Variable("y", 2);
         Variable z = new Variable("z", 2);
@@ -639,12 +641,12 @@ public abstract class CostFunctionTest {
         Variable u = new Variable("u", 2);
         CostFunction cf = factory.buildCostFunction(new Variable[]{x,y,z,t,u});
         cf.setValues(new double[] {
-            v, v, v, v, v, v, v, v, v, v, v, v, v, v, v, v, 4.61, 4.61, 4.61,
+            ng, ng, ng, ng, ng, ng, ng, ng, ng, ng, ng, ng, ng, ng, ng, ng, 4.61, 4.61, 4.61,
             4.61, 4.61, 4.61, 4.61, 4.61, 4.61, 4.61, 4.61, 4.61, 4.61, 4.61,
             4.61, 4.61
         });
 
-        assertTrue(cf.getValue(0) == v);
+        assertTrue(cf.getValue(0) == ng);
         CostFunction sum = cf.summarize(new Variable[0]);
         CostFunction res = factory.buildCostFunction(new Variable[0], 4.61);
         assertEquals(res, sum);
@@ -652,10 +654,29 @@ public abstract class CostFunctionTest {
         CostFunction dif = cf.combine(res.negate());
         res = factory.buildCostFunction(new Variable[]{x,y,z,t,u});
         res.setValues(new double[] {
-            v, v, v, v, v, v, v, v, v, v, v, v, v, v, v, v, 0, 0, 0,
+            ng, ng, ng, ng, ng, ng, ng, ng, ng, ng, ng, ng, ng, ng, ng, ng, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
         });
         assertEquals(res, dif);
+    }
+    
+    @Test
+    public void testSummarizeSparseToMoreVariables() {
+        factory.setSummarizeOperation(CostFunction.Summarize.MAX);
+        final double ng = CostFunction.Summarize.MAX.getNoGood();
+        
+        CostFunction cf = factory.buildCostFunction(new Variable[]{a,b,c}, ng);
+        cf.setValue(new int[]{0,0,0}, 0);
+        cf.setValue(new int[]{0,1,0}, 0);
+        CostFunction actual = cf.summarize(new Variable[]{a,b,c,d});
+        
+        CostFunction expected = factory.buildCostFunction(new Variable[]{a,d,b,c}, ng);
+        expected.setValue(new int[]{0,0,0,0}, 0);
+        expected.setValue(new int[]{0,1,0,0}, 0);
+        expected.setValue(new int[]{0,0,1,0}, 0);
+        expected.setValue(new int[]{0,1,1,0}, 0);
+        
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -770,6 +791,64 @@ public abstract class CostFunctionTest {
         });
         assertEquals(res, com);
         assertSame(com.getFactory(), res.getFactory());
+    }
+    
+    @Test
+    public void testCombineXunguissim() {
+        factory.setSummarizeOperation(CostFunction.Summarize.MIN);
+        factory.setCombineOperation(CostFunction.Combine.SUM);
+        
+        final double Infinity = CostFunction.Summarize.MIN.getNoGood();
+        
+        Variable v34 = new Variable("34", 2);
+        Variable v49 = new Variable("49", 2);
+        Variable v3 = new Variable("3", 2);
+        Variable v55 = new Variable("55", 2);
+        Variable v23 = new Variable("23", 2);
+        Variable v58 = new Variable("58", 2);
+        Variable v57 = new Variable("57", 2);
+        Variable v56 = new Variable("56", 2);
+        Variable v13 = new Variable("13", 2);
+        Variable v45 = new Variable("45", 2);
+        Variable v46 = new Variable("46", 2);
+        Variable v35 = new Variable("35", 2);
+        
+//        CostFunction left = factory.buildCostFunction(
+//                new Variable[]{v34,v49,v3,v55,v23,v58,v57,v56,v13,v45}
+//        );
+//        left.setValues(new double[]{
+//                    Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.48, 21.74, Infinity, 19.099, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 19.76, Infinity, 19.34, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 23.599, 23.659, 20.959, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 20.88, 20.939, 18.24, Infinity, Infinity, Infinity, Infinity, Infinity, 21.74, 21.799, 19.099, Infinity, Infinity, Infinity, Infinity, Infinity, 22.419, Infinity, 21.999, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 19.7, 18.959, 19.28, Infinity, Infinity, Infinity, Infinity, Infinity, 20.56, 19.819, 20.14, 19.4, Infinity, Infinity, Infinity, 22.819, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 20.74, 21.98, 21.24, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 21.839, Infinity, Infinity, Infinity, 23.779, Infinity, Infinity, Infinity, 20.979, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.259, Infinity, Infinity, 21.0, 20.259, Infinity, Infinity, Infinity, 23.019, Infinity, Infinity, Infinity, Infinity, 22.599, Infinity, 23.099, 23.159, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 19.88, Infinity, 20.38, 20.439, Infinity, Infinity, Infinity, Infinity, 20.74, Infinity, 21.24, 21.299, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.919, 22.179, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 20.2, 19.459, Infinity, Infinity, 23.079, Infinity, 18.42, Infinity, 21.06, 20.319, Infinity, 21.439, Infinity, Infinity, Infinity, 23.38, Infinity, Infinity, Infinity, 20.579, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 23.299, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 19.459, Infinity, Infinity, Infinity, 21.399, Infinity, Infinity, Infinity, 18.599, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 21.319, Infinity, 20.899, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.04, 22.099, 19.4, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.759, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 23.619, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 20.860, 20.12, 20.44, 19.7, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 21.580, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.439, Infinity, 22.019, Infinity, Infinity, Infinity, Infinity, 20.939, Infinity, Infinity, Infinity, 22.88, Infinity, Infinity, Infinity, 20.079, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.799, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 20.7, 19.959, Infinity, Infinity, Infinity, 21.899, Infinity, Infinity, 19.839, 19.099, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.559, 21.819, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 21.04, Infinity, 21.54, 21.599, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.259, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 23.119, 23.179, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 21.36, 20.619, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.08, 21.339, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.939, 22.199, 22.519, 23.259, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 21.659, 22.399, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 23.299, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 20.94, 21.68, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 23.339, 23.039, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.18, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 21.759, 21.46, Infinity, 21.04, Infinity, Infinity, Infinity, Infinity, 24.659, Infinity, Infinity, Infinity, 21.899, 22.639, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 19.18, 19.919, Infinity, Infinity, 22.059, Infinity, Infinity, Infinity, 20.04, 20.779, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.72, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 20.0, Infinity, Infinity, Infinity, 22.879, Infinity, Infinity, Infinity, 20.86, Infinity, Infinity, Infinity, Infinity, 22.019, Infinity, 22.759, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 21.899, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 20.439, 20.44, 21.18, Infinity, Infinity, Infinity, Infinity, Infinity, 20.899, Infinity, 23.539, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.679, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 19.32, 22.259, 21.959, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 20.899, Infinity, 21.399, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 18.68, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 19.54, Infinity, Infinity, Infinity, Infinity, Infinity, 20.58, Infinity, 23.219, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 20.499, Infinity, Infinity, Infinity, 23.379, Infinity, Infinity, Infinity, Infinity, Infinity, 20.64, 21.38, Infinity, Infinity, Infinity, 23.319, Infinity, Infinity, 19.779, 20.519, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.499, 23.239, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 21.46, 21.159, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 20.599, 20.299, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 23.319, 23.019, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 23.099, Infinity, Infinity, Infinity, 20.34, 21.08, 17.7, Infinity, 22.419, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 21.06, Infinity, Infinity, Infinity, 23.939, Infinity, Infinity, Infinity, 21.919, Infinity, Infinity, Infinity, 23.919, Infinity, Infinity, Infinity, 21.159, 21.82, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 21.879, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.739, Infinity, Infinity, Infinity, 19.64, 20.14, 20.14, 20.88, Infinity, Infinity, Infinity, Infinity, Infinity, 19.279, 19.279, 20.019, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 21.999, Infinity, 22.739, Infinity, Infinity, Infinity, Infinity, Infinity, 19.02, 21.959, 21.659, Infinity, Infinity, Infinity, Infinity, Infinity, 18.159, 21.099, 20.799, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 23.519, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 19.34, Infinity, 19.84, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 19.02, Infinity, 21.659, 22.319, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity
+//        });
+        CostFunction left = factory.buildCostFunction(
+                new Variable[]{v46,v3}
+        );
+        left.setValues(new double[]{
+                    Infinity, 2.1, Infinity, Infinity
+        });
+        
+        CostFunction right = factory.buildCostFunction(
+                new Variable[]{v46,v55,v35}
+        );
+        right.setValues(new double[]{
+            0.86,1.7,3.5,4.34,0.02,0.86,2.66,3.5
+        });
+        
+        LinkedHashSet<Variable> vs = new LinkedHashSet<Variable>(left.getVariableSet());
+        vs.addAll(right.getVariableSet());
+        Variable[] vars = vs.toArray(new Variable[0]);
+        
+        CostFunction expected = factory.buildCostFunction(vars, Infinity);
+        System.out.println(expected);
+        expected.setValues(new double[] {
+            Infinity, Infinity, Infinity, Infinity, 2.1, 2.1, 2.1, 2.1,
+            Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity
+        });
+        CostFunction actual = left.summarize(vars);
+        assertEquals(expected, actual);
+        
+        expected = left.combine(right);
+        actual = actual.combine(right);
+        assertEquals(expected, actual);
     }
 
     /**

@@ -187,7 +187,7 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
         public boolean execute(long l, double d) {
             buf.append(l);
             buf.append(":");
-            buf.append(CostFunctionStats.formatValue(d));
+            buf.append(d);
             buf.append(", ");
             return true;
         }
