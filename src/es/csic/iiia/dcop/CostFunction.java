@@ -493,6 +493,14 @@ public interface CostFunction {
     public TLongIterator iterator();
     
     /**
+     * Obtains an iterator over the linearized indices of non-infinity elements of this
+     * cost function, and maintains a non-linearized version of the indices too.
+     *
+     * @return Iterator over the indices of this cost function.
+     */
+    public MasterIterator masterIterator();
+    
+    /**
      * Obtains an iterator over the linearized indices of this cost function,
      * following the natural order of the master's CostFunction indices.
      * 

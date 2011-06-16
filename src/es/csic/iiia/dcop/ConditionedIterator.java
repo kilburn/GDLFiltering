@@ -46,7 +46,9 @@ package es.csic.iiia.dcop;
 
 public interface ConditionedIterator {
     
-    public long next(long masterIndex);
+    public long next(long referenceIdx);
+    
+    public long nextSubidxs(int[] subidx);
     
     public boolean hasNextOffset();
 

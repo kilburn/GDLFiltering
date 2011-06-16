@@ -63,8 +63,8 @@ public abstract class CostFunctionTest {
     private Variable[] variables;
     protected CostFunctionFactory factory;
 
-    private Variable a,b,c,d;
-    private CostFunction f1, fda, fdc, fa, fb;
+    protected Variable a,b,c,d;
+    protected CostFunction f1, fda, fdc, fa, fb;
 
     public abstract CostFunctionFactory buildFactory();
 
@@ -557,24 +557,6 @@ public abstract class CostFunctionTest {
      * Test of combine method, of class CostFunction.
      */
     @Test
-    public void testCombine1() {
-        factory.setMode(CostFunction.Summarize.SUM, CostFunction.Combine.PRODUCT, CostFunction.Normalize.NONE);
-        CostFunction sum = f1.summarize(new Variable[]{a,c});
-        CostFunction com = f1.combine(sum);
-        CostFunction res = factory.buildCostFunction(new Variable[]{a,b,c});
-        res.setValues(new double[]{
-            0.1*0.3, 0.2*.25, 0.05*.08, 0.2*0.3, 0.05*.25, 0.03*.08, 0,
-            0, 0.03*.07, 0.2*0.2, 0.1*0.1, 0.04*0.07
-        });
-        assertEquals(com, res);
-        assertSame(com.getFactory(), res.getFactory());
-    }
-
-    /**
-     * Test of combine method, of class CostFunction.
-     */
-    @Test
-    @Ignore
     public void testCombine2() {
         factory.setMode(CostFunction.Summarize.SUM, CostFunction.Combine.SUM, CostFunction.Normalize.NONE);
         CostFunction sum = f1.summarize(new Variable[]{a,c});
@@ -650,14 +632,6 @@ public abstract class CostFunctionTest {
         CostFunction sum = cf.summarize(new Variable[0]);
         CostFunction res = factory.buildCostFunction(new Variable[0], 4.61);
         assertEquals(res, sum);
-
-        CostFunction dif = cf.combine(res.negate());
-        res = factory.buildCostFunction(new Variable[]{x,y,z,t,u});
-        res.setValues(new double[] {
-            ng, ng, ng, ng, ng, ng, ng, ng, ng, ng, ng, ng, ng, ng, ng, ng, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-        });
-        assertEquals(res, dif);
     }
     
     @Test

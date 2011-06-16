@@ -513,6 +513,7 @@ public abstract class AbstractCostFunction implements CostFunction {
 
     /** {@inheritDoc} */
     public CostFunction combine(CostFunction factor) {
+        final double ng = factory.getSummarizeOperation().getNoGood();
 
         // Combination with null factors gives a null / the other factor
         if (factor == null || factor.getSize()==0) {
@@ -536,14 +537,19 @@ public abstract class AbstractCostFunction implements CostFunction {
             CostFunction left  = ratio1 > ratio2 ? this : factor;
             CostFunction right = left == this ? factor : this;
             
-            result = factory.buildSparseCostFunction(vars,
-                factory.getSummarizeOperation().getNoGood());
+            result = factory.buildSparseCostFunction(vars, ng);
             left = left.summarize(vars);
             sparseCombine(left, right, result);
         } else {
             // It is better to use dense functions
-            result = factory.buildCostFunction(vars);
-            denseCombine(this, factor, result);
+            result = factory.buildCostFunction(vars, 1);
+            if (result instanceof MapCostFunction) {
+                result = factory.buildSparseCostFunction(vars, ng);
+                factor = factor.summarize(vars);
+                sparseCombine(factor, this, result);
+            } else {
+                denseCombine(this, factor, result);
+            }
         }
 
         return result;
@@ -554,12 +560,13 @@ public abstract class AbstractCostFunction implements CostFunction {
     {
         final Combine operation = factory.getCombineOperation();
         
-        TLongIterator it = left.iterator();
+        MasterIterator it = left.masterIterator();
+        final int[] subidxs = it.getIndices();
         ConditionedIterator rit = right.conditionedIterator(left);
         while(it.hasNext()) {
             final long i = it.next();
             final double lv = left.getValue(i);
-            final double rv = right.getValue(rit.next(i));
+            final double rv = right.getValue(rit.nextSubidxs(subidxs));
             final double v = operation.eval(lv, rv);
             if (Double.isNaN(v)) {
                 throw new RuntimeException("Combination generated a NaN value (" + lv + "," + rv + "). Halting.");
@@ -575,7 +582,8 @@ public abstract class AbstractCostFunction implements CostFunction {
         final double ng = factory.getSummarizeOperation().getNoGood();
         final int rsize = right.size();
         
-        TLongIterator it = left.iterator();
+        MasterIterator it = left.masterIterator();
+        final int[] subidxs = it.getIndices();
         ConditionedIterator[] rit = new ConditionedIterator[right.size()];
         for (int i=0; i<rsize; i++) {
                 rit[i] = right.get(i).conditionedIterator(left);
@@ -584,7 +592,7 @@ public abstract class AbstractCostFunction implements CostFunction {
             final long idx = it.next();
             double v = left.getValue(idx);
             for (int i=0; i<rsize; i++) {
-                final double rv = right.get(i).getValue(rit[i].next(idx));
+                final double rv = right.get(i).getValue(rit[i].nextSubidxs(subidxs));
                 v = operation.eval(v, rv);
                 if (v == ng) {
                     break;
@@ -599,13 +607,16 @@ public abstract class AbstractCostFunction implements CostFunction {
     
     private void denseCombine(CostFunction f1, CostFunction f2,
             CostFunction result)
-    {
+    {   
         final Combine operation = factory.getCombineOperation();
-        ConditionedIterator i1 = f1.conditionedIterator(result);
-        ConditionedIterator i2 = f2.conditionedIterator(result);
-        for (long i=0; i<result.getSize(); i++) {
-            final double v1 = f1.getValue(i1.next(i));
-            final double v2 = f2.getValue(i2.next(i));
+        MasterIterator       it = result.masterIterator();
+        ConditionedIterator  i1 = f1.conditionedIterator(result);
+        ConditionedIterator  i2 = f2.conditionedIterator(result);
+        final int[] subidx      = it.getIndices();
+        while (it.hasNext()) {
+            final long i = it.next();
+            final double v1 = f1.getValue(i1.nextSubidxs(subidx));
+            final double v2 = f2.getValue(i2.nextSubidxs(subidx));
             final double v = operation.eval(v1, v2);
             if (Double.isNaN(v)) {
                 throw new RuntimeException("Combination generated a NaN value (" + v1 + "," + v2 + "). Halting.");
@@ -665,13 +676,14 @@ public abstract class AbstractCostFunction implements CostFunction {
             }
         }
 
-        if (sparse) {
+        CostFunction result = factory.buildCostFunction(vars.toArray(new Variable[0]));
+        if (sparse || result instanceof MapCostFunction) {
             // Sort functions by sparsity
             Collections.sort(fs, sparseComparator);
 
             Variable[] vs = vars.toArray(new Variable[0]);
             CostFunction left = fs.remove(fs.size()-1).summarize(vs);
-            CostFunction result = factory.buildSparseCostFunction(vs, nogood);
+            result = factory.buildSparseCostFunction(vs, nogood);
             sparseCombine(left, fs, result);
             return result;
         }
@@ -680,19 +692,19 @@ public abstract class AbstractCostFunction implements CostFunction {
         // Unoptimized base implementation:
         // Iterate over the result positions, fetching the values from ourselves
         // and all the other factors.
-        CostFunction result = factory.buildCostFunction(vars.toArray(new Variable[0]));
-
         final int niterators = fs.size();
         ConditionedIterator[] iterators = new ConditionedIterator[niterators];
         for (int i=0; i<niterators; i++) {
             iterators[i] = fs.get(i).conditionedIterator(result);
         }
         
-        for (long idx=0, rsize=result.getSize(); idx<rsize; idx++) {
-
-            double v = fs.get(0).getValue(iterators[0].next(idx));
+        MasterIterator it = result.masterIterator();
+        final int[] subidx = it.getIndices();
+        while (it.hasNext()) {
+            final long idx = it.next();
+            double v = fs.get(0).getValue(iterators[0].nextSubidxs(subidx));
             for (int i=1; i<niterators; i++) {
-                final long idx2 = iterators[i].next(idx);
+                final long idx2 = iterators[i].nextSubidxs(subidx);
                 v = operation.eval(v, fs.get(i).getValue(idx2));
             }
 
@@ -787,7 +799,6 @@ public abstract class AbstractCostFunction implements CostFunction {
         combi = combi.summarize(this.variables);
 
         // Perform the actual filtering
-        //Iterator<Integer> lit = result.iterator();
         boolean allNogoods = true;
         TLongIterator it = iterator();
         while(it.hasNext()) {
@@ -827,19 +838,27 @@ public abstract class AbstractCostFunction implements CostFunction {
 
         // Perform the actual filtering (only on "good" tuples)
         boolean allNogoods = true; VariableAssignment map = null;
-        TLongIterator it = iterator();
+        final int nfs = fs.size();
+        ConditionedIterator[] iterators = new ConditionedIterator[nfs];
+        for (int i=0; i<nfs; i++) {
+            iterators[i] = fs.get(i).conditionedIterator(this);
+        }
+        
+        MasterIterator it = masterIterator();
+        final int[] subidxs = it.getIndices();
         while(it.hasNext()) {
-            final long i = it.next();
-            map = getMapping(i, map);
-            double v = getValue(i);
-
-            for (CostFunction f : fs) {
-                v = com.eval(v, f.getValue(map));
+            final long idx = it.next();
+            
+            double v = getValue(idx);
+            for (int i=0; i<nfs; i++) {
+                final long idx2 = iterators[i].nextSubidxs(subidxs);
+                v = com.eval(v, fs.get(i).getValue(idx2));
                 if (sum.isBetter(bound, v)) break;
             }
             
+            
             if (sum.isBetter(bound, v)) {
-                result.setValue(i, ng);
+                result.setValue(idx, ng);
             } else {
                 allNogoods = false;
             }
@@ -896,13 +915,14 @@ public abstract class AbstractCostFunction implements CostFunction {
                 operation.getNoGood());
         }
 
-        TLongIterator it = iterator();
+        MasterIterator it = masterIterator();
+        final int[] subidxs = it.getIndices();
         ConditionedIterator rit = result.conditionedIterator(this);
         while (it.hasNext()) {
             final long i = it.next();
             
             // This value is lost during the summarization
-            rit.next(i);
+            rit.nextSubidxs(subidxs);
             while (rit.hasNextOffset()) {
                 final long idx = rit.nextOffset();
                 result.setValue(idx, operation.eval(getValue(i), result.getValue(idx)));
@@ -1014,16 +1034,16 @@ public abstract class AbstractCostFunction implements CostFunction {
             referenceIdxs = new int[other.variables.length];
             idxsToReference = new int[len];
 
-//            int i = 0;
+//            int idx = 0;
 //            for (Variable v1 : vs)  {
 //                for (int j=0; j<len; j++) {
 //                    final Variable v2 = variables[j];
 //                    if (v1.equals(v2)) {
-//                        idxsToReference[j] = i;
+//                        idxsToReference[j] = idx;
 //                        break;
 //                    }
 //                }
-//                i++;
+//                idx++;
 //            }
             
             ArrayList<Integer> freeVars = new ArrayList<Integer>(len);
@@ -1080,6 +1100,23 @@ public abstract class AbstractCostFunction implements CostFunction {
 
         public long next(long referenceIdx) {
             master.indexToSubindex(referenceIdx, referenceIdxs);
+            
+            // Compute subindex -> index
+            idx = 0;
+            for (int i = 0; i < len; i++) {
+                final int referenceIdxi = idxsToReference[i];
+                if (referenceIdxi >= 0) {
+                    final int idxv = referenceIdxs[referenceIdxi];
+                    idx += sizes[len - i - 1] * idxv;
+                }
+            }
+            
+            currentOffset = 0;
+            return idx;
+        }
+        
+        public long nextSubidxs(int[] referenceIdxs) {
+            //master.indexToSubindex(referenceIdx, referenceIdxs);
             
             // Compute subindex -> index
             idx = 0;

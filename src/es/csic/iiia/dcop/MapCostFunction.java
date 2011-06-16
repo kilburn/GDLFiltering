@@ -131,6 +131,11 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
     @Override public TLongIterator iterator() {
         return map.keySet().iterator();
     }
+    
+    /** {@inheritDoc} */
+    @Override public MasterIterator masterIterator() {
+        return new MapMasterIterator();
+    }
 
     /** {@inheritDoc} */
     public double getValue(long index) {
@@ -191,6 +196,30 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
             buf.append(", ");
             return true;
         }
+    }
+    
+    private class MapMasterIterator implements MasterIterator {
+        private TLongIterator baseIterator = map.keySet().iterator();
+        private int[] subidx = new int[variables.length];
+
+        public int[] getIndices() {
+            return subidx;
+        }
+
+        public long next() {
+            final long idx = baseIterator.next();
+            indexToSubindex(idx, subidx);
+            return idx;
+        }
+
+        public boolean hasNext() {
+            return baseIterator.hasNext();
+        }
+
+        public void remove() {
+            baseIterator.remove();
+        }
+        
     }
 
 }

@@ -111,6 +111,11 @@ public final class HypercubeCostFunction extends AbstractCostFunction implements
     @Override public TLongIterator iterator() {
         return new HypercubeIterator();
     }
+    
+    /** {@inheritDoc} */
+    @Override public MasterIterator masterIterator() {
+        return new HypercubeMasterIterator();
+    }
 
     /** {@inheritDoc} */
     @Override public double getValue(long index) {
@@ -202,6 +207,53 @@ public final class HypercubeCostFunction extends AbstractCostFunction implements
             throw new UnsupportedOperationException("You can not remove elements from an hypercube.");
         }
 
+    }
+    
+    /**
+     * Implements the Iterator interface for an hypercube, allowing to iterate
+     * over its elements using the common java conventions.
+     */
+    protected class HypercubeMasterIterator implements MasterIterator {
+        private final int[] subidx = new int[variables.length];
+        private long idx;
+
+        public HypercubeMasterIterator() {
+            idx = -1;
+            if (variables.length > 0)
+                subidx[variables.length-1] = -1;
+        }
+        
+        private void incIdx() {
+            idx++;
+            for (int i=variables.length-1; i>=0; i--) {
+                if (++subidx[i] != variables[i].getDomain()) {
+                    break;
+                } else {
+                    subidx[i] = 0;
+                }
+            }
+        }
+
+        @Override
+        public boolean hasNext() {
+            return idx >= -1 && idx < size-1;
+        }
+
+        @Override
+        public long next() {
+            incIdx();
+            return idx;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException("You can not remove elements from an hypercube.");
+        }
+        
+        @Override
+        public int[] getIndices() {
+            return subidx;
+        }
     }
 
 }
