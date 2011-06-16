@@ -139,7 +139,7 @@ public class CliApp {
     /**
      * Junction Tree building parameters
      */
-    private JTBuildingHeuristic heuristic = JTBuildingHeuristic.MCS;
+    private JTBuildingHeuristic heuristic = JTBuildingHeuristic.RANDOM;
     private int maxJunctionTreeTries = 30;
 
     /**

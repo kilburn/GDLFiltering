@@ -133,11 +133,12 @@ public class Cli {
 
         System.err.println();
         System.err.println("-- Junction tree building options");
-        System.err.println("  -e heuristic, --heuristic=heuristic (mcs)");
+        System.err.println("  -e heuristic, --heuristic=heuristic (random)");
         System.err.println("    Uses the specified heuristic function to build the Junction Tree,");
         System.err.println("    where heuristic is one of: ");
-        System.err.println("      - mcn : chooses the most connected node next, randomly breaking ties.");
-        System.err.println("      - mcs : chooses the most related node next, then mcn to break ties.");
+        System.err.println("      - mcn    : chooses the most connected node next, randomly breaking ties.");
+        System.err.println("      - mcs    : chooses the most related node next, then mcn to break ties.");
+        System.err.println("      - random : randomly picks any of the candidates as the next node for the tree.");
         System.err.println("  -m variables, --max-clique-size=variables (14)");
         System.err.println("    Don not try to solve problems with cliques of more than <variables> variables.");
         System.err.println("  -j tries, --jt-tries tries (30)");
@@ -341,12 +342,10 @@ public class Cli {
                     break;
 
                 case 'e':
-                    arg = g.getOptarg();
-                    if (arg.equals("mcn"))
-                        cli.setHeuristic(JTBuildingHeuristic.MCN);
-                    else if (arg.equals("mcs"))
-                        cli.setHeuristic(JTBuildingHeuristic.MCS);
-                    else {
+                    arg = g.getOptarg().toUpperCase();
+                    try {
+                        cli.setHeuristic(JTBuildingHeuristic.valueOf(arg));
+                    } catch (IllegalArgumentException e) {
                         System.err.println("Error: invalid heuristic \"" + arg + "\"");
                         System.exit(0);
                     }

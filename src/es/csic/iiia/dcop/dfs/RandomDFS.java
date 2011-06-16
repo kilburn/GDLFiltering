@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  * 
- * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
+ * Copyright (c) 2010, IIIA-CSIC, Artificial Intelligence Research Institute
  * All rights reserved.
  * 
  * Redistribution and use of this software in source and binary forms, with or
@@ -36,37 +36,27 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.cli;
+package es.csic.iiia.dcop.dfs;
 
-import es.csic.iiia.dcop.dfs.DFS;
-import es.csic.iiia.dcop.dfs.MCN;
-import es.csic.iiia.dcop.dfs.MCS;
-import es.csic.iiia.dcop.dfs.RandomDFS;
-import java.util.logging.Level;
+import es.csic.iiia.dcop.CostFunction;
+import es.csic.iiia.dcop.Variable;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public enum JTBuildingHeuristic {
-    MCS (MCS.class),
-    MCN (MCN.class),
-    RANDOM (RandomDFS.class),
-    ;
+public class RandomDFS extends DFS {
 
-    private Class<? extends DFS> clazz;
-    JTBuildingHeuristic(Class<? extends DFS> c) {
-        clazz = c;
+    public RandomDFS(List<CostFunction> factors) {
+        super(factors);
     }
-    DFS getInstance() {
-        DFS instance = null;
-        try {
-            instance = clazz.newInstance();
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return instance;
+
+    public RandomDFS() {}
+
+    protected HashSet<Variable> selectCandidates(HashSet<Variable> next) {
+        return next;
     }
+
 }

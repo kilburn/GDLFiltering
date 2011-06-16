@@ -44,7 +44,6 @@ import java.util.HashMap;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
-import java.util.Hashtable;
 import java.util.Map.Entry;
 import org.junit.After;
 import org.junit.AfterClass;

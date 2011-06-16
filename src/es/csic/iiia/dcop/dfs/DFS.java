@@ -306,8 +306,8 @@ public abstract class DFS {
         while (next.size() > 0) {
 
             // Choose one child amongst candidates
-            //HashSet<Variable> selectedCandidates = selectCandidates(next);
-            Variable v = pickRandomly(next);
+            HashSet<Variable> selectedCandidates = selectCandidates(next);
+            Variable v = pickRandomly(selectedCandidates);
 
             // Link both nodes
             adjacency[variableIndices.get(v)][variableIndices.get(currentNode)] = 1;
