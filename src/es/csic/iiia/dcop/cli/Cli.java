@@ -130,6 +130,8 @@ public class Cli {
         System.err.println("      - custom     : uses the custom output format.");
         System.err.println("  -t [file], --trace[=file]");
         System.err.println("    Save algorithms' traces in [file], or \"trace.txt\" if unspecified.");
+        System.err.println("  --evidence-file=<file>");
+        System.err.println("    Load the evidence file <file> (uai stuff).");
 
         System.err.println();
         System.err.println("-- Junction tree building options");
@@ -206,6 +208,7 @@ public class Cli {
             new LongOpt("factor-graph", LongOpt.OPTIONAL_ARGUMENT, null, 'f'),
             new LongOpt("clique-graph", LongOpt.OPTIONAL_ARGUMENT, null, 'g'),
             new LongOpt("export-tree", LongOpt.OPTIONAL_ARGUMENT, null, 4),
+            new LongOpt("evidence-file", LongOpt.OPTIONAL_ARGUMENT, null, 10),
             new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
             new LongOpt("igdl-r", LongOpt.REQUIRED_ARGUMENT, null, 'i'),
             new LongOpt("jt-tries", LongOpt.REQUIRED_ARGUMENT, null, 'j'),
@@ -317,6 +320,18 @@ public class Cli {
                     double p = Double.parseDouble(arg);
                     StochasticalExpansion.p = p;
                     DSA.p = p;
+                    break;
+                    
+                case 10:
+                    arg = g.getOptarg();
+                    if (arg != null) {
+                        try {
+                            cli.setEvidenceFile(new File(arg));
+                        } catch (FileNotFoundException ex) {
+                            System.err.println("Error loading the tree file: " + ex.getLocalizedMessage());
+                            System.exit(0);
+                        }
+                    }
                     break;
 
                 case 'a':

@@ -61,6 +61,7 @@ import es.csic.iiia.dcop.gdl.GdlFactory;
 import es.csic.iiia.dcop.figdl.strategy.ApproximationStrategy;
 import es.csic.iiia.dcop.io.CliqueTreeSerializer;
 import es.csic.iiia.dcop.io.DatasetReader;
+import es.csic.iiia.dcop.io.EvidenceReader;
 import es.csic.iiia.dcop.io.TreeReader;
 import es.csic.iiia.dcop.jt.JTResults;
 import es.csic.iiia.dcop.jt.JunctionTree;
@@ -171,6 +172,7 @@ public class CliApp {
     private int IGdlR = 2;
     private String optimalFile = null;
     private InputStream input = System.in;
+    private InputStream evidence = null;
 
 
     private void outputVariableStatistics(List<CostFunction> factors) {
@@ -220,6 +222,16 @@ public class CliApp {
         factory.setNormalizationType(normalization);
         factory.setSummarizeOperation(summarizeOperation);
         List<CostFunction> factors = r.read(input, factory);
+        
+        VariableAssignment evidences = new VariableAssignment();
+        
+        // Incorporate evidence
+        if (evidence != null) {
+            EvidenceReader.incorporate(factors, evidences, evidence);
+        }
+        if (!evidences.isEmpty()) {
+            log.info("[Info] " + evidences.size() + " variables fixed by evidence.");
+        }
 
         printInformation();
 
@@ -323,10 +335,11 @@ public class CliApp {
         }
 
         map.putAll(unaries);
+        map.putAll(evidences);
         SortedMap<Variable, Integer> foo = new TreeMap<Variable, Integer>(map);
         StringBuilder buf = new StringBuilder();
         if (outputFormat == outputFormat.UAI) {
-            buf.append("MPE\n").append(foo.size());
+            buf.append("MPE\n1\n").append(foo.size());
         } else {
             buf.append("SOLUTION ");
         }
@@ -500,6 +513,10 @@ public class CliApp {
 
     void setInputFile(File file) throws FileNotFoundException {
         input = new FileInputStream(file);
+    }
+    
+    void setEvidenceFile(File file) throws FileNotFoundException {
+        evidence = new FileInputStream(file);
     }
 
     void setOutputFile(File file) throws FileNotFoundException {

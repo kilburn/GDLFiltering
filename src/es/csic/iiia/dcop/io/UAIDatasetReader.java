@@ -160,7 +160,7 @@ public class UAIDatasetReader {
                         // The input values are probabilities, so we have to
                         // log them, and negating makes the costs positive
                         // (so we have to minimize instead of maximize)
-                        factorValues[j++] = v;
+                        factorValues[j++] = -Math.log(v);
                         if (j == nFactorStates) {
                             factors.get(i++).setValues(factorValues);
                             if (i == nfactors) {
