@@ -1,4 +1,4 @@
-/*
+ /*
  * Software License Agreement (BSD License)
  * 
  * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
@@ -36,33 +36,19 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.cli;
+package es.csic.iiia.dcop.gdlf.strategies;
 
-import es.csic.iiia.dcop.gdlf.strategies.GdlFStrategy;
-import java.util.logging.Level;
+import es.csic.iiia.dcop.CostFunction;
+import java.util.List;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public enum ApproximationStrategies {
-    AAMAS_TOP_DOWN (es.csic.iiia.dcop.gdlf.strategies.UnlimitedComputationTopDown.class),
-    AAMAS_BOTTOM_UP (es.csic.iiia.dcop.gdlf.strategies.UnlimitedComputationBottomUp.class),
-    DCR_BOTTOM_UP (es.csic.iiia.dcop.gdlf.strategies.LimitedComputationBottomUp.class),
-    ;
 
-    private GdlFStrategy instance;
-    ApproximationStrategies(Class<? extends GdlFStrategy> c) {
-        try {
-            instance = c.newInstance();
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-    GdlFStrategy getInstance(int maxr) {
-        instance.setMaxR(maxr);
-        return instance;
-    }
+
+public interface SliceStrategy {
+    
+    public List<CostFunction> slice(List<CostFunction> fs, int r);
+    
 }

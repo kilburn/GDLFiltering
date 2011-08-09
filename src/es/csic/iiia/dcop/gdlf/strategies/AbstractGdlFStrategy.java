@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  * 
- * Copyright (c) 2010, IIIA-CSIC, Artificial Intelligence Research Institute
+ * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
  * All rights reserved.
  * 
  * Redistribution and use of this software in source and binary forms, with or
@@ -36,37 +36,56 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.figdl.strategy.cbp;
+package es.csic.iiia.dcop.gdlf.strategies;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.util.metrics.Metric;
-import es.csic.iiia.dcop.util.metrics.NormInf;
-import java.util.HashSet;
+import es.csic.iiia.dcop.gdlf.Limits;
+import java.util.Collection;
+import java.util.List;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class LMREcStrategy extends CBPartitioningStrategy {
-    private static Metric metric = new NormInf();
-
-    @Override
-    protected void filterVars(HashSet<Variable> cvars, HashSet<Variable> evs) {
-        cvars.retainAll(evs);
+public abstract class AbstractGdlFStrategy implements GdlFStrategy {
+    
+    private final ControlStrategy control;
+    private final MergeStrategy merge;
+    private final FilterStrategy filter;
+    private final SliceStrategy slice;
+    
+    public AbstractGdlFStrategy(ControlStrategy control,
+            MergeStrategy merge, FilterStrategy filter, SliceStrategy slice)
+    {
+        this.control = control;
+        this.merge = merge;
+        this.filter = filter;
+        this.slice = slice;
     }
 
-    @Override
-    protected double getGain(CostFunction merged, CostFunction f1, CostFunction f2, Variable[] vars) {
-        double gain = 0;
-
-        vars = merged.getSharedVariables(vars).toArray(new Variable[0]);
-        CostFunction sc = f1.summarize(vars).combine(f2.summarize(vars));
-        CostFunction cs = merged.summarize(vars);
-        gain = metric.getValue(cs.combine(sc.negate()));
-        gain /= (double)merged.getVariableSet().size();
-
-        return gain;
+    public boolean hasMoreElements() {
+        return control.hasMoreElements();
     }
 
+    public Limits nextElement() {
+        return control.nextElement();
+    }
+
+    public List<CostFunction> merge(List<CostFunction> fs, Collection<Variable> edgeVariables, int rComputation, int rCommunication) {
+        return merge.merge(fs, edgeVariables, rComputation, rCommunication);
+    }
+
+    public List<CostFunction> filter(List<CostFunction> fs, List<CostFunction> pfs, double ub) {
+        return filter.filter(fs, pfs, ub);
+    }
+
+    public List<CostFunction> slice(List<CostFunction> fs, int r) {
+        return slice.slice(fs, r);
+    }
+    
+    public void setMaxR(int r) {
+        control.setMaxR(r);
+    }
+    
 }

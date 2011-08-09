@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  * 
- * Copyright (c) 2010, IIIA-CSIC, Artificial Intelligence Research Institute
+ * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
  * All rights reserved.
  * 
  * Redistribution and use of this software in source and binary forms, with or
@@ -36,9 +36,42 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * GDL implementation of the Utility Propagation phase as described in the
- * DCTEf paper.
- */
-package es.csic.iiia.dcop.figdl;
+package es.csic.iiia.dcop.gdlf;
 
+/**
+ *
+ * @author Marc Pujol <mpujol at iiia.csic.es>
+ */
+
+
+public class Limits {
+    private final int mergeCommunication;
+    private final int mergeComputation;
+    private final int splitCommunication;
+    
+    public Limits(int mergeComputation, int mergeCommunication, int splitCommunication) {
+        this.mergeComputation = mergeComputation;
+        this.splitCommunication = splitCommunication;
+        this.mergeCommunication = mergeCommunication;
+    }
+
+    public int getMergeCommunication() {
+        return mergeCommunication;
+    }
+
+    public int getMergeComputation() {
+        return mergeComputation;
+    }
+
+    public int getSplitCommunication() {
+        return splitCommunication;
+    }
+    
+    @Override
+    public String toString() {
+        StringBuilder buf = new StringBuilder();
+        buf.append("(").append(mergeComputation).append(",").append(mergeCommunication).append(",")
+                .append(splitCommunication).append(")");
+        return buf.toString();
+    }
+}

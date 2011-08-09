@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  * 
- * Copyright (c) 2010, IIIA-CSIC, Artificial Intelligence Research Institute
+ * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
  * All rights reserved.
  * 
  * Redistribution and use of this software in source and binary forms, with or
@@ -36,7 +36,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.figdl;
+package es.csic.iiia.dcop.gdlf;
 
 import es.csic.iiia.dcop.up.UPResults;
 import es.csic.iiia.dcop.up.UPEdge;
@@ -50,23 +50,20 @@ import org.slf4j.LoggerFactory;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class FIGdlIteration extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, FIGdlMessage>,UPResults> {
+public class GdlFIteration extends UPGraph<GdlFNode,UPEdge<GdlFNode, GdlFMessage>,UPResults> {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
-
-    private int r = 2;
-    private int s = 9;
 
     /**
      * Constructs a clique graph that uses the specified {@code EdgeFactory} to
      * create it's edges.
      */
-    public FIGdlIteration() {
+    public GdlFIteration() {
         super();
     }
 
     @Override
-    public void addNode(FIGdlNode clique) {
+    public void addNode(GdlFNode clique) {
         super.addNode(clique);
     }
 
@@ -79,18 +76,10 @@ public class FIGdlIteration extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, FIGdlMes
     protected void end() {
         super.end();
     }
-
-    public void setR(int r) {
-        this.r = r;
-        for(FIGdlNode n : getNodes()) {
-            n.setR(r);
-        }
-    }
-
-    public void setS(int s) {
-        this.s = s;
-        for(FIGdlNode n : getNodes()) {
-            n.setS(s);
+    
+    void setLimits(Limits limits) {
+        for(GdlFNode n : getNodes()) {
+            n.setLimits(limits);
         }
     }
 
@@ -101,7 +90,7 @@ public class FIGdlIteration extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, FIGdlMes
 
     @Override
     public void reportStart() {
-        log.debug("\n======= RUNNING FIGDL ITERATION r=" + this.r + ", s=" + this.s);
+        log.debug("\n======= RUNNING FIGDL ITERATION ");
     }
 
     @Override
@@ -112,18 +101,11 @@ public class FIGdlIteration extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, FIGdlMes
     }
 
     void prepareNextIteration(double bound) {
-        for(FIGdlNode n : getNodes()) {
+        for(GdlFNode n : getNodes()) {
             n.prepareNextIteration(bound);
         }
-        for(UPEdge<FIGdlNode, FIGdlMessage> e : getEdges()) {
+        for(UPEdge<GdlFNode, GdlFMessage> e : getEdges()) {
             e.clear();
-        }
-    }
-
-    void setOptimumValue(double optimum) {
-        log.warn("Using an externally-fed (optimal?) value: " + optimum);
-        for (FIGdlNode n : getNodes()) {
-            n.setOptimumValue(optimum);
         }
     }
 

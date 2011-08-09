@@ -39,7 +39,7 @@
 package es.csic.iiia.dcop.vp.strategy.expansion;
 
 import es.csic.iiia.dcop.VariableAssignment;
-import es.csic.iiia.dcop.figdl.FIGdlNode;
+import es.csic.iiia.dcop.gdlf.GdlFNode;
 import es.csic.iiia.dcop.vp.strategy.VPStrategy;
 import java.util.ArrayList;
 
@@ -49,7 +49,7 @@ import java.util.ArrayList;
  */
 public class GreedyExpansion implements ExpansionStrategy {
 
-    public int getNumberOfSolutionsToExpand(ArrayList<VariableAssignment> mappings, FIGdlNode upnode) {
+    public int getNumberOfSolutionsToExpand(ArrayList<VariableAssignment> mappings, GdlFNode upnode) {
         return VPStrategy.numberOfSolutions - mappings.size();
     }
 

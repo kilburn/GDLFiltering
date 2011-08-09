@@ -40,8 +40,6 @@ package es.csic.iiia.dcop.cli;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.dsa.DSA;
-import es.csic.iiia.dcop.figdl.FIGdlGraph;
-import es.csic.iiia.dcop.figdl.strategy.ApproximationStrategy;
 import es.csic.iiia.dcop.vp.strategy.VPStrategy;
 import es.csic.iiia.dcop.vp.strategy.expansion.StochasticalExpansion;
 import gnu.getopt.Getopt;
@@ -152,28 +150,13 @@ public class Cli {
         System.err.println("    Sets the 'r' to value in igdl.");
         System.err.println("  --nsols=<number> (1)");
         System.err.println("    Sets figdl to test <number> number of possible solutions at each iteration");
-        System.err.println("  --min-r=<number> (2)");
-        System.err.println("    Sets figdl's minimum r to <number>.");
-        System.err.println("  --max-s=<number> (inf)");
-        System.err.println("    Sets figdl to operate with s_max = number >= r.");
-        System.err.println("  --optimal-file=<file>");
-        System.err.println("    Uses the value stored in <file> as a previously-known optimal (for testing).");
         System.err.println("  --old-style-filtering");
         System.err.println("    Uses the old-style filtering method (filter using outgoing functions only).");
-        System.err.println("  -p strategy, --partition-strategy=strategy (scp-cc)");
+        System.err.println("  -p strategy, --approximation-strategy=strategy (dcr-bottom-up)");
         System.err.println("    Uses the specified approximation strategy, where strategy is one of: ");
-        System.err.println("      - scp-cc     : scope-based partitioning communication & computation bounded");
-        System.err.println("      - scp-c      : scope-based partitioning communication bounded");
-        System.err.println("      - scp-flex   : scope-based partitioning flexible computation");
-        System.err.println("      - lre-cc     : content-based local relative error strategy (communication and computation bounded).");
-        System.err.println("      - lre-c      : content-based local relative error strategy (just communication bounded).");
-        System.err.println("      - lmre-c     : content-based local max relative error strategy (just communication bounded).");
-        System.err.println("      - lmre-cc    : content-based local max relative error strategy (communication and computation bounded).");
-        System.err.println("      - lre-d      : greedy decomposition using LRE.");
-        System.err.println("      - lmre-d     : greedy decomposition using LMRE.");
-        System.err.println("      - superset   : superset scope-based partitioning.");
-        System.err.println("      - zeros-d    : zero-avoiding decomposition.");
-        System.err.println("      - zeros-flex : zero-avoiding flexible decomposition.");
+        System.err.println("      - aamas-top-down  : zero-tracking decomposition unlimited memory");
+        System.err.println("      - aamas-bottom-up : scope-based partitioning unlimited memory");
+        System.err.println("      - dcr-bottom-up   : scope-based partitioning limited memory");
         System.err.println("  --probability=<value> (0.9)");
         System.err.println("    Sets the probability parameter of both DSA algorithm and stochastical solution expansion.");
         System.err.println("  --solution-expansion=strategy (root)");
@@ -211,13 +194,10 @@ public class Cli {
             new LongOpt("jt-tries", LongOpt.REQUIRED_ARGUMENT, null, 'j'),
             new LongOpt("load-tree", LongOpt.REQUIRED_ARGUMENT, null, 'l'),
             new LongOpt("max-clique-size", LongOpt.REQUIRED_ARGUMENT, null, 'm'),
-            new LongOpt("min-r", LongOpt.REQUIRED_ARGUMENT, null, 2),
-            new LongOpt("max-s", LongOpt.REQUIRED_ARGUMENT, null, 3),
             new LongOpt("normalize", LongOpt.REQUIRED_ARGUMENT, null, 'n'),
             new LongOpt("nsols", LongOpt.REQUIRED_ARGUMENT, null, 1),
             new LongOpt("output-format", LongOpt.REQUIRED_ARGUMENT, null, 'o'),
             new LongOpt("old-style-filtering", LongOpt.NO_ARGUMENT, null, 8),
-            new LongOpt("optimal-file", LongOpt.REQUIRED_ARGUMENT, null, 5),
             new LongOpt("partition-strategy", LongOpt.REQUIRED_ARGUMENT, null, 'p'),
             new LongOpt("probability", LongOpt.REQUIRED_ARGUMENT, null, 9),
             new LongOpt("random-noise", LongOpt.OPTIONAL_ARGUMENT, null, 'r'),
@@ -253,38 +233,11 @@ public class Cli {
                     VPStrategy.numberOfSolutions = nsols;
                     break;
 
-                case 2:
-                    arg = g.getOptarg();
-                    int min_r = Integer.parseInt(arg);
-                    if (min_r < 1) {
-                        System.err.println("Error: the minimum 'r' value must be greater than 0.");
-                        System.exit(0);
-                    }
-                    FIGdlGraph.setMinR(min_r);
-                    break;
-
-                case 3:
-                    arg = g.getOptarg();
-                    int max_s = Integer.parseInt(arg);
-                    if (max_s < 1) {
-                        System.err.println("Error: the minimum 's' value must be greater than 0.");
-                        System.exit(0);
-                    }
-                    FIGdlGraph.setMaxS(max_s);
-                    break;
-
                 case 4:
                     cli.setCreateCliqueTree(true);
                     arg = g.getOptarg();
                     if (arg != null) {
                         cli.setCliqueTreeFile(arg);
-                    }
-                    break;
-
-                case 5:
-                    arg = g.getOptarg();
-                    if (arg != null) {
-                        cli.setOptimalFile(arg);
                     }
                     break;
 
@@ -306,10 +259,6 @@ public class Cli {
                         System.err.println("Error: invalid solution solving strategy \"" + arg + "\"");
                         System.exit(0);
                     }
-                    break;
-
-                case 8:
-                    ApproximationStrategy.filteringMethod = ApproximationStrategy.FILTER_CLASSIC;
                     break;
 
                 case 9:

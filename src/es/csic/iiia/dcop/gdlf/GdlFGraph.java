@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  * 
- * Copyright (c) 2010, IIIA-CSIC, Artificial Intelligence Research Institute
+ * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
  * All rights reserved.
  * 
  * Redistribution and use of this software in source and binary forms, with or
@@ -36,12 +36,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.figdl;
+package es.csic.iiia.dcop.gdlf;
 
+import es.csic.iiia.dcop.gdlf.strategies.ControlStrategy;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunction.Summarize;
 import es.csic.iiia.dcop.bb.UBGraph;
 import es.csic.iiia.dcop.bb.UBResults;
+import es.csic.iiia.dcop.gdlf.strategies.GdlFStrategy;
 import es.csic.iiia.dcop.mp.Result;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
@@ -54,7 +56,6 @@ import es.csic.iiia.dcop.util.MemoryTracker;
 import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.VPResults;
 import es.csic.iiia.dcop.vp.strategy.VPStrategy;
-import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,53 +63,39 @@ import org.slf4j.LoggerFactory;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, FIGdlMessage>,UPResults> {
+public class GdlFGraph extends UPGraph<GdlFNode,UPEdge<GdlFNode, GdlFMessage>,UPResults> {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
-
-    private static int minR = 2;
-    private static int maxS = Integer.MAX_VALUE;
-    private static double optimumValue = Double.NaN;
-    private static VPStrategy solutionStrategy;
+    
+    /**
+     * Control parameters
+     */
+    private GdlFStrategy strategy;
     
     private double constant;
     private boolean inverted;
     
-    public FIGdlGraph(CostFunction constant, boolean inverted) {
+    private static VPStrategy solutionStrategy;
+    
+    private UBResults ubResults;
+
+    private GdlFIteration iteration = new GdlFIteration();
+    
+    public GdlFGraph(CostFunction constant, boolean inverted, GdlFStrategy strategy) {
         super();
         this.constant = constant.getValue(0);
         this.inverted = inverted;
+        this.strategy = strategy;
     }
-
-    public static void setMaxS(int max_s) {
-        maxS = max_s;
-    }
-
-    public static void setOptimalValue(double optimum) {
-        optimumValue = optimum;
-    }
-
-    private UBResults ubResults;
-
-    public static void setMinR(int min_r) {
-        minR = min_r;
-    }
-
-    public static void setSolutionStrategy(VPStrategy strategy) {
-        solutionStrategy = strategy;
-    }
-
-    private FIGdlIteration iteration = new FIGdlIteration();
-    private int maxR;
 
     @Override
-    public void addNode(FIGdlNode clique) {
+    public void addNode(GdlFNode clique) {
         super.addNode(clique);
         iteration.addNode(clique);
     }
 
     @Override
-    public void addEdge(UPEdge<FIGdlNode, FIGdlMessage> edge) {
+    public void addEdge(UPEdge<GdlFNode, GdlFMessage> edge) {
         super.addEdge(edge);
         iteration.addEdge(edge);
     }
@@ -123,27 +110,17 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, FIGdlMessage
     public UPResults run(int maxIterations) {
         reportStart();
 
-        if (!Double.isNaN(optimumValue)) {
-            optimumValue -= constant;
-            if (inverted)
-                optimumValue = -optimumValue;
-            iteration.setOptimumValue(optimumValue);
-        }
-
         UPResults globalResults = (UPResults)getResults();
         double bestCost = Double.NaN, bestBound = Double.NaN, realBestCost = Double.NaN;
-        iteration.setS(maxS);
 
-        for (int i=minR; i<=maxR; i++) {
-            System.out.println("Now r=" + i);
+        while (strategy.hasMoreElements()) {
+            Limits limits = strategy.nextElement();
+            System.out.println("Now limits = " + limits);
 
             // Value propagation
-            if (i > maxS) {
-                iteration.setS(i);
-            }
-            iteration.setR(i);
+            iteration.setLimits(limits);
+            
             boolean exit = false;
-
             for (int j=0; j<1; j++) {
 
                 ConstraintChecks.addTracker(this);
@@ -158,7 +135,7 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, FIGdlMessage
                 globalResults.mergeResults(iterResults);
 
                 Summarize summarize = null;
-                for(FIGdlNode n : getNodes()) {
+                for(GdlFNode n : getNodes()) {
                     if (n.getRelations().size() > 0) {
                         summarize = n.getRelations().get(0).getFactory().getSummarizeOperation();
                         break;
@@ -169,7 +146,6 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, FIGdlMessage
                 // Solution extraction
                 VPGraph vp = new VPGraph(this, solutionStrategy);
                 VPResults res = vp.run(1000);
-                ArrayList<Result> rs = iterResults.getResults();
                 globalResults.mergeResults(res);
 
                 // Bound calculation
@@ -229,10 +205,6 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, FIGdlMessage
         return globalResults;
     }
 
-    public void setMaxR(int maxR) {
-        this.maxR = maxR;
-    }
-
     @Override
     protected UPResults buildResults() {
         return new UPResults();
@@ -240,6 +212,10 @@ public class FIGdlGraph extends UPGraph<FIGdlNode,UPEdge<FIGdlNode, FIGdlMessage
 
     public UBResults getUBResults() {
         return ubResults;
+    }
+    
+    public static void setSolutionStrategy(VPStrategy st) {
+        solutionStrategy = st;
     }
 
 }

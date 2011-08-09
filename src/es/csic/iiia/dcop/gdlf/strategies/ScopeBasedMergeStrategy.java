@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  * 
- * Copyright (c) 2010, IIIA-CSIC, Artificial Intelligence Research Institute
+ * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
  * All rights reserved.
  * 
  * Redistribution and use of this software in source and binary forms, with or
@@ -36,21 +36,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.figdl.strategy;
+package es.csic.iiia.dcop.gdlf.strategies;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.figdl.FIGdlMessage;
-import es.csic.iiia.dcop.up.IUPNode;
-import es.csic.iiia.dcop.up.UPEdge;
-import es.csic.iiia.dcop.up.UPGraph;
-import es.csic.iiia.dcop.util.CostFunctionStats;
-import es.csic.iiia.dcop.util.metrics.Metric;
-import es.csic.iiia.dcop.util.metrics.Norm0;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,79 +52,85 @@ import org.slf4j.LoggerFactory;
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class FlexibleZerosDecompositionStrategy extends ApproximationStrategy {
-
-    private static Logger log = LoggerFactory.getLogger(UPGraph.class);
-    private Metric informationLossNorm = new Norm0();
-
-    @Override
-    public void initialize(IUPNode node) {
-        super.initialize(node);
-    }
+public class ScopeBasedMergeStrategy implements MergeStrategy {
+    
+    private static Logger log = LoggerFactory.getLogger(ScopeBasedMergeStrategy.class);
 
     @Override
-    protected FIGdlMessage approximate(ArrayList<CostFunction> fs,
-            UPEdge<? extends IUPNode, FIGdlMessage> e) {
+    public List<CostFunction> merge(
+            List<CostFunction> fs,
+            Collection<Variable> edgeVariables, 
+            int rComputation, int rCommunication
+    ) {
 
-        long cc = 0;
-
-        // Message to be sent
-        FIGdlMessage msg = new FIGdlMessage();
-
-        // Tracking of broken variable links
-        int nBrokenLinks = 0;
-
-        // Partitions is a list of functions that will be sent through the edge
+        // Partitions is a list of functions that will be output
         // (after summarizing to the edge's variables)
         ArrayList<ArrayList<CostFunction>> partitions = new ArrayList<ArrayList<CostFunction>>();
 
         // PartitionsVariables is a list containing the sets of variables present
         // in the corresponding approximate.
         ArrayList<Collection<Variable>> partitionsVariables = new ArrayList<Collection<Variable>>();
-
-        // Sort the input functions by decreasing arity, randomizing the order
-        // of functions with the same arity.
-        //fs = sortByArityWithRandomness(fs);
-
-        // Iterate over the functions, merging them whenever it's possible
-        // or creating a new function when it's not.
-        final int s = node.getS();
-        log.trace("-- Calculating partitions (s=" + s + ")");
+        ArrayList<Collection<Variable>> partitionsEdgeVariables = new ArrayList<Collection<Variable>>();
+        
+        log.trace("-- Calculating partitions (rComp=" + rComputation + ", rComm=" + rCommunication + ")");
         for (CostFunction inFunction : fs) {
+            
             // Obtain a set of variables in inFunction
-            Collection<Variable> variableSet = new HashSet<Variable>(inFunction.getVariableSet());
+            Set<Variable> variableSet     = new HashSet<Variable>(inFunction.getVariableSet());
+            Set<Variable> edgeVariableSet = inFunction.getSharedVariables(edgeVariables);
 
-            // Check if the source function is already bigger than what we
-            // can manage.
-            while (variableSet.size() > s) {
+            // Check if the source function is already bigger than what we can manage
+            // computationally.
+            while (variableSet.size() > rComputation) {
                 // Remove one variable
                 Variable v = variableSet.iterator().next();
                 variableSet.remove(v);
+                edgeVariableSet.remove(v);
 
                 if (log.isTraceEnabled()) {
                     log.trace("\tRemoving " + v.getName() + " from " + inFunction);
                 }
+                
                 inFunction = inFunction.summarize(variableSet.toArray(new Variable[0]));
                 if (log.isTraceEnabled()) {
                     log.trace("\t-> " + inFunction);
                 }
+            }
+            
+            // Check if the source function is already bigger than we can manage
+            // in the communication front.
+            while (edgeVariableSet.size() > rCommunication) {
+                // Remove one variable
+                Variable v = edgeVariableSet.iterator().next();
+                variableSet.remove(v);
+                edgeVariableSet.remove(v);
 
-                nBrokenLinks++;
+                if (log.isTraceEnabled()) {
+                    log.trace("\tRemoving " + v.getName() + " from " + inFunction);
+                }
+                
+                inFunction = inFunction.summarize(variableSet.toArray(new Variable[0]));
+                if (log.isTraceEnabled()) {
+                    log.trace("\t-> " + inFunction);
+                }
             }
 
             // Check if there's a suitable existing part where we can merge
             // inFunction
             boolean merged = false;
-
+            
             for (int i=0, len=partitions.size(); i<len; i++) {
                 final Collection<Variable> partitionVariables = partitionsVariables.get(i);
+                final Collection<Variable> partitionEdgeVariables = partitionsEdgeVariables.get(i);
 
                 // Tmp is to avoid editing the original set
                 Collection<Variable> tmp = new HashSet<Variable>(partitionVariables);
+                Collection<Variable> edgeTmp = new HashSet<Variable>(partitionEdgeVariables);
                 tmp.addAll(variableSet);
-
+                edgeTmp.addAll(edgeVariableSet);
+                
                 //log.trace("\t\t(" + i + ") tmp size: " + tmp.size());
-                if (tmp.size() <= s) {
+                if (tmp.size() <= rComputation && edgeTmp.size() <= rCommunication) {
 
                     if (log.isTraceEnabled()) {
                         log.trace("\tP(" + i + ") += " + inFunction);
@@ -138,12 +138,9 @@ public class FlexibleZerosDecompositionStrategy extends ApproximationStrategy {
 
                     partitions.get(i).add(inFunction);
                     partitionsVariables.set(i, tmp);
+                    partitionsEdgeVariables.set(i, edgeTmp);
                     merged = true;
                     break;
-                } else {
-                    tmp = new HashSet<Variable>(partitionVariables);
-                    tmp.retainAll(variableSet);
-                    nBrokenLinks += tmp.size();
                 }
 
             }
@@ -159,59 +156,24 @@ public class FlexibleZerosDecompositionStrategy extends ApproximationStrategy {
                 newPartition.add(inFunction);
                 partitions.add(newPartition);
                 partitionsVariables.add(variableSet);
+                partitionsEdgeVariables.add(edgeVariableSet);
             }
         }
-        msg.setInformationLoss(nBrokenLinks);
-
-        // Now that we have all the parts, summarize, decompose and add them
+        
+        // And return a list after combining the functions inside each partition
+        // Now that we have all the parts, summarize and add them
+        ArrayList<CostFunction> result = new ArrayList<CostFunction>();
         log.trace("-- Resulting partitions");
-        double informationLoss = 0;
-        Collection<Variable> edgeVariables = Arrays.asList(e.getVariables());
         for (int i=0, len=partitions.size(); i<len; i++) {
-
             if (log.isTraceEnabled()) {
                 log.trace("\t" + partitions.get(i));
             }
-
-            // Summarize part
-            partitionsVariables.get(i).retainAll(edgeVariables);
-            final Variable[] vars = partitionsVariables.get(i).toArray(new Variable[0]);
             final ArrayList<CostFunction> partition = partitions.get(i);
-            CostFunction f = partition.remove(partition.size()-1).combine(partition).summarize(vars);
-
-            // Don't try to break a fitting factor into smaller pieces
-            if (f.getVariableSet().size() <= node.getR()) {
-                msg.addFactor(f);
-                continue;
-            }
-
-            // Now, the factor f must be decomposed as functions of "r" variables
-            msg.cc += f.getSize();
-            
-            // Remove the constant value (summarization to no variables)
-            CostFunction cst = f.summarize(new Variable[0]);
-            msg.addFactor(cst);
-            f = f.combine(cst.negate());
-            msg.cc += f.getSize();
-
-            // Obtain the projection approximation
-            CostFunction[] res =
-                    CostFunctionStats.getZeroDecompositionApproximation(f, node.getR());
-            for (int j=0; j<res.length-1; j++) {
-                msg.addFactor(res[j]);
-            }
-            informationLoss += informationLossNorm.getValue(res[res.length-1]);
-
-            if (log.isTraceEnabled()) {
-                log.trace("\tSummarizes to : " + f);
-            }
+            final CostFunction f = partition.remove(partition.size()-1).combine(partition);
+            result.add(f);
         }
-        msg = filterMessage(e, msg);
-
-        // And the total information lost
-        msg.setInformationLoss(informationLoss);
-
-        return msg;
+        
+        return result;
     }
 
 }

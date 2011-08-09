@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  * 
- * Copyright (c) 2010, IIIA-CSIC, Artificial Intelligence Research Institute
+ * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
  * All rights reserved.
  * 
  * Redistribution and use of this software in source and binary forms, with or
@@ -36,18 +36,21 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.figdl;
+package es.csic.iiia.dcop.gdlf;
 
-import es.csic.iiia.dcop.figdl.strategy.ApproximationStrategy;
 import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.VariableAssignment;
-import es.csic.iiia.dcop.up.IUPNode;
+import es.csic.iiia.dcop.gdlf.strategies.GdlFStrategy;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
+import es.csic.iiia.dcop.up.UPNode;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,9 +59,14 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, FIGdlMessage>, UPResult> {
+public class GdlFNode extends UPNode<UPEdge<GdlFNode, GdlFMessage>, UPResult> {
 
     private static Logger log = LoggerFactory.getLogger(UPGraph.class);
+    
+    /**
+     * Computation and Communication limits
+     */
+    private Limits limits;
 
     /**
      * Cost Functions known by this node.
@@ -66,39 +74,19 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, FIGdlMessage>, UPResult
     private ArrayList<CostFunction> costFunctions;
 
     /**
-     * Approximation strategy to use
-     */
-    private ApproximationStrategy strategy;
-
-    /**
-     * FIGdlNode from previous iteration
-     */
-    private ArrayList<UPEdge<FIGdlNode, FIGdlMessage>> previousEdges;
-
-    /**
      * Bounds from previous iteration
      */
     private double bound = Double.NaN;
-
-    /**
-     * (Experimental) Amount of information loss in received functions as an
-     * heuristic of received cost functions' accuracy.
-     */
-    private double informationLoss = 0;
-    private double localInformationLoss = 0;
-    private double maxInformationLoss = 0;
-
-    /**
-     * Boolean flag that indicates if the algorithm has started filtering
-     * some tuples.
-     */
-    private boolean startedFiltering;
     
     /**
-     * Boolean flag that indicates if the algorithm is filtering more than
-     * 90% of the tuples.
+     * Previously sent messages
      */
-    private boolean endingFiltering;
+    private HashMap<UPEdge, List<CostFunction>> receivedFunctions;
+    
+    /**
+     * Strategies
+     */
+    private GdlFStrategy strategy;
 
     /**
      * Constructs a new clique with the specified member variable and null
@@ -106,8 +94,9 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, FIGdlMessage>, UPResult
      *
      * @param variable member variable of this clique.
      */
-    public FIGdlNode(Variable variable) {
+    public GdlFNode(Variable variable) {
         super(variable);
+        receivedFunctions = new HashMap<UPEdge, List<CostFunction>>();
     }
 
     /**
@@ -118,40 +107,29 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, FIGdlMessage>, UPResult
      *
      * @param potential potential of the clique.
      */
-    public FIGdlNode(CostFunction potential) {
+    public GdlFNode(CostFunction potential) {
         super(potential);
+        receivedFunctions = new HashMap<UPEdge, List<CostFunction>>();
     }
 
     /**
      * Constructs a new empty clique.
      */
-    public FIGdlNode() {
+    public GdlFNode() {
         super();
+        receivedFunctions = new HashMap<UPEdge, List<CostFunction>>();
     }
 
     /**
-     * Prepares this FIGdlNode for a new (different "r") iteration.
+     * Prepares this GdlFNode for a new (different "r") iteration.
      * @param bound 
      */
     public void prepareNextIteration(double bound) {
 
-        if (previousEdges != null) previousEdges.clear();
-        previousEdges = new ArrayList<UPEdge<FIGdlNode, FIGdlMessage>>();
-        for(UPEdge<FIGdlNode, FIGdlMessage> e : getEdges()) {
-            if (e.getMessage(this) == null) {
-                e.tick();
-            }
-
-            UPEdge<FIGdlNode, FIGdlMessage> newe = new UPEdge<FIGdlNode, FIGdlMessage>(e);
-            previousEdges.add(newe);
-        }
-
-        if (Double.isNaN(this.getBound()) || factory.getSummarizeOperation().isBetter(bound, this.getBound())) {
+        if (Double.isNaN(this.bound) || factory.getSummarizeOperation().isBetter(bound, this.bound)) {
             this.bound = bound;
         }
 
-        strategy.setFilteringOptions(bound, previousEdges);
-        localInformationLoss = 0;
     }
 
     /**
@@ -161,13 +139,10 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, FIGdlMessage>, UPResult
     @Override
     public void initialize() {
         super.initialize();
-        startedFiltering = false;
-        localInformationLoss = 0;
 
         // Tree-based operation
         setMode(Modes.TREE_UP);
         costFunctions = new ArrayList<CostFunction>(relations);
-        getApproximationStrategy().initialize(this);
 
         // Send initial messages
         sendMessages();
@@ -183,24 +158,19 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, FIGdlMessage>, UPResult
 
         // Rebuild cost function list
         costFunctions = new ArrayList<CostFunction>();
+        
         // Populate with our assigned relations
         for (CostFunction f : relations) {
             costFunctions.add(factory.buildCostFunction(f));
         }
 
         // And the received messages
-        informationLoss = 0; maxInformationLoss = 0;
-        Collection<UPEdge<FIGdlNode, FIGdlMessage>> edges = getEdges();
-        for (UPEdge<FIGdlNode, FIGdlMessage> e : edges) {
-            FIGdlMessage msg = e.getMessage(this);
+        Collection<UPEdge<GdlFNode, GdlFMessage>> edges = getEdges();
+        for (UPEdge<GdlFNode, GdlFMessage> e : edges) {
+            GdlFMessage msg = e.getMessage(this);
             if (msg != null) {
+                receivedFunctions.put(e, msg.getFactors());
                 costFunctions.addAll(msg.getFactors());
-                if (isParent(e)) {
-                    informationLoss += msg.getInformationLoss();
-                    maxInformationLoss = Math.max(maxInformationLoss, msg.getMaxInformationLoss());
-                }
-                startedFiltering = startedFiltering || msg.hasStartedFiltering();
-                endingFiltering = endingFiltering || msg.isEndingFiltering();
             }
         }
 
@@ -225,30 +195,50 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, FIGdlMessage>, UPResult
             belief = belief.combine(costFunctions);
         }
 
-        for (UPEdge<FIGdlNode, FIGdlMessage> e : getEdges()) {
+        for (UPEdge<GdlFNode, GdlFMessage> e : getEdges()) {
             if (!readyToSend(e)) {
                 continue;
             }
 
             // List of all functions that would be sent (combined)
-            ArrayList<CostFunction> fs = new ArrayList<CostFunction>(costFunctions);
-
-            // Remove the factors received through this edge
-            if (e.getMessage(this) != null) {
-                
-                // This is equivalent to doing:
-                // fs.removeAll(e.getMessage(this).getFactors());
-                // ... but removing is an expensive operation, so
+            List<CostFunction> fs = null;
+            if (e.getMessage(this) == null) {
+                 fs = new ArrayList<CostFunction>(costFunctions);
+            } else {
                 // we build a new list instead which is faster.
                 fs = new ArrayList<CostFunction>(relations);
-                for (UPEdge<FIGdlNode, FIGdlMessage> e2 : getEdges()) {
+                for (UPEdge<GdlFNode, GdlFMessage> e2 : getEdges()) {
                     if (e == e2) continue;
                     fs.addAll(e2.getMessage(this).getFactors());
                 }
             }
 
-            // Obtain the approximate
-            FIGdlMessage msg = getApproximationStrategy().getApproximation(fs, e);
+            // Merge
+            List<Variable> vs = Arrays.asList(e.getVariables());
+            fs = strategy.merge(fs, vs, limits.getMergeComputation(), limits.getMergeCommunication());
+            
+            // Summarize
+            for (int i=0, len=fs.size(); i<len; i++) {
+                final CostFunction f = fs.get(i);
+                Variable[] vars = f.getSharedVariables(e.getVariables()).toArray(new Variable[0]);
+                fs.set(i, fs.get(i).summarize(vars));
+            }
+            
+            // Filter
+            if (!Double.isNaN(bound)) {
+                List<CostFunction> pfs = receivedFunctions.get(e);
+                if (pfs == null) {
+                    System.err.println("Wop¿!");
+                }
+                fs = strategy.filter(fs, pfs, bound);
+            }
+            
+            // Slice
+            fs = strategy.slice(fs, limits.getSplitCommunication());
+            
+            GdlFMessage msg = new GdlFMessage(fs);
+            
+            // Debug stuff
             if (log.isTraceEnabled()) {
                 CostFunction lb = belief.summarize(e.getVariables());
                 if (e.getMessage(this) != null) {
@@ -258,21 +248,6 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, FIGdlMessage>, UPResult
                 }
                 msg.setBelief(lb);
             }
-
-            if (isParent(e)) {
-                localInformationLoss = msg.getInformationLoss();
-                msg.setMaxInformationLoss(maxInformationLoss + localInformationLoss);
-                if (!startedFiltering && msg.hasFilteredFunctions()) {
-                    msg.setStartedFiltering();
-                    startedFiltering = true;
-                }
-                if (!endingFiltering && msg.isEndingFiltering()) {
-                    msg.setEndingFiltering();
-                    endingFiltering = true;
-                }
-            }
-            if (startedFiltering) msg.setStartedFiltering();
-            if (endingFiltering) msg.setEndingFiltering();
 
             e.sendMessage(this, msg);
         }
@@ -284,61 +259,23 @@ public class FIGdlNode extends IUPNode<UPEdge<FIGdlNode, FIGdlMessage>, UPResult
         return false;
     }
 
-    /**
-     * @return the strategy
-     */
-    public ApproximationStrategy getApproximationStrategy() {
-        return strategy;
-    }
-
-    /**
-     * @param strategy the strategy to set
-     */
-    public void setApproximationStrategy(ApproximationStrategy strategy) {
-        this.strategy = strategy;
-    }
-
     @Override
     public ArrayList<CostFunction> getReducedBelief(VariableAssignment map) {
         ArrayList<CostFunction> fs = new ArrayList<CostFunction>();
         for (CostFunction f : costFunctions) {
-            long time = System.currentTimeMillis();
             final CostFunction f2 = f.reduce(map);
             fs.add(f2);
-            time = System.currentTimeMillis() - time;
-            if (time > 10) {
-                log.info("Reduce f time: " + time +
-                        ", vars: " + f.getVariableSet().size() +
-                        " -> " + f2.getVariableSet().size());
-            }
         }
 
         return fs;
     }
-
-    @Override
-    public double getBound() {
-        return bound;
+    
+    void setLimits(Limits limits) {
+        this.limits = limits;
     }
 
-    public double getInformationLoss() {
-        return informationLoss;
-    }
-
-    public double getMaxInformationLoss() {
-        return maxInformationLoss + localInformationLoss;
-    }
-
-    void setOptimumValue(double optimum) {
-        strategy.setOptimumValue(optimum);
-    }
-
-    public boolean isEndingFiltering() {
-        return endingFiltering;
-    }
-
-    public boolean hasStartedFiltering() {
-        return startedFiltering;
+    void setStrategy(GdlFStrategy strategy) {
+        this.strategy = strategy;
     }
 
 }

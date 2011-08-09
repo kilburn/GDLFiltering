@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  * 
- * Copyright (c) 2010, IIIA-CSIC, Artificial Intelligence Research Institute
+ * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
  * All rights reserved.
  * 
  * Redistribution and use of this software in source and binary forms, with or
@@ -36,17 +36,19 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.figdl.strategy;
+package es.csic.iiia.dcop.gdlf.strategies;
+
+import es.csic.iiia.dcop.CostFunction;
+import java.util.List;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class RankDownStrategy extends RankStrategy {
+public class DummySliceStrategy implements SliceStrategy {
 
-    @Override
-    protected int getOrder() {
-        return -1;
+    public List<CostFunction> slice(List<CostFunction> fs, int r) {
+        return fs;
     }
 
 }

@@ -1,7 +1,7 @@
-/*
+ /*
  * Software License Agreement (BSD License)
  * 
- * Copyright (c) 2010, IIIA-CSIC, Artificial Intelligence Research Institute
+ * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
  * All rights reserved.
  * 
  * Redistribution and use of this software in source and binary forms, with or
@@ -35,57 +35,30 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package es.csic.iiia.dcop.gdlf.strategies;
 
-package es.csic.iiia.dcop.up;
-
-import es.csic.iiia.dcop.CostFunction;
-import es.csic.iiia.dcop.Variable;
+import es.csic.iiia.dcop.gdlf.Limits;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public abstract class IUPNode <E extends UPEdge, R extends UPResult> extends
-        UPNode<E, R>
-{
-    /**
-     * Maximum (in-memory) function size (in number of elements)
-     */
-    private int s;
+public class LimitedComputationBottomUpControlStrategy implements ControlStrategy {
 
-    public IUPNode(Variable variable) {
-        super(variable);
+    private int r = 1;
+    private int maxr;
+
+    public boolean hasMoreElements() {
+        return r < maxr;
     }
 
-    public IUPNode(CostFunction potential) {
-        super(potential);
+    public Limits nextElement() {
+        r++;
+        return new Limits(r, r, r);
     }
 
-    public IUPNode() {
-        super();
+    public void setMaxR(int r) {
+        this.maxr = r;
     }
-
-    /**
-     * Maximum cost function arity
-     */
-    private int r;
-
-    public void setR(int r) {
-        this.r = r;
-    }
-
-    public int getR() {
-        return r;
-    }
-
-    public void setS(int s) {
-        this.s = s;
-    }
-
-    public int getS() {
-        return this.s;
-    }
-
-    public double getBound() {return Double.NaN;};
-
+    
 }

@@ -38,6 +38,10 @@
 
 package es.csic.iiia.dcop.util;
 
+import es.csic.iiia.dcop.CostFunction;
+import es.csic.iiia.dcop.MapCostFunction;
+import java.util.List;
+
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
@@ -48,6 +52,25 @@ public class MemoryTracker {
 
     public static void track(long bytes) {
         max = Math.max(max, bytes);
+    }
+    
+    public static long getRequiredMemory(CostFunction f) {
+        long header = f.getVariableSet().size() * 4L;
+        long payload;
+        if (f instanceof MapCostFunction)
+            payload = (f.getSize() - f.getNumberOfNoGoods()) * 16L;
+        else
+            payload = f.getSize() * 8L;
+
+        return header+payload;
+    }
+
+    public static long getRequiredMemory(List<CostFunction> fs) {
+        long sum = 0;
+        for (CostFunction f : fs) {
+            sum += getRequiredMemory(f);
+        }
+        return sum;
     }
 
     public static String asString() {

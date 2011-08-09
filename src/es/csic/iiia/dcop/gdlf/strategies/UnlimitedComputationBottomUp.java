@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  * 
- * Copyright (c) 2010, IIIA-CSIC, Artificial Intelligence Research Institute
+ * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
  * All rights reserved.
  * 
  * Redistribution and use of this software in source and binary forms, with or
@@ -36,17 +36,20 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.figdl.strategy;
+package es.csic.iiia.dcop.gdlf.strategies;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class RankUpStrategy extends RankStrategy {
 
-    @Override
-    protected int getOrder() {
-        return 1;
+
+public class UnlimitedComputationBottomUp extends AbstractGdlFStrategy {
+    
+    public UnlimitedComputationBottomUp() {
+        super(  new UnlimitedComputationBottomUpControlStrategy(),
+                new ScopeBasedMergeStrategy(), new TwoSidedFilterStrategy(),
+                new DummySliceStrategy());
     }
-
+    
 }

@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  * 
- * Copyright (c) 2010, IIIA-CSIC, Artificial Intelligence Research Institute
+ * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
  * All rights reserved.
  * 
  * Redistribution and use of this software in source and binary forms, with or
@@ -36,35 +36,20 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.figdl.strategy.cbp;
-
-import es.csic.iiia.dcop.CostFunction;
-import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.util.metrics.Metric;
-import es.csic.iiia.dcop.util.metrics.NormInf;
-import java.util.HashSet;
+package es.csic.iiia.dcop.gdlf.strategies;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class LMREccStrategy extends CBPartitioningStrategy {
-    private static Metric metric = new NormInf();
 
-    @Override
-    protected void filterVars(HashSet<Variable> cvars, HashSet<Variable> evs) {}
 
-    @Override
-    protected double getGain(CostFunction merged, CostFunction f1, CostFunction f2, Variable[] vars) {
-        double gain = 0;
-
-        vars = merged.getSharedVariables(vars).toArray(new Variable[0]);
-        CostFunction sc = f1.summarize(vars).combine(f2.summarize(vars));
-        CostFunction cs = merged.summarize(vars);
-        gain = metric.getValue(cs.combine(sc.negate()));
-        gain /= (double)merged.getVariableSet().size();
-
-        return gain;
+public class LimitedComputationBottomUp extends AbstractGdlFStrategy {
+    
+    public LimitedComputationBottomUp() {
+        super(  new LimitedComputationBottomUpControlStrategy(),
+                new ScopeBasedMergeStrategy(), new TwoSidedFilterStrategy(),
+                new DummySliceStrategy());
     }
-
+    
 }

@@ -42,14 +42,13 @@ import es.csic.iiia.dcop.vp.strategy.expansion.ExpansionStrategy;
 import es.csic.iiia.dcop.vp.strategy.solving.SolvingStrategy;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.VariableAssignment;
-import es.csic.iiia.dcop.figdl.FIGdlNode;
+import es.csic.iiia.dcop.gdlf.GdlFNode;
 import es.csic.iiia.dcop.up.UPNode;
 import es.csic.iiia.dcop.vp.MappingResults;
 import es.csic.iiia.dcop.vp.VPGraph;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.PriorityQueue;
-import java.util.TreeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,11 +77,9 @@ public class VPStrategy {
 
 
         int solutionsToExpand = 0;
-        if (upnode instanceof FIGdlNode) {
-            FIGdlNode finode = (FIGdlNode)upnode;
-            if (finode.hasStartedFiltering() && !finode.isEndingFiltering()) {
-                solutionsToExpand = expansion.getNumberOfSolutionsToExpand(mappings, finode);
-            }
+        if (upnode instanceof GdlFNode) {
+            GdlFNode finode = (GdlFNode)upnode;
+            solutionsToExpand = expansion.getNumberOfSolutionsToExpand(mappings, finode);
         }
 //        if (solutionsToExpand > 0) {
 //            System.out.println("Node " + this + " expanding " + solutionsToExpand + " solutions.");

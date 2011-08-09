@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  * 
- * Copyright (c) 2010, IIIA-CSIC, Artificial Intelligence Research Institute
+ * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
  * All rights reserved.
  * 
  * Redistribution and use of this software in source and binary forms, with or
@@ -36,7 +36,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.figdl;
+package es.csic.iiia.dcop.gdlf;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
@@ -45,15 +45,16 @@ import es.csic.iiia.dcop.util.Compressor;
 import es.csic.iiia.dcop.util.CostFunctionStats;
 import es.csic.iiia.dcop.util.FunctionCounter;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * GDL Utility message.
  * 
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class FIGdlMessage implements UPMessage {
+public class GdlFMessage implements UPMessage {
 
-    private ArrayList<CostFunction> factors;
+    private List<CostFunction> factors;
     private CostFunction belief = null;
     public long cc = 0;
     private double informationLoss = 0;
@@ -61,15 +62,15 @@ public class FIGdlMessage implements UPMessage {
     private boolean startedFiltering = false;
     private boolean endingFiltering = false;
 
-    public FIGdlMessage(ArrayList<CostFunction> factors) {
+    public GdlFMessage(List<CostFunction> factors) {
         this.factors = factors;
     }
 
-    public FIGdlMessage() {
+    public GdlFMessage() {
         this.factors = new ArrayList<CostFunction>();
     }
 
-    public ArrayList<CostFunction> getFactors() {
+    public List<CostFunction> getFactors() {
         return this.factors;
     }
 

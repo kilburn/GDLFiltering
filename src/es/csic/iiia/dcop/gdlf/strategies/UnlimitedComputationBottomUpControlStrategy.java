@@ -1,7 +1,7 @@
-/*
+ /*
  * Software License Agreement (BSD License)
  * 
- * Copyright (c) 2010, IIIA-CSIC, Artificial Intelligence Research Institute
+ * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
  * All rights reserved.
  * 
  * Redistribution and use of this software in source and binary forms, with or
@@ -35,38 +35,30 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package es.csic.iiia.dcop.gdlf.strategies;
 
-package es.csic.iiia.dcop.figdl.strategy.cbp;
-
-import es.csic.iiia.dcop.CostFunction;
-import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.util.metrics.Metric;
-import es.csic.iiia.dcop.util.metrics.Norm1;
-import java.util.HashSet;
+import es.csic.iiia.dcop.gdlf.Limits;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class LREcStrategy extends CBPartitioningStrategy {
-    private static Metric metric = new Norm1();
+public class UnlimitedComputationBottomUpControlStrategy implements ControlStrategy {
 
-    @Override
-    protected void filterVars(HashSet<Variable> cvars, HashSet<Variable> evs) {
-        cvars.retainAll(evs);
+    private int r = 1;
+    private int maxr;
+
+    public boolean hasMoreElements() {
+        return r < maxr;
     }
 
-    @Override
-    protected double getGain(CostFunction merged, CostFunction f1, CostFunction f2, Variable[] vars) {
-        double gain = 0;
-
-        vars = merged.getSharedVariables(vars).toArray(new Variable[0]);
-        CostFunction sc = f1.summarize(vars).combine(f2.summarize(vars));
-        CostFunction cs = merged.summarize(vars);
-        gain = metric.getValue(cs.combine(sc.negate()));
-        gain /= (double)merged.getVariableSet().size();
-
-        return gain;
+    public Limits nextElement() {
+        r++;
+        return new Limits(Integer.MAX_VALUE, r, r);
     }
-
+    
+    public void setMaxR(int r) {
+        this.maxr = r;
+    }
+    
 }

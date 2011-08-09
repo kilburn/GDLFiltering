@@ -49,7 +49,6 @@ public enum SolutionExpansionStrategies {
     ROOT (es.csic.iiia.dcop.vp.strategy.expansion.RootExpansion.class),
     GREEDY (es.csic.iiia.dcop.vp.strategy.expansion.GreedyExpansion.class),
     STOCHASTIC (es.csic.iiia.dcop.vp.strategy.expansion.StochasticalExpansion.class),
-    INFORMATION_LOSS (es.csic.iiia.dcop.vp.strategy.expansion.InformationLossExpansion.class),
     ;
 
     private ExpansionStrategy instance;

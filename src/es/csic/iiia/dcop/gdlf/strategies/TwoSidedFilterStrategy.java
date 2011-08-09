@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  * 
- * Copyright (c) 2010, IIIA-CSIC, Artificial Intelligence Research Institute
+ * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
  * All rights reserved.
  * 
  * Redistribution and use of this software in source and binary forms, with or
@@ -36,36 +36,53 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.figdl.strategy.cbp;
+package es.csic.iiia.dcop.gdlf.strategies;
 
 import es.csic.iiia.dcop.CostFunction;
-import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.util.metrics.Metric;
-import es.csic.iiia.dcop.util.metrics.Norm1;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class LREccStrategy extends CBPartitioningStrategy {
-    private static Metric metric = new Norm1();
+public class TwoSidedFilterStrategy implements FilterStrategy {
+    
+    private static Logger log = LoggerFactory.getLogger(TwoSidedFilterStrategy.class);
 
-    @Override
-    protected void filterVars(HashSet<Variable> cvars, HashSet<Variable> evs) {}
+    // TODO: Memory tracking
+    public List<CostFunction> filter(List<CostFunction> fs, List<CostFunction> pfs, double ub) {
+        
+        if (Double.isNaN(ub)) {
+            return fs;
+        }
 
-    @Override
-    protected double getGain(CostFunction merged, CostFunction f1, 
-            CostFunction f2, Variable[] vars)
-    {
-        double gain = 0;
-        vars = merged.getSharedVariables(vars).toArray(new Variable[0]);
-        CostFunction sc = f1.summarize(vars).combine(f2.summarize(vars));
-        CostFunction cs = merged.summarize(vars);
-        gain = metric.getValue(cs.combine(sc.negate()));
-        gain /= (double)merged.getVariableSet().size();
+        ArrayList<CostFunction> res = new ArrayList<CostFunction>();
+        for (int i=0, len=fs.size(); i<len; i++) {
+            ArrayList<CostFunction> filterers;
+//            if (filteringMethod == FILTER_IMPROVED) {
+                filterers = new ArrayList<CostFunction>(pfs);
+                for (int j=0; j<len; j++) {
+                    if (i!=j) filterers.add(fs.get(j));
+                }
+//            } else {
+//                filterers = pfs;
+//            }
 
-        return gain;
+            final CostFunction outf = fs.get(i);
+            final CostFunction filtered = outf.filter(filterers, ub);
+            if (log.isTraceEnabled()) {
+                log.trace("Input b:" + ub + " f:" + outf);
+                log.trace("Filtered: " + filtered);
+            }
+            res.add(filtered);
+        }
+
+        return res;        
     }
+
+    
 
 }

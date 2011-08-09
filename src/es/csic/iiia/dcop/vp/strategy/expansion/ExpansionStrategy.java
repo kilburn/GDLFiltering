@@ -39,7 +39,7 @@
 package es.csic.iiia.dcop.vp.strategy.expansion;
 
 import es.csic.iiia.dcop.VariableAssignment;
-import es.csic.iiia.dcop.figdl.FIGdlNode;
+import es.csic.iiia.dcop.gdlf.GdlFNode;
 import java.util.ArrayList;
 
 /**
@@ -49,5 +49,5 @@ import java.util.ArrayList;
 public interface ExpansionStrategy {
     public int getNumberOfSolutionsToExpand(
             ArrayList<VariableAssignment> mappings,
-            FIGdlNode upnode);
+            GdlFNode upnode);
 }

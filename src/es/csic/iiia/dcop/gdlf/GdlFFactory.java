@@ -36,84 +36,64 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.figdl;
+package es.csic.iiia.dcop.gdlf;
 
+import es.csic.iiia.dcop.gdlf.strategies.ControlStrategy;
 import es.csic.iiia.dcop.CostFunction;
-import es.csic.iiia.dcop.figdl.strategy.ApproximationStrategy;
+import es.csic.iiia.dcop.gdlf.strategies.GdlFStrategy;
 import es.csic.iiia.dcop.mp.AbstractNode.Modes;
 import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.up.UPResults;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPFactory;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Factory for the Utility Propagation GDL implementation.
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class FIGdlFactory implements UPFactory<FIGdlGraph, FIGdlNode, UPEdge<FIGdlNode, FIGdlMessage>,
+public class GdlFFactory implements UPFactory<GdlFGraph, GdlFNode, UPEdge<GdlFNode, GdlFMessage>,
     UPResult, UPResults> {
 
     private Modes mode = Modes.TREE_UP;
-    private int r = Integer.MAX_VALUE;
-    private ApproximationStrategy approximationStrategy;
+    
+    private GdlFStrategy strategy;
+    
+    /*
+     * Required to invert maximization problems to minimization ones, and
+     * to handle negative values.
+     */
     private CostFunction constant;
     private boolean inverted;
 
-    public FIGdlFactory(CostFunction constant, boolean inverted, int r, ApproximationStrategy approximationStrategy) {
-        this.r = r;
-        this.approximationStrategy = approximationStrategy;
+    public GdlFFactory(CostFunction constant, boolean inverted, GdlFStrategy strategy) {
         this.constant = constant;
         this.inverted = inverted;
+        this.strategy = strategy;
     }
 
-    public FIGdlGraph buildGraph() {
-        FIGdlGraph g = new FIGdlGraph(constant, inverted);
-        g.setMaxR(r);
+    public GdlFGraph buildGraph() {
+        GdlFGraph g = new GdlFGraph(constant, inverted, strategy);
         return g;
     }
 
-    public FIGdlNode buildNode() {
-        FIGdlNode n = new FIGdlNode();
+    public GdlFNode buildNode() {
+        GdlFNode n = new GdlFNode();
         n.setMode(mode);
-        n.setR(2);
-        try {
-            n.setApproximationStrategy(approximationStrategy.getClass().newInstance());
-        } catch (InstantiationException ex) {
-            Logger.getLogger(FIGdlFactory.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            Logger.getLogger(FIGdlFactory.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
+        n.setStrategy(strategy);
         return n;
     }
 
-    public UPEdge<FIGdlNode, FIGdlMessage> buildEdge(FIGdlNode node1, FIGdlNode node2) {
-        return new UPEdge<FIGdlNode, FIGdlMessage>(node1, node2);
+    public UPEdge<GdlFNode, GdlFMessage> buildEdge(GdlFNode node1, GdlFNode node2) {
+        return new UPEdge<GdlFNode, GdlFMessage>(node1, node2);
     }
 
-    public UPResult buildResult(FIGdlNode node) {
+    public UPResult buildResult(GdlFNode node) {
         return new UPResult(node);
     }
 
     public UPResults buildResults() {
         return new UPResults();
-    }
-
-    /**
-     * @return the mode
-     */
-    public Modes getMode() {
-        return mode;
-    }
-
-    /**
-     * @param mode the mode to set
-     */
-    public void setMode(Modes mode) {
-        this.mode = mode;
     }
 
 }

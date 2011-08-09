@@ -55,10 +55,10 @@ import es.csic.iiia.dcop.up.UPResults;
 import es.csic.iiia.dcop.dfs.DFS;
 import es.csic.iiia.dcop.dsa.DSA;
 import es.csic.iiia.dcop.dsa.DSAResults;
-import es.csic.iiia.dcop.figdl.FIGdlFactory;
-import es.csic.iiia.dcop.figdl.FIGdlGraph;
 import es.csic.iiia.dcop.gdl.GdlFactory;
-import es.csic.iiia.dcop.figdl.strategy.ApproximationStrategy;
+import es.csic.iiia.dcop.gdlf.GdlFFactory;
+import es.csic.iiia.dcop.gdlf.GdlFGraph;
+import es.csic.iiia.dcop.gdlf.strategies.GdlFStrategy;
 import es.csic.iiia.dcop.io.CliqueTreeSerializer;
 import es.csic.iiia.dcop.io.DatasetReader;
 import es.csic.iiia.dcop.io.TreeReader;
@@ -75,21 +75,18 @@ import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.VPResults;
 import es.csic.iiia.dcop.vp.strategy.VPStrategy;
 import es.csic.iiia.dcop.vp.strategy.expansion.StochasticalExpansion;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,12 +105,7 @@ public class CliApp {
         log.info("[Info] Summarize: " + summarizeOperation.toString());
         log.info("[Info] Combine: " + combineOperation.toString());
         log.info("[Info] Normalize: " + normalization.toString());
-        if (algorithm == Algorithm.FIGDL) {
-            log.info("[Info] Filtering style: " +
-                    (ApproximationStrategy.filteringMethod == ApproximationStrategy.FILTER_IMPROVED
-                    ? "two-sides"
-                    : "one-side")
-            );
+        if (algorithm == Algorithm.GDLF) {
             log.info("[Info] Approximation: " + approximationStrategy.toString());
             log.info("[Info] Number-of-solutions: " + VPStrategy.numberOfSolutions);
             log.info("[Info] Solution-expansion: " + expansionStrategy.toString());
@@ -164,12 +156,11 @@ public class CliApp {
     /**
      * Strategies to use for GDL with filtering
      */
-    private ApproximationStrategies approximationStrategy = ApproximationStrategies.SCP_CC;
+    private ApproximationStrategies approximationStrategy = ApproximationStrategies.DCR_BOTTOM_UP;
     private SolutionExpansionStrategies expansionStrategy = SolutionExpansionStrategies.GREEDY;
     private SolutionSolvingStrategies solvingStrategy = SolutionSolvingStrategies.OPTIMAL;
 
     private int IGdlR = 2;
-    private String optimalFile = null;
     private InputStream input = System.in;
 
 
@@ -208,7 +199,7 @@ public class CliApp {
             System.err.println("Warning: maxsum doesn't converge without normalization, using sum0.");
             normalization = CostFunction.Normalize.SUM0;
         }
-        if (algorithm == Algorithm.FIGDL && summarizeOperation == CostFunction.Summarize.SUM) {
+        if (algorithm == Algorithm.GDLF && summarizeOperation == CostFunction.Summarize.SUM) {
             System.err.println("Error: figdl can not work with sum summarization.");
             System.exit(1);
         }
@@ -250,7 +241,7 @@ public class CliApp {
             
             // Positivize if figdl
             boolean inverse = false;
-            if (algorithm == Algorithm.FIGDL) {
+            if (algorithm == Algorithm.GDLF) {
                 // Invert the problem (max -> min)
                 if (summarizeOperation == CostFunction.Summarize.MAX) {
                     factory.setSummarizeOperation(CostFunction.Summarize.MIN);
@@ -271,8 +262,8 @@ public class CliApp {
                     expansionStrategy.getInstance(),
                     solvingStrategy.getInstance()
             );
-            if (algorithm == Algorithm.FIGDL && cg instanceof FIGdlGraph) {
-                FIGdlGraph.setSolutionStrategy(sStrategy);
+            if (algorithm == Algorithm.GDLF && cg instanceof GdlFGraph) {
+                GdlFGraph.setSolutionStrategy(sStrategy);
             }
 
             // Add noise if requested
@@ -281,26 +272,13 @@ public class CliApp {
                 rna.addNoise(cg);
             }
 
-            if (optimalFile != null) {
-                try {
-                    BufferedReader br = new BufferedReader(new InputStreamReader(
-                            new FileInputStream(new File(optimalFile))
-                    ));
-                    double optimal = Double.parseDouble(br.readLine());
-                    FIGdlGraph.setOptimalValue(optimal);
-                } catch (IOException ex) {
-                    java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
-                }
-
-            }
-
             // Run the solving algorithm
             cg.setFactory(factory);
             UPResults results = cg.run(1000);
             UBResults ubres = null;
 
-            if (algorithm == Algorithm.FIGDL && cg instanceof FIGdlGraph) {
-                ubres = ((FIGdlGraph)cg).getUBResults();
+            if (algorithm == Algorithm.GDLF && cg instanceof GdlFGraph) {
+                ubres = ((GdlFGraph)cg).getUBResults();
             } else {
                 VPGraph st = new VPGraph(cg, sStrategy);
                 VPResults res = st.run(10000);
@@ -338,7 +316,7 @@ public class CliApp {
         // Evaluate solution
         double cost = 0;
         factors.add(constant);
-        if (algorithm == Algorithm.FIGDL && summarizeOperation == CostFunction.Summarize.MAX) {
+        if (algorithm == Algorithm.GDLF && summarizeOperation == CostFunction.Summarize.MAX) {
             ConstantFactorExtractor.invert(factors);
         }
         for (CostFunction f : factors) {
@@ -415,16 +393,16 @@ public class CliApp {
         switch(algorithm) {
 
             case GDL:
-            case FIGDL:
+            case GDLF:
                 UPFactory factory = null;
                 if (algorithm == Algorithm.GDL) {
                     factory = new GdlFactory();
                     ((GdlFactory)factory).setMode(Modes.TREE_UP);
                 } else {
-                    ApproximationStrategy pStrategy = approximationStrategy.getInstance();
-                    factory = new FIGdlFactory(constant, 
+                    GdlFStrategy pStrategy = approximationStrategy.getInstance(this.getIGdlR());
+                    factory = new GdlFFactory(constant, 
                             summarizeOperation == CostFunction.Summarize.MAX,
-                            this.getIGdlR(), pStrategy);
+                            pStrategy);
                 }
                 int variables = 0;
                 JTResults results = null;
@@ -437,7 +415,7 @@ public class CliApp {
                     JunctionTree jt = new JunctionTree(cg);
                     results = jt.run(1000);
                     variables = results.getMaxVariables();
-                    if (algorithm == Algorithm.FIGDL) {
+                    if (algorithm == Algorithm.GDLF) {
                         int newRoot = jt.getLowestDecisionRoot();
                         cg.setRoot(newRoot);
                     }
@@ -469,7 +447,7 @@ public class CliApp {
                 JunctionTree jt = new JunctionTree(cg);
                 results = jt.run(1000);
                 variables = results.getMaxVariables();
-                if (algorithm == Algorithm.FIGDL) {
+                if (algorithm == Algorithm.GDLF) {
                     int newRoot = jt.getLowestDecisionRoot();
                     cg.setRoot(newRoot);
                 }
@@ -604,14 +582,6 @@ public class CliApp {
     }
     void setSolutionSolving(SolutionSolvingStrategies solutionSolvingStrategy) {
         this.solvingStrategy = solutionSolvingStrategy;
-    }
-
-    public String getOptimalFile() {
-        return optimalFile;
-    }
-
-    public void setOptimalFile(String optimalFile) {
-        this.optimalFile = optimalFile;
     }
 
     public String getCliqueTreeFile() {

@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  * 
- * Copyright (c) 2010, IIIA-CSIC, Artificial Intelligence Research Institute
+ * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
  * All rights reserved.
  * 
  * Redistribution and use of this software in source and binary forms, with or
@@ -36,24 +36,19 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.figdl.strategy.gd;
+package es.csic.iiia.dcop.gdlf.strategies;
 
 import es.csic.iiia.dcop.CostFunction;
-import es.csic.iiia.dcop.util.metrics.Metric;
-import es.csic.iiia.dcop.util.metrics.Norm1;
+import java.util.List;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class LREGreedyStrategy extends GreedyDecompositionStrategy {
+
+
+public interface FilterStrategy {
     
-    private static final Metric metric = new Norm1();
-
-    @Override
-    protected double getGain(CostFunction f) {
-        final double bound = node.getBound();
-        return Double.isNaN(bound) ? metric.getValue(f) : metric.getValue(f, bound);
-    }
-
+    public List<CostFunction> filter(List<CostFunction> fs, List<CostFunction> pfs, double ub);
+    
 }

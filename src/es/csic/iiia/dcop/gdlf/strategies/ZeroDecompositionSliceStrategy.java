@@ -36,91 +36,48 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.figdl.strategy;
+package es.csic.iiia.dcop.gdlf.strategies;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.figdl.FIGdlMessage;
-import es.csic.iiia.dcop.up.IUPNode;
-import es.csic.iiia.dcop.up.UPEdge;
-import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.util.CostFunctionStats;
-import es.csic.iiia.dcop.util.metrics.Metric;
-import es.csic.iiia.dcop.util.metrics.Norm0;
 import java.util.ArrayList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.List;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class ZerosDecompositionStrategy extends ApproximationStrategy {
+public class ZeroDecompositionSliceStrategy implements SliceStrategy {
 
-    private static Logger log = LoggerFactory.getLogger(UPGraph.class);
-    private Metric informationLossNorm = new Norm0();
-
-    @Override
-    public void initialize(IUPNode node) {
-        super.initialize(node);
-    }
-
-    @Override
-    protected FIGdlMessage approximate(ArrayList<CostFunction> fs,
-            UPEdge<? extends IUPNode, FIGdlMessage> e) {
-
-        long cc = 0;
-        
-        // Message to be sent
-        FIGdlMessage msg = new FIGdlMessage();
-
-        // Calculate the "big" function that should be sent
-        CostFunction remaining = node.getFactory().buildNeutralCostFunction(new Variable[0]);
-        remaining = remaining.combine(fs);
-        
-        // null belief yields an empty message
-        if (remaining == null) {
-            return msg;
+    public List<CostFunction> slice(List<CostFunction> fs, int r) {
+        List<CostFunction> res = new ArrayList<CostFunction>();
+        for (CostFunction f : fs) {
+            sliceFunction(f, r, res);
         }
 
-        msg.cc += remaining.getSize();
+        return fs;
+    }
+
+    private void sliceFunction(CostFunction f, int r, List<CostFunction> fs) {
         
-        // Filter the belief
-        remaining = this.filterFactor(e, remaining);
-
-        // Summarize the belief to the shared variables
-        remaining = remaining.summarize(
-            remaining.getSharedVariables(e.getVariables()).toArray(new Variable[0])
-        );
-
-        msg.cc += remaining.getSize();
-
         // Don't try to break a fitting message into smaller pieces
-        if (remaining.getVariableSet().size() <= node.getR()) {
-            msg.addFactor(remaining);
-            return msg;
+        if (f.getVariableSet().size() <= r) {
+            fs.add(f);
+            return;
         }
 
         // Remove the constant value (summarization to no variables)
-        CostFunction cst = remaining.summarize(new Variable[0]);
-        msg.addFactor(cst);
-        remaining = remaining.combine(cst.negate());
-        msg.cc += remaining.getSize();
+        CostFunction cst = f.summarize(new Variable[0]);
+        fs.add(cst);
+        f = f.combine(cst.negate());
 
         // Obtain the projection approximation
         CostFunction[] res =
-                CostFunctionStats.getZeroDecompositionApproximation(remaining, node.getR());
+                CostFunctionStats.getZeroDecompositionApproximation(f, r);
         for (int i=0; i<res.length-1; i++) {
-            msg.addFactor(res[i]);
-            msg.cc += remaining.getSize();
+            fs.add(res[i]);
         }
-
-        // And the total information lost
-        msg.setInformationLoss(
-                informationLossNorm.getValue(res[res.length-1])
-        );
-
-        return msg;
     }
 
 }

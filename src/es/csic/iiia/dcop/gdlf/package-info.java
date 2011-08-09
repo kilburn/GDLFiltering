@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  * 
- * Copyright (c) 2010, IIIA-CSIC, Artificial Intelligence Research Institute
+ * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
  * All rights reserved.
  * 
  * Redistribution and use of this software in source and binary forms, with or
@@ -36,45 +36,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.vp.strategy.expansion;
-
-import es.csic.iiia.dcop.VariableAssignment;
-import es.csic.iiia.dcop.figdl.FIGdlNode;
-import es.csic.iiia.dcop.vp.VPGraph;
-import es.csic.iiia.dcop.vp.strategy.VPStrategy;
-import java.util.ArrayList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
- *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * GDL with function filtering, JAIR? version
  */
-public class InformationLossExpansion implements ExpansionStrategy {
+package es.csic.iiia.dcop.gdlf;
 
-    private static Logger log = LoggerFactory.getLogger(VPGraph.class);
-
-    public int getNumberOfSolutionsToExpand(ArrayList<VariableAssignment> mappings, FIGdlNode node) {
-        double informationLoss = node.getInformationLoss();
-        double maxInformationLoss = node.getMaxInformationLoss();
-        int remainingSlots = VPStrategy.numberOfSolutions - mappings.size();
-
-        int solutions = 0;
-        double ns = informationLoss/((double)maxInformationLoss)*remainingSlots;
-        solutions = (int)ns;
-        ns -= (double)solutions;
-        if (log.isTraceEnabled()) {
-            log.trace("bl: " + informationLoss + ", cb: " + maxInformationLoss
-                    + ", rs: " + remainingSlots + ", ns: " + ns);
-        }
-        if (Math.random() < ns) {
-            solutions++;
-        }
-
-        if (log.isDebugEnabled()) {
-            log.debug("Solutions to expand: " + solutions);
-        }
-
-        return solutions;
-    }
-}
