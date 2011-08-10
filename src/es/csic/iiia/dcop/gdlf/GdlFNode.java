@@ -46,6 +46,7 @@ import es.csic.iiia.dcop.gdlf.strategies.GdlFStrategy;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.up.UPNode;
+import es.csic.iiia.dcop.util.MemoryTracker;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -155,7 +156,6 @@ public class GdlFNode extends UPNode<UPEdge<GdlFNode, GdlFMessage>, UPResult> {
      * @return number of constraint checks consumed.
      */
     public void run() {
-
         // Rebuild cost function list
         costFunctions = new ArrayList<CostFunction>();
         

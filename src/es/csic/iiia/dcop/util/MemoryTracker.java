@@ -40,6 +40,7 @@ package es.csic.iiia.dcop.util;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.MapCostFunction;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -48,11 +49,26 @@ import java.util.List;
  */
 public class MemoryTracker {
 
-    static long max = 0;
+    static long bytes = 0;
+    
+    private static HashMap<Object, Long> trackers = new HashMap<Object, Long>();
 
-    public static void track(long bytes) {
-        max = Math.max(max, bytes);
+    public static void add(long count) {
+        bytes += count;
     }
+    
+    public static void addTracker(Object tracker) {
+        trackers.put(tracker, bytes);
+    }
+    public static long removeTracker(Object tracker) {
+        long tbytes = bytes - trackers.remove(tracker);
+        if (trackers.isEmpty()) {
+            bytes = 0;
+        }
+        return tbytes;
+    }
+    
+    
     
     public static long getRequiredMemory(CostFunction f) {
         long header = f.getVariableSet().size() * 4L;
@@ -71,11 +87,6 @@ public class MemoryTracker {
             sum += getRequiredMemory(f);
         }
         return sum;
-    }
-
-    public static String asString() {
-        double mbs = max/(1024*1024f);
-        return Double.toString(mbs);
     }
 
 }

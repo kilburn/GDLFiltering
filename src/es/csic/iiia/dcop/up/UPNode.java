@@ -164,9 +164,9 @@ public abstract class UPNode<E extends UPEdge, R extends UPResult> extends
         return relations;
     }
 
-    public int getSize() {
+    public long getSize() {
         // Now we have to do it the hard way...
-        int size = 1;
+        long size = 1;
         for (Variable v : variables) {
             size *= v.getDomain();
         }
