@@ -1,4 +1,4 @@
-/*
+ /*
  * Software License Agreement (BSD License)
  * 
  * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
@@ -35,38 +35,30 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package es.csic.iiia.dcop.gdlf.strategies;
 
-package es.csic.iiia.dcop.cli;
-
-import es.csic.iiia.dcop.gdlf.strategies.GdlFStrategy;
-import java.util.logging.Level;
+import es.csic.iiia.dcop.gdlf.Limits;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public enum ApproximationStrategies {
-    AAMAS_TOP_DOWN (es.csic.iiia.dcop.gdlf.strategies.UnlimitedComputationTopDown.class),
-    AAMAS_BOTTOM_UP (es.csic.iiia.dcop.gdlf.strategies.UnlimitedComputationBottomUp.class),
-    DCR_BOTTOM_UP (es.csic.iiia.dcop.gdlf.strategies.LimitedComputationBottomUp.class),
-    MIXED_NOSLICE (es.csic.iiia.dcop.gdlf.strategies.MixedWithoutSlice.class),
-    MIXED_SLICE (es.csic.iiia.dcop.gdlf.strategies.MixedWithSlice.class),
-    MIXED_USLICE (es.csic.iiia.dcop.gdlf.strategies.MixedWithUSlice.class),
-    ;
+public abstract class AbstractMixedControlStrategy implements ControlStrategy {
 
-    private GdlFStrategy instance;
-    ApproximationStrategies(Class<? extends GdlFStrategy> c) {
-        try {
-            instance = c.newInstance();
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    protected int r = 1;
+    protected int maxr;
+    protected int delta = 0;
+    
+    public void setDelta(int delta) {
+        this.delta = delta;
+    }
+
+    public boolean hasMoreElements() {
+        return r < maxr;
+    }
+
+    public void setMaxR(int r) {
+        this.maxr = r;
     }
     
-    GdlFStrategy getInstance(int maxr) {
-        instance.setMaxR(maxr);
-        return instance;
-    }
 }

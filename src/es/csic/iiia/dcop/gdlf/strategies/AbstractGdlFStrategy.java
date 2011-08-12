@@ -63,6 +63,10 @@ public abstract class AbstractGdlFStrategy implements GdlFStrategy {
         this.filter = filter;
         this.slice = slice;
     }
+    
+    protected ControlStrategy getControlStrategy() {
+        return control;
+    }
 
     public boolean hasMoreElements() {
         return control.hasMoreElements();

@@ -157,6 +157,11 @@ public class Cli {
         System.err.println("      - aamas-top-down  : zero-tracking decomposition unlimited memory");
         System.err.println("      - aamas-bottom-up : scope-based partitioning unlimited memory");
         System.err.println("      - dcr-bottom-up   : scope-based partitioning limited memory");
+        System.err.println("      - mixed-noslice   : mixed (r+delta, r, r) scope-based partitioning.");
+        System.err.println("      - mixed-slice     : mixed (r+delta, r+delta, r) scp + zero-decomposition.");
+        System.err.println("      - mixed-uslice    : mixed (inf, r+delta, r) scp + zero-decomposition.");
+        System.err.println("  --delta=<value> (0)");
+        System.err.println("    Sets the delta parameter for the mixed approximation strategies.");
         System.err.println("  --probability=<value> (0.9)");
         System.err.println("    Sets the probability parameter of both DSA algorithm and stochastical solution expansion.");
         System.err.println("  --solution-expansion=strategy (root)");
@@ -198,7 +203,8 @@ public class Cli {
             new LongOpt("nsols", LongOpt.REQUIRED_ARGUMENT, null, 1),
             new LongOpt("output-format", LongOpt.REQUIRED_ARGUMENT, null, 'o'),
             new LongOpt("old-style-filtering", LongOpt.NO_ARGUMENT, null, 8),
-            new LongOpt("partition-strategy", LongOpt.REQUIRED_ARGUMENT, null, 'p'),
+            new LongOpt("approximation-strategy", LongOpt.REQUIRED_ARGUMENT, null, 'p'),
+            new LongOpt("delta", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("probability", LongOpt.REQUIRED_ARGUMENT, null, 9),
             new LongOpt("random-noise", LongOpt.OPTIONAL_ARGUMENT, null, 'r'),
             new LongOpt("summarize", LongOpt.REQUIRED_ARGUMENT, null, 's'),
@@ -221,6 +227,16 @@ public class Cli {
                         System.err.println("Error: invalid compression method \"" + arg + "\"");
                         System.exit(0);
                     }
+                    break;
+                    
+                case 2:
+                    arg = g.getOptarg();
+                    int delta = Integer.parseInt(arg);
+                    if (delta < 0) {
+                        System.err.println("Error: the delta value must be greater than or equal to 0.");
+                        System.exit(0);
+                    }
+                    cli.setDelta(delta);
                     break;
 
                 case 1:

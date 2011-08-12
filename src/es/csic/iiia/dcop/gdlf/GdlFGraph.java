@@ -161,7 +161,7 @@ public class GdlFGraph extends UPGraph<GdlFNode,UPEdge<GdlFNode, GdlFMessage>,UP
                 System.out.println("ITERBYTES " + iterBytes);
                 System.out.println("ITERCCS " + iterCCs);
                 System.out.println("ITERSPARSITY " + FunctionCounter.getRatio());
-                System.out.println("ITERMAX_NODE_MEMORY " + MemoryTracker.asString() + " Mb");
+                //System.out.println("ITERMAX_NODE_MEMORY " + MemoryTracker.asString() + " Mb");
 
                 double newCost = ubResults.getCost()+constant;
                 double newBound = ubResults.getBound()+constant;
