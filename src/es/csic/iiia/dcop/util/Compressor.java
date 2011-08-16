@@ -59,7 +59,7 @@ public class Compressor {
 
     public static long getCompressedSizeF(CostFunction f) {
         switch(METHOD) {
-            case BZIP2:
+            case BZ2:
             case ARITH:
                 return arithmeticCompress(f);
             case SPARSE:
@@ -78,7 +78,7 @@ public class Compressor {
         long sum = 0;
         for (CostFunction f : fs) {
             switch(METHOD) {
-                case BZIP2:
+                case BZ2:
                 case ARITH:
                     sum += arithmeticCompressWithHeader(f);
                     break;

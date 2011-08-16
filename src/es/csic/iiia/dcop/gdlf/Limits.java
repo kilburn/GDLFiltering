@@ -50,9 +50,9 @@ public class Limits {
     private final int splitCommunication;
     
     public Limits(int mergeComputation, int mergeCommunication, int splitCommunication) {
-        this.mergeComputation = mergeComputation;
-        this.splitCommunication = splitCommunication;
-        this.mergeCommunication = mergeCommunication;
+        this.mergeComputation = Math.max(mergeComputation,1);
+        this.splitCommunication = Math.max(splitCommunication,1);
+        this.mergeCommunication = Math.max(mergeCommunication,1);
     }
 
     public int getMergeCommunication() {

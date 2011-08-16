@@ -58,6 +58,7 @@ import es.csic.iiia.dcop.dsa.DSAResults;
 import es.csic.iiia.dcop.gdl.GdlFactory;
 import es.csic.iiia.dcop.gdlf.GdlFFactory;
 import es.csic.iiia.dcop.gdlf.GdlFGraph;
+import es.csic.iiia.dcop.gdlf.strategies.AbstractMixedStrategy;
 import es.csic.iiia.dcop.gdlf.strategies.GdlFStrategy;
 import es.csic.iiia.dcop.io.CliqueTreeSerializer;
 import es.csic.iiia.dcop.io.DatasetReader;
@@ -107,6 +108,11 @@ public class CliApp {
         log.info("[Info] Normalize: " + normalization.toString());
         if (algorithm == Algorithm.GDLF) {
             log.info("[Info] Approximation: " + approximationStrategy.toString());
+            if (approximationStrategy == ApproximationStrategies.MIXED_NOSLICE
+                    || approximationStrategy == ApproximationStrategies.MIXED_SLICE
+                    || approximationStrategy == ApproximationStrategies.MIXED_USLICE) {
+                log.info("[Info] Delta: " + delta);
+            }
             log.info("[Info] Number-of-solutions: " + VPStrategy.numberOfSolutions);
             log.info("[Info] Solution-expansion: " + expansionStrategy.toString());
             if (expansionStrategy == SolutionExpansionStrategies.STOCHASTIC) {
@@ -160,6 +166,7 @@ public class CliApp {
     private SolutionExpansionStrategies expansionStrategy = SolutionExpansionStrategies.GREEDY;
     private SolutionSolvingStrategies solvingStrategy = SolutionSolvingStrategies.OPTIMAL;
 
+    private int delta = 0;
     private int IGdlR = 2;
     private InputStream input = System.in;
 
@@ -325,6 +332,7 @@ public class CliApp {
             cost = combineOperation.eval(cost, f.getValue(map));
         }
         log.info("COST " + cost);
+        //log.info("MAX_NODE_MEMORY " + MemoryTracker.asString() + " Mb");
     }
 
     void setCreateCliqueGraph(boolean create) {
@@ -401,6 +409,9 @@ public class CliApp {
                     ((GdlFactory)factory).setMode(Modes.TREE_UP);
                 } else {
                     GdlFStrategy pStrategy = approximationStrategy.getInstance(this.getIGdlR());
+                    if (pStrategy instanceof AbstractMixedStrategy) {
+                        ((AbstractMixedStrategy)pStrategy).setDelta(delta);
+                    }
                     factory = new GdlFFactory(constant, 
                             summarizeOperation == CostFunction.Summarize.MAX,
                             pStrategy);
@@ -721,6 +732,10 @@ public class CliApp {
      */
     public void setSummarizeOperation(CostFunction.Summarize summarizeOperation) {
         this.summarizeOperation = summarizeOperation;
+    }
+    
+    public void setDelta(int delta) {
+        this.delta = delta;
     }
     
 }

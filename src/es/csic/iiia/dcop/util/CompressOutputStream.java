@@ -62,7 +62,7 @@ public class CompressOutputStream extends OutputStream {
             case ARITH:
                 compressor = new ArithCodeOutputStream(byteCounter, new PPMModel(8));
                 break;
-            case BZIP2:
+            case BZ2:
                 try {
                     compressor = new CBZip2OutputStream(compressor);
                 } catch (IOException ex) {
