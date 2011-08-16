@@ -295,6 +295,8 @@ public class CliApp {
             log.info("CYCLE_CCS " + results.getMaximalCcc());
             log.info("TOTAL_BYTES " + results.getTotalBytesc());
             log.info("CYBLE_BYTES " + results.getMaximalBytesc());
+            log.info("MAX_NODE_MEMORY " + 
+                    MemoryTracker.toString(results.getMaximalMemoryc()) + " Mb");
             log.info("LOAD_FACTOR " + results.getLoadFactor());
             final double bound = ubres.getBound() + constant.getValue(0);
             log.info("BOUND " + (inverse ? -bound : bound));
@@ -323,7 +325,6 @@ public class CliApp {
             cost = combineOperation.eval(cost, f.getValue(map));
         }
         log.info("COST " + cost);
-        log.info("MAX_NODE_MEMORY " + MemoryTracker.asString() + " Mb");
     }
 
     void setCreateCliqueGraph(boolean create) {

@@ -40,6 +40,7 @@ package es.csic.iiia.dcop.mp;
 
 import es.csic.iiia.dcop.util.BytesSent;
 import es.csic.iiia.dcop.util.ConstraintChecks;
+import es.csic.iiia.dcop.util.MemoryTracker;
 import java.util.ArrayList;
 
 /**
@@ -93,19 +94,25 @@ public abstract class AbstractGraph<N extends Node,E extends Edge,R extends Resu
         // Algorithm initialization
         results = buildResults();
         
-        long mcc = 0, tcc = 0, mbytes = 0, tbytes = 0;
+        long mcc = 0, tcc = 0, mbytes = 0, tbytes = 0, mmem = 0;
         for(Node n : nodes) {
             ConstraintChecks.addTracker(n);
             BytesSent.addTracker(n);
+            MemoryTracker.addTracker(n);
+            
             n.initialize();
+            
             long cc = ConstraintChecks.removeTracker(n);
             long bytes = BytesSent.removeTracker(n);
+            long mem = MemoryTracker.removeTracker(n);
+            
             tcc += cc;
             tbytes += bytes;
             mcc = Math.max(mcc, cc);
             mbytes = Math.max(mbytes, bytes);
+            mmem = Math.max(mmem, mem);
         }
-        results.addCycle(mcc, tcc, mbytes, tbytes);
+        results.addCycle(mcc, tcc, mbytes, tbytes, mmem);
     }
 
     protected void end() {

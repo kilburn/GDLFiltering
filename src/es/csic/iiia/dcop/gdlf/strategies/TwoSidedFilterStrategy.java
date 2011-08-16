@@ -39,6 +39,7 @@
 package es.csic.iiia.dcop.gdlf.strategies;
 
 import es.csic.iiia.dcop.CostFunction;
+import es.csic.iiia.dcop.util.MemoryTracker;
 import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
@@ -59,19 +60,19 @@ public class TwoSidedFilterStrategy implements FilterStrategy {
             return fs;
         }
 
+        // Filtering requires copying the filtered function at each step,
+        // so we account for the biggest one.
+        long maxmem = Long.MIN_VALUE;
         ArrayList<CostFunction> res = new ArrayList<CostFunction>();
         for (int i=0, len=fs.size(); i<len; i++) {
-            ArrayList<CostFunction> filterers;
-//            if (filteringMethod == FILTER_IMPROVED) {
-                filterers = new ArrayList<CostFunction>(pfs);
-                for (int j=0; j<len; j++) {
-                    if (i!=j) filterers.add(fs.get(j));
-                }
-//            } else {
-//                filterers = pfs;
-//            }
+            ArrayList<CostFunction> filterers = new ArrayList<CostFunction>(pfs);
+            for (int j=0; j<len; j++) {
+                if (i!=j) filterers.add(fs.get(j));
+            }
 
             final CostFunction outf = fs.get(i);
+            maxmem = Math.max(maxmem, MemoryTracker.getRequiredMemory(outf));
+            
             final CostFunction filtered = outf.filter(filterers, ub);
             if (log.isTraceEnabled()) {
                 log.trace("Input b:" + ub + " f:" + outf);
@@ -80,6 +81,7 @@ public class TwoSidedFilterStrategy implements FilterStrategy {
             res.add(filtered);
         }
 
+        MemoryTracker.add(maxmem);
         return res;        
     }
 

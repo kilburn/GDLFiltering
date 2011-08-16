@@ -144,6 +144,7 @@ public class GdlFNode extends UPNode<UPEdge<GdlFNode, GdlFMessage>, UPResult> {
         // Tree-based operation
         setMode(Modes.TREE_UP);
         costFunctions = new ArrayList<CostFunction>(relations);
+        MemoryTracker.add(MemoryTracker.getRequiredMemory(costFunctions));
 
         // Send initial messages
         sendMessages();
@@ -173,6 +174,11 @@ public class GdlFNode extends UPNode<UPEdge<GdlFNode, GdlFMessage>, UPResult> {
                 costFunctions.addAll(msg.getFactors());
             }
         }
+        
+        // We need memory to store all the received functions
+        for (List<CostFunction> lfs : receivedFunctions.values()) {
+            MemoryTracker.add(MemoryTracker.getRequiredMemory(lfs));
+        }
 
         // Send updated messages
         sendMessages();
@@ -189,6 +195,7 @@ public class GdlFNode extends UPNode<UPEdge<GdlFNode, GdlFMessage>, UPResult> {
     }
 
     private void sendMessages() {
+        
         CostFunction belief = null;
         if (log.isTraceEnabled()) {
             belief = factory.buildNeutralCostFunction(new Variable[0]);
@@ -221,15 +228,13 @@ public class GdlFNode extends UPNode<UPEdge<GdlFNode, GdlFMessage>, UPResult> {
             for (int i=0, len=fs.size(); i<len; i++) {
                 final CostFunction f = fs.get(i);
                 Variable[] vars = f.getSharedVariables(e.getVariables()).toArray(new Variable[0]);
-                fs.set(i, fs.get(i).summarize(vars));
+                final CostFunction summarizedFunction = fs.get(i).summarize(vars);
+                fs.set(i, summarizedFunction);
             }
             
             // Filter
             if (!Double.isNaN(bound)) {
                 List<CostFunction> pfs = receivedFunctions.get(e);
-                if (pfs == null) {
-                    System.err.println("Wop¿!");
-                }
                 fs = strategy.filter(fs, pfs, bound);
             }
             

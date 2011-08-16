@@ -36,62 +36,52 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.util;
+package es.csic.iiia.dcop.gdlf.strategies;
 
 import es.csic.iiia.dcop.CostFunction;
-import es.csic.iiia.dcop.MapCostFunction;
-import java.util.Collection;
-import java.util.HashMap;
+import es.csic.iiia.dcop.util.MemoryTracker;
+import java.util.ArrayList;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
-public class MemoryTracker {
-
-    static long bytes = 0;
+public class OneSidedFilterStrategy implements FilterStrategy {
     
-    private static HashMap<Object, Long> trackers = new HashMap<Object, Long>();
+    private static Logger log = LoggerFactory.getLogger(OneSidedFilterStrategy.class);
 
-    public static void add(long count) {
-        bytes += count;
-    }
-    
-    public static void addTracker(Object tracker) {
-        trackers.put(tracker, bytes);
-    }
-    public static long removeTracker(Object tracker) {
-        long tbytes = bytes - trackers.remove(tracker);
-        if (trackers.isEmpty()) {
-            bytes = 0;
+    // TODO: Memory tracking
+    public List<CostFunction> filter(List<CostFunction> fs, List<CostFunction> pfs, double ub) {
+        
+        if (Double.isNaN(ub)) {
+            return fs;
         }
-        return tbytes;
-    }
-    
-    
-    
-    public static long getRequiredMemory(CostFunction f) {
-        long header = f.getVariableSet().size() * 4L;
-        long payload;
-        if (f instanceof MapCostFunction)
-            payload = (f.getSize() - f.getNumberOfNoGoods()) * 16L;
-        else
-            payload = f.getSize() * 8L;
 
-        return header+payload;
-    }
+        // Filtering requires copying the filtered function at each step,
+        // so we account for the biggest one.
+        long maxmem = Long.MIN_VALUE;
+        ArrayList<CostFunction> res = new ArrayList<CostFunction>();
+        for (int i=0, len=fs.size(); i<len; i++) {
+            List<CostFunction> filterers = pfs;
 
-    public static long getRequiredMemory(Collection<CostFunction> fs) {
-        long sum = 0;
-        for (CostFunction f : fs) {
-            sum += getRequiredMemory(f);
+            final CostFunction outf = fs.get(i);
+            maxmem = Math.max(maxmem, MemoryTracker.getRequiredMemory(outf));
+            
+            final CostFunction filtered = outf.filter(filterers, ub);
+            if (log.isTraceEnabled()) {
+                log.trace("Input b:" + ub + " f:" + outf);
+                log.trace("Filtered: " + filtered);
+            }
+            res.add(filtered);
         }
-        return sum;
+        
+        MemoryTracker.add(maxmem);
+        return res;        
     }
+
     
-    public static String toString(long bytes) {
-        double mbs = bytes/(1024*1024f);
-        return Double.toString(mbs);
-    }
 
 }

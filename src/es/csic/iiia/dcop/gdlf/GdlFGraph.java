@@ -38,13 +38,11 @@
 
 package es.csic.iiia.dcop.gdlf;
 
-import es.csic.iiia.dcop.gdlf.strategies.ControlStrategy;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunction.Summarize;
 import es.csic.iiia.dcop.bb.UBGraph;
 import es.csic.iiia.dcop.bb.UBResults;
 import es.csic.iiia.dcop.gdlf.strategies.GdlFStrategy;
-import es.csic.iiia.dcop.mp.Result;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.up.UPResult;
@@ -161,7 +159,8 @@ public class GdlFGraph extends UPGraph<GdlFNode,UPEdge<GdlFNode, GdlFMessage>,UP
                 System.out.println("ITERBYTES " + iterBytes);
                 System.out.println("ITERCCS " + iterCCs);
                 System.out.println("ITERSPARSITY " + FunctionCounter.getRatio());
-                System.out.println("ITERMAX_NODE_MEMORY " + MemoryTracker.asString() + " Mb");
+                System.out.println("ITERMAX_NODE_MEMORY " + 
+                        MemoryTracker.toString(iterResults.getMaximalMemoryc()) + " Mb");
 
                 double newCost = ubResults.getCost()+constant;
                 double newBound = ubResults.getBound()+constant;

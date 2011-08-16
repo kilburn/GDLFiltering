@@ -40,6 +40,7 @@ package es.csic.iiia.dcop.gdlf.strategies;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
+import es.csic.iiia.dcop.util.MemoryTracker;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -170,6 +171,7 @@ public class ScopeBasedMergeStrategy implements MergeStrategy {
             }
             final ArrayList<CostFunction> partition = partitions.get(i);
             final CostFunction f = partition.remove(partition.size()-1).combine(partition);
+            MemoryTracker.add(MemoryTracker.getRequiredMemory(f));
             result.add(f);
         }
         
