@@ -142,11 +142,12 @@ public class DefaultResults<R extends Result> implements Results<R> {
      * Constructs a new GDL results holder object.
      */
     public DefaultResults() {
-        this.results      = new ArrayList<R>();
-        this.totalCc      = new ArrayList<Long>();
-        this.maximalCc    = new ArrayList<Long>();
-        this.totalBytes   = new ArrayList<Long>();
-        this.maximalBytes = new ArrayList<Long>();
+        this.results       = new ArrayList<R>();
+        this.totalCc       = new ArrayList<Long>();
+        this.maximalCc     = new ArrayList<Long>();
+        this.totalBytes    = new ArrayList<Long>();
+        this.maximalBytes  = new ArrayList<Long>();
+        this.maximalMemory = new ArrayList<Long>();
     }
 
     /**
