@@ -47,7 +47,7 @@ public class MixedWithUSliceControlStrategy extends AbstractMixedControlStrategy
     
     public Limits nextElement() {
         r++;
-        return new Limits(Integer.MAX_VALUE, r, r-delta);
+        return new Limits(Integer.MAX_VALUE, r+delta, r);
     }
     
 }

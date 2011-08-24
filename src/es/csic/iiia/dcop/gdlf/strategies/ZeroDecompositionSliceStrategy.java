@@ -56,7 +56,7 @@ public class ZeroDecompositionSliceStrategy implements SliceStrategy {
             sliceFunction(f, r, res);
         }
 
-        return fs;
+        return res;
     }
 
     private void sliceFunction(CostFunction f, int r, List<CostFunction> fs) {
