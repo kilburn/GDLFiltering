@@ -41,6 +41,8 @@ import es.csic.iiia.dcop.mp.AbstractNode.Modes;
 import es.csic.iiia.dcop.util.BytesSent;
 import es.csic.iiia.dcop.util.ConstraintChecks;
 import es.csic.iiia.dcop.util.MemoryTracker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -51,6 +53,8 @@ import es.csic.iiia.dcop.util.MemoryTracker;
  */
 public abstract class DefaultGraph<N extends Node, E extends Edge, R extends Results>
         extends AbstractGraph<N, E, R> {
+    
+    private static Logger log = LoggerFactory.getLogger(Graph.class);
 
     private Modes mode = Modes.GRAPH;
 
@@ -112,12 +116,14 @@ public abstract class DefaultGraph<N extends Node, E extends Edge, R extends Res
                     break;
                 }
             }
-
+            if (converged) {
+                log.info("Convergence achieved.");
+            }
         }
 
         // Just in case...
         if (iter == maxIterations) {
-            System.err.println("WARNING: Maximum number of iterations reached (i=" + iter + ")");
+            log.warn("WARNING: Maximum number of iterations reached (i=" + iter + ")");
         }
 
         // Result collection

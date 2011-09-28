@@ -90,4 +90,9 @@ public class GdlGraph extends UPGraph<GdlNode,UPEdge<GdlNode, GdlMessage>,UPResu
         super.end();
     }
 
+    @Override
+    public void reportIteration(int i) {
+        log.info("Starting iteration " + i);
+    }
+
 }
