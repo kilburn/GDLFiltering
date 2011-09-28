@@ -66,6 +66,8 @@ public class DatasetReader {
 
             if (firstLine.equals("MARKOV")) {
                 return new UAIDatasetReader().read(input, factory);
+            } else if (firstLine.equals("DAI")) {
+                return new DaiDatasetReader().read(input, factory);
             } else {
                 return new UCIDatasetReader().read(input, factory, firstLine);
             }
