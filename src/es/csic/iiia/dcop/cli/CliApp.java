@@ -43,7 +43,9 @@ import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunctionFactory;
+import es.csic.iiia.dcop.CostFunctionTypeFactory;
 import es.csic.iiia.dcop.FactorGraph;
+import es.csic.iiia.dcop.MapCostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.algo.JunctionTreeAlgo;
@@ -233,10 +235,11 @@ public class CliApp {
         // Output total number of variables and min/avg/max domain
         outputVariableStatistics(factors);
 
-        // DSA Can solve from here
         VariableAssignment map = null;
-        CostFunction constant = factory.buildCostFunction(new Variable[0]);
+        CostFunction constant = factory.buildCostFunction(new Variable[0], 
+                factory.getCombineOperation().getNeutralValue());
 
+        // DSA Can solve from here
         if (algorithm == Algorithm.DSA) {
 
             DSA dsa = new DSA(fg);
