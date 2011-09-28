@@ -171,6 +171,58 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
     }
 
     /** {@inheritDoc} */
+    public boolean equals(CostFunction other, double delta) {
+
+        if (other == null) {
+            return false;
+        }
+
+        if (this == other) {
+            return true;
+        }
+
+        if (this.variableSet != other.getVariableSet() &&
+                (this.variableSet == null ||
+                !this.variableSet.equals(other.getVariableSet())))
+        {
+            return false;
+        }
+
+        // Constant cost function handling
+        if (variableSet.size() == 0) {
+            final double e = getValue(0) - other.getValue(0);
+            return Math.abs(e) <= delta;
+        }
+
+        if (!(other instanceof MapCostFunction)) {
+            super.equals(other);
+        }
+
+        MapCostFunction o = (MapCostFunction)other;
+        if (getNumberOfNoGoods() != o.getNumberOfNoGoods()) {
+            return false;
+        }
+
+        MasterIterator it = masterIterator();
+        final int[] subidxs = it.getIndices();
+        ConditionedIterator rit = o.conditionedIterator(this);
+        while (it.hasNext()) {
+            final long i = it.next();
+            final double v1 = getValue(i);
+            final double v2 = o.getValue(rit.nextSubidxs(subidxs));
+            if (Double.isNaN(v1) || Double.isNaN(v2)) {
+                return false;
+            }
+            final double e = v1 - v2;
+            if (Math.abs(e) > delta) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /** {@inheritDoc} */
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
