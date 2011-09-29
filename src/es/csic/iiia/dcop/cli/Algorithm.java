@@ -43,5 +43,5 @@ package es.csic.iiia.dcop.cli;
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
 public enum Algorithm {
-    GDL, MAX_SUM, FIGDL, DSA
+    GDL, MAX_SUM, GDLF, DSA
 }

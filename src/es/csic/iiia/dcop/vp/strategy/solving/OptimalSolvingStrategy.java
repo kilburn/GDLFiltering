@@ -38,10 +38,8 @@
 
 package es.csic.iiia.dcop.vp.strategy.solving;
 
-import es.csic.iiia.dcop.vp.strategy.solving.SolvingStrategy;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.VariableAssignment;
-import es.csic.iiia.dcop.figdl.FIGdlNode;
 import es.csic.iiia.dcop.up.UPNode;
 import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.strategy.CandidateSolution;

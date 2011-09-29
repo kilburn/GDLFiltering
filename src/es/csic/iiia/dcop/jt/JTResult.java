@@ -54,7 +54,7 @@ public class JTResult implements Result {
         this.clique = clique;
     }
 
-    public int getSize() {
+    public long getSize() {
         return clique.getSize();
     }
 

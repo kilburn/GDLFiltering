@@ -38,7 +38,7 @@
 
 package es.csic.iiia.dcop.cli;
 
-import es.csic.iiia.dcop.figdl.strategy.ApproximationStrategy;
+import es.csic.iiia.dcop.gdlf.strategies.GdlFStrategy;
 import java.util.logging.Level;
 
 /**
@@ -46,24 +46,16 @@ import java.util.logging.Level;
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
 public enum ApproximationStrategies {
-    SCP_C (es.csic.iiia.dcop.figdl.strategy.scp.SCPcStrategy.class),
-    SCP_CC (es.csic.iiia.dcop.figdl.strategy.scp.SCPccStrategy.class),
-    SCP_FLEX (es.csic.iiia.dcop.figdl.strategy.scp.SCPFlexibleStrategy.class),
-    RANKUP (es.csic.iiia.dcop.figdl.strategy.RankUpStrategy.class),
-    RANKDOWN (es.csic.iiia.dcop.figdl.strategy.RankDownStrategy.class),
-    LRE_D (es.csic.iiia.dcop.figdl.strategy.gd.LREGreedyStrategy.class),
-    LMRE_D (es.csic.iiia.dcop.figdl.strategy.gd.LMREGreedyStrategy.class),
-    ZEROS_D (es.csic.iiia.dcop.figdl.strategy.ZerosDecompositionStrategy.class),
-    ZEROS_FLEX (es.csic.iiia.dcop.figdl.strategy.FlexibleZerosDecompositionStrategy.class),
-    LRE_C (es.csic.iiia.dcop.figdl.strategy.cbp.LREcStrategy.class),
-    LRE_CC (es.csic.iiia.dcop.figdl.strategy.cbp.LREccStrategy.class),
-    LMRE_C (es.csic.iiia.dcop.figdl.strategy.cbp.LMREcStrategy.class),
-    LMRE_CC (es.csic.iiia.dcop.figdl.strategy.cbp.LMREccStrategy.class),
-    SUPERSET (es.csic.iiia.dcop.figdl.strategy.scp.SCPSuperSetStrategy.class),
+    AAMAS_TOP_DOWN (es.csic.iiia.dcop.gdlf.strategies.UnlimitedComputationTopDown.class),
+    AAMAS_BOTTOM_UP (es.csic.iiia.dcop.gdlf.strategies.UnlimitedComputationBottomUp.class),
+    DCR_BOTTOM_UP (es.csic.iiia.dcop.gdlf.strategies.LimitedComputationBottomUp.class),
+    MIXED_NOSLICE (es.csic.iiia.dcop.gdlf.strategies.MixedWithoutSlice.class),
+    MIXED_SLICE (es.csic.iiia.dcop.gdlf.strategies.MixedWithSlice.class),
+    MIXED_USLICE (es.csic.iiia.dcop.gdlf.strategies.MixedWithUSlice.class),
     ;
 
-    private ApproximationStrategy instance;
-    ApproximationStrategies(Class<? extends ApproximationStrategy> c) {
+    private GdlFStrategy instance;
+    ApproximationStrategies(Class<? extends GdlFStrategy> c) {
         try {
             instance = c.newInstance();
         } catch (InstantiationException ex) {
@@ -72,7 +64,9 @@ public enum ApproximationStrategies {
             java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    ApproximationStrategy getInstance() {
+    
+    GdlFStrategy getInstance(int maxr) {
+        instance.setMaxR(maxr);
         return instance;
     }
 }

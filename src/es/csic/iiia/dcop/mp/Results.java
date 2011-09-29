@@ -45,7 +45,7 @@ package es.csic.iiia.dcop.mp;
  */
 public interface Results<R extends Result> {
 
-    public void addCycle(long mcc, long tcc, long mbytes, long tbytes);
+    public void addCycle(long mcc, long tcc, long mbytes, long tbytes, long mmem);
 
     public void add(R result);
 

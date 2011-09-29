@@ -40,6 +40,9 @@ package es.csic.iiia.dcop.mp;
 import es.csic.iiia.dcop.mp.AbstractNode.Modes;
 import es.csic.iiia.dcop.util.BytesSent;
 import es.csic.iiia.dcop.util.ConstraintChecks;
+import es.csic.iiia.dcop.util.MemoryTracker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -50,6 +53,8 @@ import es.csic.iiia.dcop.util.ConstraintChecks;
  */
 public abstract class DefaultGraph<N extends Node, E extends Edge, R extends Results>
         extends AbstractGraph<N, E, R> {
+    
+    private static Logger log = LoggerFactory.getLogger(Graph.class);
 
     private Modes mode = Modes.GRAPH;
 
@@ -84,21 +89,24 @@ public abstract class DefaultGraph<N extends Node, E extends Edge, R extends Res
             }
 
             // Clique operation
-            long mcc = 0, tcc = 0, mbytes = 0, tbytes = 0;
+            long mcc = 0, tcc = 0, mbytes = 0, tbytes = 0, mmem = 0;
             for (Node n : getNodes()) {
                 if (n.isUpdated()) {
                     ConstraintChecks.addTracker(n);
                     BytesSent.addTracker(n);
+                    MemoryTracker.addTracker(n);
                     n.run();
                     long cc = ConstraintChecks.removeTracker(n);
                     long bytes = BytesSent.removeTracker(n);
+                    long mem = MemoryTracker.removeTracker(n);
                     tcc += cc;
                     tbytes += bytes;
                     mcc = Math.max(mcc, cc);
                     mbytes = Math.max(mbytes, bytes);
+                    mmem = Math.max(mmem, mem);
                 }
             }
-            results.addCycle(mcc, tcc, mbytes, tbytes);
+            results.addCycle(mcc, tcc, mbytes, tbytes, mmem);
 
             // Check for convergence
             converged = true;
@@ -108,12 +116,14 @@ public abstract class DefaultGraph<N extends Node, E extends Edge, R extends Res
                     break;
                 }
             }
-
+            if (converged) {
+                log.info("Convergence achieved.");
+            }
         }
 
         // Just in case...
         if (iter == maxIterations) {
-            System.err.println("WARNING: Maximum number of iterations reached (i=" + iter + ")");
+            log.warn("WARNING: Maximum number of iterations reached (i=" + iter + ")");
         }
 
         // Result collection

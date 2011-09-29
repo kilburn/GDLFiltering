@@ -38,7 +38,6 @@
 
 package es.csic.iiia.dcop;
 
-import com.sun.tools.corba.se.idl.InvalidArgument;
 import es.csic.iiia.dcop.util.CostFunctionStats;
 import gnu.trove.iterator.TLongIterator;
 import gnu.trove.list.TLongList;
@@ -53,7 +52,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import javax.activation.UnsupportedDataTypeException;
 
 /**
  * Base implementation of a cost function.
@@ -100,7 +98,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         public int compare(CostFunction t, CostFunction t1) {
             final float r1 = t.getNumberOfNoGoods()/(float)t.getSize();
             final float r2 = t1.getNumberOfNoGoods()/(float)t1.getSize();
-            return r1 < r2 ? 1 : (r1 == r2 ? 0 : -1);
+            return r1 < r2 ? -1 : (r1 == r2 ? 0 : 1);
         }
     };
 
@@ -494,7 +492,11 @@ public abstract class AbstractCostFunction implements CostFunction {
         TLongIterator it = iterator();
         while(it.hasNext()) {
             final long i = it.next();
-            result.setValue(i, operation.negate(getValue(i)));
+            final double v = operation.negate(getValue(i));
+            if (Double.isNaN(v)) {
+                throw new RuntimeException("Negation generated a NaN value. Halting.");
+            }
+            result.setValue(i, v);
         }
         return result;
     }
@@ -680,10 +682,10 @@ public abstract class AbstractCostFunction implements CostFunction {
         if (sparse || result instanceof MapCostFunction) {
             // Sort functions by sparsity
             Collections.sort(fs, sparseComparator);
-
+            // @TODO : Check if the order is right!!
             Variable[] vs = vars.toArray(new Variable[0]);
             CostFunction left = fs.remove(fs.size()-1).summarize(vs);
-            result = factory.buildSparseCostFunction(vs, nogood);
+            result = factory.buildSparseCostFunction(vs);
             sparseCombine(left, fs, result);
             return result;
         }
@@ -734,14 +736,22 @@ public abstract class AbstractCostFunction implements CostFunction {
             sum += getValue(it.next());
         }
         
-        final double dlen = (double)size;
+        //@TODO: This is noooot so clear.
+        final double dlen = (double)(size - getNumberOfNoGoods());
         final double avg = sum / dlen;
+        if (Double.isNaN(avg)) {
+            throw new RuntimeException("Normalization generated a NaN value. Halting.");
+        }
         it = iterator();
         switch (mode) {
             case SUM0:
                 while(it.hasNext()) {
                     final long i = it.next();
-                    result.setValue(i, getValue(i) - avg);
+                    double v = getValue(i) - avg;
+                    if (Double.isNaN(v)) {
+                        throw new RuntimeException("Normalization generated a NaN value. Halting.");
+                    }
+                    result.setValue(i, v);
                 }
                 break;
             case SUM1:
@@ -775,9 +785,14 @@ public abstract class AbstractCostFunction implements CostFunction {
         }
 
         // Instantiate lit
-        CostFunction result = this.getNumberOfNoGoods() / this.getSize() > 0.8
-                ? factory.buildSparseCostFunction(newVariables.toArray(new Variable[0]))
-                : factory.buildCostFunction(newVariables.toArray(new Variable[0]));
+        float sparsity = this.getNumberOfNoGoods() / (float)this.getSize();
+        if (sparsity > 0.8) {
+            CostFunction result = factory.buildSparseCostFunction(
+                    newVariables.toArray(new Variable[0]));
+            return sparseReduce(result, mapping);
+        }
+
+        CostFunction result = factory.buildCostFunction(newVariables.toArray(new Variable[0]));
         VariableAssignment map = null;
         for (long i = 0, len = result.getSize(); i < len; i++) {
             map = result.getMapping(i, map);
@@ -785,7 +800,31 @@ public abstract class AbstractCostFunction implements CostFunction {
             final long idx = getIndex(map);
             result.setValue(i, getValue(idx));
         }
-        
+
+        return result;
+    }
+
+    private CostFunction sparseReduce(CostFunction result, VariableAssignment mapping) {
+
+        // Intersect mappings with the variables of this factor
+        Set<Variable> vs = getSharedVariables(mapping.keySet());
+        TLongIterator it = iterator();
+        VariableAssignment map = null;
+        while (it.hasNext()) {
+            final long i = it.next();
+            map = getMapping(i, map);
+
+            boolean ok = true;
+            for (Variable v : vs) {
+                if (mapping.get(v) != map.get(v)) {
+                    ok = false;
+                    break;
+                }
+            }
+
+            result.setValue(result.getIndex(map), getValue(i));
+        }
+
         return result;
     }
 

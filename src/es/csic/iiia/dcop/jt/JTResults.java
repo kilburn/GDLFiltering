@@ -46,10 +46,10 @@ import es.csic.iiia.dcop.mp.DefaultResults;
  */
 public class JTResults extends DefaultResults<JTResult> {
 
-    public int getMaxSize() {
-        int max = Integer.MIN_VALUE;
+    public long getMaxSize() {
+        long max = Long.MIN_VALUE;
         for (JTResult r : getResults()) {
-            final int s = r.getSize();
+            final long s = r.getSize();
             if (max < s) max = s;
         }
         return max;

@@ -50,10 +50,6 @@ import es.csic.iiia.dcop.bb.UBResults;
 import es.csic.iiia.dcop.dfs.DFS;
 import es.csic.iiia.dcop.dfs.MCN;
 import es.csic.iiia.dcop.dfs.MCS;
-import es.csic.iiia.dcop.figdl.FIGdlFactory;
-import es.csic.iiia.dcop.figdl.FIGdlGraph;
-import es.csic.iiia.dcop.figdl.FIGdlMessage;
-import es.csic.iiia.dcop.figdl.strategy.ZerosDecompositionStrategy;
 import es.csic.iiia.dcop.jt.JunctionTree;
 import es.csic.iiia.dcop.mp.AbstractNode.Modes;
 import es.csic.iiia.dcop.mp.DefaultResults;
@@ -224,78 +220,6 @@ public class GDLTest {
     }
 
     @Test
-    public void testFIGdlExample() {
-        // Set operating mode
-        CostFunction.Summarize summarize = CostFunction.Summarize.MIN;
-        CostFunction.Combine combine = CostFunction.Combine.SUM;
-        CostFunction.Normalize normalize = CostFunction.Normalize.NONE;
-        factory.setMode(summarize, combine, normalize);
-
-        Variable x,y,z,t,u,v;
-        x = new Variable("x", 2);
-        y = new Variable("y", 2);
-        z = new Variable("z", 2);
-        t = new Variable("t", 2);
-        u = new Variable("u", 2);
-        v = new Variable("v", 2);
-
-        // Simple cycle with unique solution
-        CostFunction f0 = factory.buildCostFunction(new Variable[] {x, y});
-        f0.setValues(new double[] {20, 10, 10, 0});
-        CostFunction f1 = factory.buildCostFunction(new Variable[] {y, t});
-        f1.setValues(new double[] {0, 4, 4, 12});
-        CostFunction f2 = factory.buildCostFunction(new Variable[] {z, t});
-        f2.setValues(new double[] {14, 10, 14, 10});
-        CostFunction f3 = factory.buildCostFunction(new Variable[] {t, u});
-        f3.setValues(new double[] {3, 2, 2, 0});
-        CostFunction f4 = factory.buildCostFunction(new Variable[] {z, v});
-        f4.setValues(new double[] {3, 2, 2, 0});
-        CostFunction f5 = factory.buildCostFunction(new Variable[] {u, v});
-        f5.setValues(new double[] {0, 10, 10, 0});
-        CostFunction[] factors = new CostFunction[] {f0,f1,f2,f3,f4,f5};
-
-        // Build a junction tree
-        DFS dfs = new MCN(Arrays.asList(factors));
-        CostFunction constant = factory.buildCostFunction(new Variable[0],0);
-        FIGdlGraph.setMinR(1);
-        UPFactory f = new FIGdlFactory(constant, false, Integer.MAX_VALUE, new ZerosDecompositionStrategy());
-        UPGraph g = JunctionTreeAlgo.buildGraph(f, dfs.getFactorDistribution(), dfs.getAdjacency());
-        JunctionTree jt = new JunctionTree(g);
-        jt.run(100);
-        System.out.println(g);
-
-        // Run the UtilityPropagation phase
-        g.setFactory(factory);
-        ((FIGdlGraph)g).setMaxR(1);
-        FIGdlGraph.setMinR(1);
-        FIGdlGraph.setSolutionStrategy(solvingStrategy);
-        DefaultResults<UPResult> results = g.run(100);
-        UBResults ubres = ((FIGdlGraph)g).getUBResults();
-        VariableAssignment map = ubres.getMap();
-
-        // The solution should be 1 1 1 0 1 1
-        assertEquals(1, (int)map.get(x));
-        assertEquals(1, (int)map.get(y));
-        assertEquals(1, (int)map.get(z));
-        assertEquals(0, (int)map.get(t));
-        assertEquals(1, (int)map.get(u));
-        assertEquals(1, (int)map.get(v));
-
-
-        // With a total utility of 20
-        double cost = 0;
-        for (CostFunction fn : factors) {
-            cost += fn.getValue(map);
-        }
-        assertEquals(cost, 20, 0.0001);
-
-        // UB must be 20
-        for (UBResult r : ubres.getResults()) {
-            assertEquals(20, r.getUB(), 0.0001);
-        }
-    }
-
-    @Test
     @Ignore
     public void testGraphGdlMinSum() {
         // Set operating mode
@@ -362,71 +286,6 @@ public class GDLTest {
             cost += fn.getValue(map);
         }
         assertEquals(cost, 20, 0.0001);
-    }
-
-    @Test
-    @Ignore
-    public void testTesting() {
-        // Set operating mode
-        CostFunction.Summarize summarize = CostFunction.Summarize.MIN;
-        CostFunction.Combine combine = CostFunction.Combine.SUM;
-        CostFunction.Normalize normalize = CostFunction.Normalize.NONE;
-        factory.setMode(summarize, combine, normalize);
-
-        Variable x,y,z,t,u,v;
-        x = new Variable("9", 2);
-        y = new Variable("0", 2);
-        z = new Variable("7", 2);
-        t = new Variable("5", 2);
-        u = new Variable("18", 2);
-        v = new Variable("v", 2);
-        Variable[] variables = new Variable[] {x, y, z, t, u, v};
-
-        // Simple cycle with unique solution
-        CostFunction f1 = factory.buildCostFunction(new Variable[] {x});
-        f1.setValues(new double[] {-0.210,-0.25});
-        CostFunction f2 = factory.buildCostFunction(new Variable[] {y, z});
-        f2.setValues(new double[] {-3.110,-3.909,-3.89,-2.969});
-        CostFunction f3 = factory.buildCostFunction(new Variable[] {t, z});
-        f3.setValues(new double[] {-17.02,-15.8,-15.899,-16.96});
-        CostFunction f4 = factory.buildCostFunction(new Variable[] {u, t});
-        f4.setValues(new double[] {-1.81,-0.229,-0.25,-1.83});
-        CostFunction f5 = factory.buildCostFunction(new Variable[] {x, u});
-        f5.setValues(new double[] {0.71,-0.71,-0.71,0.71});
-        CostFunction f6 = factory.buildCostFunction(new Variable[] {u});
-        f6.setValues(new double[] {-0.04,0.04});
-        CostFunction[] factors = new CostFunction[] {f1,f2,f3,f4,f5,f6};
-
-        CostFunction p1 = f4.combine(f5).combine(f6).combine(f1).summarize(new Variable[]{u});
-        CostFunction p2 = f2.combine(f3).summarize(new Variable[]{y, z});
-        CostFunction ok=null;
-        for (CostFunction f : factors) {
-            System.err.println(f);
-            System.err.println(new CostFunctionStats(f));
-            ok = f.combine(ok);
-        }
-        ok.summarize(new Variable[]{y,z,u});
-        FIGdlMessage m = new FIGdlMessage();
-        m.addFactor(p1);
-        m.addFactor(p2);
-        m.setBelief(ok);
-        System.err.println(m);
-
-        p1 = f1.combine(f3).combine(f4).combine(f5).combine(f6).summarize(new Variable[]{u,z});
-        p2 = f2.summarize(new Variable[]{y,z});
-        m = new FIGdlMessage();
-        m.addFactor(p1);
-        m.addFactor(p2);
-        m.setBelief(ok);
-        System.err.println(m);
-
-        p1 = f1.combine(f2.summarize(new Variable[]{z})).combine(f3).combine(f4)
-                .combine(f5).combine(f6).summarize(new Variable[]{u,z});
-        m = new FIGdlMessage();
-        m.addFactor(p1);
-        m.setBelief(ok);
-        System.err.println(m);
-
     }
 
 }

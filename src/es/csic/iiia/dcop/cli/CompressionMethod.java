@@ -43,5 +43,5 @@ package es.csic.iiia.dcop.cli;
  * @author Marc Pujol <mpujol at iiia.csic.es>
  */
 public enum CompressionMethod {
-    ARITH, BZIP2, NONE, SPARSE
+    ARITH, BZ2, NONE, SPARSE
 }

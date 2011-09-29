@@ -43,7 +43,9 @@ import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunctionFactory;
+import es.csic.iiia.dcop.CostFunctionTypeFactory;
 import es.csic.iiia.dcop.FactorGraph;
+import es.csic.iiia.dcop.MapCostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.algo.JunctionTreeAlgo;
@@ -55,10 +57,11 @@ import es.csic.iiia.dcop.up.UPResults;
 import es.csic.iiia.dcop.dfs.DFS;
 import es.csic.iiia.dcop.dsa.DSA;
 import es.csic.iiia.dcop.dsa.DSAResults;
-import es.csic.iiia.dcop.figdl.FIGdlFactory;
-import es.csic.iiia.dcop.figdl.FIGdlGraph;
 import es.csic.iiia.dcop.gdl.GdlFactory;
-import es.csic.iiia.dcop.figdl.strategy.ApproximationStrategy;
+import es.csic.iiia.dcop.gdlf.GdlFFactory;
+import es.csic.iiia.dcop.gdlf.GdlFGraph;
+import es.csic.iiia.dcop.gdlf.strategies.AbstractMixedStrategy;
+import es.csic.iiia.dcop.gdlf.strategies.GdlFStrategy;
 import es.csic.iiia.dcop.io.CliqueTreeSerializer;
 import es.csic.iiia.dcop.io.DatasetReader;
 import es.csic.iiia.dcop.io.EvidenceReader;
@@ -76,21 +79,18 @@ import es.csic.iiia.dcop.vp.VPGraph;
 import es.csic.iiia.dcop.vp.VPResults;
 import es.csic.iiia.dcop.vp.strategy.VPStrategy;
 import es.csic.iiia.dcop.vp.strategy.expansion.StochasticalExpansion;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,13 +109,13 @@ public class CliApp {
         log.info("[Info] Summarize: " + summarizeOperation.toString());
         log.info("[Info] Combine: " + combineOperation.toString());
         log.info("[Info] Normalize: " + normalization.toString());
-        if (algorithm == Algorithm.FIGDL) {
-            log.info("[Info] Filtering style: " +
-                    (ApproximationStrategy.filteringMethod == ApproximationStrategy.FILTER_IMPROVED
-                    ? "two-sides"
-                    : "one-side")
-            );
+        if (algorithm == Algorithm.GDLF) {
             log.info("[Info] Approximation: " + approximationStrategy.toString());
+            if (approximationStrategy == ApproximationStrategies.MIXED_NOSLICE
+                    || approximationStrategy == ApproximationStrategies.MIXED_SLICE
+                    || approximationStrategy == ApproximationStrategies.MIXED_USLICE) {
+                log.info("[Info] Delta: " + delta);
+            }
             log.info("[Info] Number-of-solutions: " + VPStrategy.numberOfSolutions);
             log.info("[Info] Solution-expansion: " + expansionStrategy.toString());
             if (expansionStrategy == SolutionExpansionStrategies.STOCHASTIC) {
@@ -165,12 +165,12 @@ public class CliApp {
     /**
      * Strategies to use for GDL with filtering
      */
-    private ApproximationStrategies approximationStrategy = ApproximationStrategies.SCP_CC;
+    private ApproximationStrategies approximationStrategy = ApproximationStrategies.DCR_BOTTOM_UP;
     private SolutionExpansionStrategies expansionStrategy = SolutionExpansionStrategies.GREEDY;
     private SolutionSolvingStrategies solvingStrategy = SolutionSolvingStrategies.OPTIMAL;
 
+    private int delta = 0;
     private int IGdlR = 2;
-    private String optimalFile = null;
     private InputStream input = System.in;
     private InputStream evidence = null;
 
@@ -210,7 +210,7 @@ public class CliApp {
             System.err.println("Warning: maxsum doesn't converge without normalization, using sum0.");
             normalization = CostFunction.Normalize.SUM0;
         }
-        if (algorithm == Algorithm.FIGDL && summarizeOperation == CostFunction.Summarize.SUM) {
+        if (algorithm == Algorithm.GDLF && summarizeOperation == CostFunction.Summarize.SUM) {
             System.err.println("Error: figdl can not work with sum summarization.");
             System.exit(1);
         }
@@ -247,10 +247,11 @@ public class CliApp {
         // Output total number of variables and min/avg/max domain
         outputVariableStatistics(factors);
 
-        // DSA Can solve from here
         VariableAssignment map = null;
-        CostFunction constant = factory.buildCostFunction(new Variable[0]);
+        CostFunction constant = factory.buildCostFunction(new Variable[0], 
+                factory.getCombineOperation().getNeutralValue());
 
+        // DSA Can solve from here
         if (algorithm == Algorithm.DSA) {
 
             DSA dsa = new DSA(fg);
@@ -262,7 +263,7 @@ public class CliApp {
             
             // Positivize if figdl
             boolean inverse = false;
-            if (algorithm == Algorithm.FIGDL) {
+            if (algorithm == Algorithm.GDLF) {
                 // Invert the problem (max -> min)
                 if (summarizeOperation == CostFunction.Summarize.MAX) {
                     factory.setSummarizeOperation(CostFunction.Summarize.MIN);
@@ -283,8 +284,8 @@ public class CliApp {
                     expansionStrategy.getInstance(),
                     solvingStrategy.getInstance()
             );
-            if (algorithm == Algorithm.FIGDL && cg instanceof FIGdlGraph) {
-                FIGdlGraph.setSolutionStrategy(sStrategy);
+            if (algorithm == Algorithm.GDLF && cg instanceof GdlFGraph) {
+                GdlFGraph.setSolutionStrategy(sStrategy);
             }
 
             // Add noise if requested
@@ -293,26 +294,13 @@ public class CliApp {
                 rna.addNoise(cg);
             }
 
-            if (optimalFile != null) {
-                try {
-                    BufferedReader br = new BufferedReader(new InputStreamReader(
-                            new FileInputStream(new File(optimalFile))
-                    ));
-                    double optimal = Double.parseDouble(br.readLine());
-                    FIGdlGraph.setOptimalValue(optimal);
-                } catch (IOException ex) {
-                    java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
-                }
-
-            }
-
             // Run the solving algorithm
             cg.setFactory(factory);
             UPResults results = cg.run(1000);
             UBResults ubres = null;
 
-            if (algorithm == Algorithm.FIGDL && cg instanceof FIGdlGraph) {
-                ubres = ((FIGdlGraph)cg).getUBResults();
+            if (algorithm == Algorithm.GDLF && cg instanceof GdlFGraph) {
+                ubres = ((GdlFGraph)cg).getUBResults();
             } else {
                 VPGraph st = new VPGraph(cg, sStrategy);
                 VPResults res = st.run(10000);
@@ -329,6 +317,8 @@ public class CliApp {
             log.info("CYCLE_CCS " + results.getMaximalCcc());
             log.info("TOTAL_BYTES " + results.getTotalBytesc());
             log.info("CYBLE_BYTES " + results.getMaximalBytesc());
+            log.info("MAX_NODE_MEMORY " + 
+                    MemoryTracker.toString(results.getMaximalMemoryc()) + " Mb");
             log.info("LOAD_FACTOR " + results.getLoadFactor());
             final double bound = ubres.getBound() + constant.getValue(0);
             log.info("BOUND " + (inverse ? -bound : bound));
@@ -351,14 +341,14 @@ public class CliApp {
         // Evaluate solution
         double cost = 0;
         factors.add(constant);
-        if (algorithm == Algorithm.FIGDL && summarizeOperation == CostFunction.Summarize.MAX) {
+        if (algorithm == Algorithm.GDLF && summarizeOperation == CostFunction.Summarize.MAX) {
             ConstantFactorExtractor.invert(factors);
         }
         for (CostFunction f : factors) {
             cost = combineOperation.eval(cost, f.getValue(map));
         }
         log.info("COST " + cost);
-        log.info("MAX_NODE_MEMORY " + MemoryTracker.asString() + " Mb");
+        //log.info("MAX_NODE_MEMORY " + MemoryTracker.asString() + " Mb");
     }
 
     void setCreateCliqueGraph(boolean create) {
@@ -428,16 +418,19 @@ public class CliApp {
         switch(algorithm) {
 
             case GDL:
-            case FIGDL:
+            case GDLF:
                 UPFactory factory = null;
                 if (algorithm == Algorithm.GDL) {
                     factory = new GdlFactory();
                     ((GdlFactory)factory).setMode(Modes.TREE_UP);
                 } else {
-                    ApproximationStrategy pStrategy = approximationStrategy.getInstance();
-                    factory = new FIGdlFactory(constant, 
+                    GdlFStrategy pStrategy = approximationStrategy.getInstance(this.getIGdlR());
+                    if (pStrategy instanceof AbstractMixedStrategy) {
+                        ((AbstractMixedStrategy)pStrategy).setDelta(delta);
+                    }
+                    factory = new GdlFFactory(constant, 
                             summarizeOperation == CostFunction.Summarize.MAX,
-                            this.getIGdlR(), pStrategy);
+                            pStrategy);
                 }
                 int variables = 0;
                 JTResults results = null;
@@ -450,7 +443,7 @@ public class CliApp {
                     JunctionTree jt = new JunctionTree(cg);
                     results = jt.run(1000);
                     variables = results.getMaxVariables();
-                    if (algorithm == Algorithm.FIGDL) {
+                    if (algorithm == Algorithm.GDLF) {
                         int newRoot = jt.getLowestDecisionRoot();
                         cg.setRoot(newRoot);
                     }
@@ -482,7 +475,7 @@ public class CliApp {
                 JunctionTree jt = new JunctionTree(cg);
                 results = jt.run(1000);
                 variables = results.getMaxVariables();
-                if (algorithm == Algorithm.FIGDL) {
+                if (algorithm == Algorithm.GDLF) {
                     int newRoot = jt.getLowestDecisionRoot();
                     cg.setRoot(newRoot);
                 }
@@ -623,14 +616,6 @@ public class CliApp {
         this.solvingStrategy = solutionSolvingStrategy;
     }
 
-    public String getOptimalFile() {
-        return optimalFile;
-    }
-
-    public void setOptimalFile(String optimalFile) {
-        this.optimalFile = optimalFile;
-    }
-
     public String getCliqueTreeFile() {
         return cliqueTreeFile;
     }
@@ -767,6 +752,10 @@ public class CliApp {
      */
     public void setSummarizeOperation(CostFunction.Summarize summarizeOperation) {
         this.summarizeOperation = summarizeOperation;
+    }
+    
+    public void setDelta(int delta) {
+        this.delta = delta;
     }
     
 }
