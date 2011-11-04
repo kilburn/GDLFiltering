@@ -65,7 +65,7 @@ public class PerformanceTest {
         factory.setSparseFactory(cff);
         factory.setCombineOperation(CostFunction.Combine.SUM);
         
-        falseFunction = factory.buildCostFunction(new Variable[0]);
+        falseFunction = factory.buildCostFunction(new Variable[0], 0);
         
         preLaunch = System.nanoTime();
     }

@@ -73,7 +73,9 @@ public abstract class MaxSum {
         GdlGraph cg = new GdlGraph();
 
         // Remove constant factors
-        CostFunction constant = factors.get(0).getFactory().buildCostFunction(new Variable[]{});
+        final CostFunctionFactory factory = factors.get(0).getFactory();
+        final double nv = factory.getCombineOperation().getNeutralValue();
+        CostFunction constant = factory.buildCostFunction(new Variable[]{}, nv);
         for (CostFunction f : factors) {
             if (f.getVariableSet().isEmpty()) {
                 constant = constant.combine(f);

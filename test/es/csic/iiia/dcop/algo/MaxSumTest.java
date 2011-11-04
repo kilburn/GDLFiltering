@@ -92,9 +92,9 @@ public class MaxSumTest {
      */
     @Test
     public void testBuildGraph2() {
-        CostFunction f1 = factory.buildCostFunction(new Variable[]{a,c});
-        CostFunction f2 = factory.buildCostFunction(new Variable[]{c,d});
-        CostFunction f3 = factory.buildCostFunction(new Variable[]{a,d});
+        CostFunction f1 = factory.buildCostFunction(new Variable[]{a,c}, 0);
+        CostFunction f2 = factory.buildCostFunction(new Variable[]{c,d}, 0);
+        CostFunction f3 = factory.buildCostFunction(new Variable[]{a,d}, 0);
 
         CostFunction[] factors = new CostFunction[]{f1,f2,f3};
         GdlGraph cg = MaxSum.buildGraph(Arrays.asList(factors));
@@ -121,13 +121,13 @@ public class MaxSumTest {
         Variable[] variables = new Variable[] {s,c,r};
 
         // Cloudy
-        CostFunction f0 = factory.buildCostFunction(new Variable[] {c});
+        CostFunction f0 = factory.buildCostFunction(new Variable[] {c}, 0);
         f0.setValues(new double[] {0.25, 0.75});
         // Cloudy | Sprinkler
-        CostFunction f1 = factory.buildCostFunction(new Variable[] {c, s});
+        CostFunction f1 = factory.buildCostFunction(new Variable[] {c, s}, 0);
         f1.setValues(new double[] {0.25, 0.4, 0.75, 0.6});
         // Cloudy | Rain
-        CostFunction f2 = factory.buildCostFunction(new Variable[] {c, r});
+        CostFunction f2 = factory.buildCostFunction(new Variable[] {c, r}, 0);
         f2.setValues(new double[] {0.8, 0.75, 0.2, 0.25});
         CostFunction[] factors = new CostFunction[] {f0,f1,f2};
 
@@ -169,13 +169,13 @@ public class MaxSumTest {
         Variable[] variables = new Variable[] {s,c,r};
 
         // Cloudy
-        CostFunction f0 = factory.buildCostFunction(new Variable[] {c});
+        CostFunction f0 = factory.buildCostFunction(new Variable[] {c}, 0);
         f0.setValues(new double[] {0.25, 0.75});
         // Cloudy | Sprinkler
-        CostFunction f1 = factory.buildCostFunction(new Variable[] {c, s});
+        CostFunction f1 = factory.buildCostFunction(new Variable[] {c, s}, 0);
         f1.setValues(new double[] {0.25, 0.4, 0.75, 0.6});
         // Cloudy | Rain
-        CostFunction f2 = factory.buildCostFunction(new Variable[] {c, r});
+        CostFunction f2 = factory.buildCostFunction(new Variable[] {c, r}, 0);
         f2.setValues(new double[] {0.8, 0.75, 0.2, 0.25});
         CostFunction[] factors = new CostFunction[] {f0,f1,f2};
 
@@ -217,16 +217,16 @@ public class MaxSumTest {
         w = new Variable("wetglass",2);
 
         // Cloudy
-        CostFunction f0 = factory.buildCostFunction(new Variable[] {c});
+        CostFunction f0 = factory.buildCostFunction(new Variable[] {c}, 0);
         f0.setValues(new double[] {0.5, 0.5});
         // Cloudy | Sprinkler
-        CostFunction f1 = factory.buildCostFunction(new Variable[] {c, s});
+        CostFunction f1 = factory.buildCostFunction(new Variable[] {c, s}, 0);
         f1.setValues(new double[] {0.5, 0.5, 0.9, 0.1});
         // Cloudy | Rain
-        CostFunction f2 = factory.buildCostFunction(new Variable[] {c, r});
+        CostFunction f2 = factory.buildCostFunction(new Variable[] {c, r}, 0);
         f2.setValues(new double[] {0.8, 0.2, 0.2, 0.8});
         // Sprinkler | Rain | WetGlass
-        CostFunction f3 = factory.buildCostFunction(new Variable[] {s, r, w});
+        CostFunction f3 = factory.buildCostFunction(new Variable[] {s, r, w}, 0);
         f3.setValues(new double[] {1, 0, 0.1, 0.9, 0.1, 0.9, 0.01, 0.99});
         CostFunction[] factors = new CostFunction[] {f1,f2,f3,f0};
 
@@ -238,21 +238,21 @@ public class MaxSumTest {
         assertEquals(12, results.getIterations());
 
         // Expected beliefs
-        CostFunction b1 = factory.buildCostFunction(new Variable[]{c});
+        CostFunction b1 = factory.buildCostFunction(new Variable[]{c}, 0);
         b1.setValues(new double[]{-0.1050, 0.1050});
-        CostFunction b2 = factory.buildCostFunction(new Variable[]{s});
+        CostFunction b2 = factory.buildCostFunction(new Variable[]{s}, 0);
         b2.setValues(new double[]{0.1050, -0.1050});
-        CostFunction b3 = factory.buildCostFunction(new Variable[]{r});
+        CostFunction b3 = factory.buildCostFunction(new Variable[]{r}, 0);
         b3.setValues(new double[]{-0.1050, 0.1050});
-        CostFunction b4 = factory.buildCostFunction(new Variable[]{w});
+        CostFunction b4 = factory.buildCostFunction(new Variable[]{w}, 0);
         b4.setValues(new double[]{-0.1050, 0.1050});
-        CostFunction b5 = factory.buildCostFunction(new Variable[]{c});
+        CostFunction b5 = factory.buildCostFunction(new Variable[]{c}, 0);
         b5.setValues(new double[]{-0.1050, 0.1050});
-        CostFunction b6 = factory.buildCostFunction(new Variable[]{c,s});
+        CostFunction b6 = factory.buildCostFunction(new Variable[]{c,s}, 0);
         b6.setValues(new double[]{0.0050, 0.0950, 0.3050, -0.4050});
-        CostFunction b7 = factory.buildCostFunction(new Variable[]{c,r});
+        CostFunction b7 = factory.buildCostFunction(new Variable[]{c,r}, 0);
         b7.setValues(new double[]{0.1950, -0.5050, -0.0950, 0.4050});
-        CostFunction b8 = factory.buildCostFunction(new Variable[]{s,r,w});
+        CostFunction b8 = factory.buildCostFunction(new Variable[]{s,r,w}, 0);
         b8.setValues(new double[]{
             0.4950, -0.5050, -0.0950, 0.7050, -0.7050, 0.0950, -0.4850, 0.4950
         });
@@ -287,16 +287,16 @@ public class MaxSumTest {
         w = new Variable("wetglass",2);
 
         // Cloudy
-        CostFunction f0 = factory.buildCostFunction(new Variable[] {c});
+        CostFunction f0 = factory.buildCostFunction(new Variable[] {c}, 0);
         f0.setValues(new double[] {0.5, 0.5});
         // Cloudy | Sprinkler
-        CostFunction f1 = factory.buildCostFunction(new Variable[] {c, s});
+        CostFunction f1 = factory.buildCostFunction(new Variable[] {c, s}, 0);
         f1.setValues(new double[] {0.5, 0.5, 0.9, 0.1});
         // Cloudy | Rain
-        CostFunction f2 = factory.buildCostFunction(new Variable[] {c, r});
+        CostFunction f2 = factory.buildCostFunction(new Variable[] {c, r}, 0);
         f2.setValues(new double[] {0.8, 0.2, 0.2, 0.8});
         // Sprinkler | Rain | WetGlass
-        CostFunction f3 = factory.buildCostFunction(new Variable[] {s, r, w});
+        CostFunction f3 = factory.buildCostFunction(new Variable[] {s, r, w}, 0);
         f3.setValues(new double[] {1, 0, 0.1, 0.9, 0.1, 0.9, 0.01, 0.99});
         CostFunction[] factors = new CostFunction[] {f1,f2,f3,f0};
 
@@ -307,23 +307,23 @@ public class MaxSumTest {
         //assertEquals(4, results.getIterations());
 
         // Expected beliefs
-        CostFunction b1 = factory.buildCostFunction(new Variable[]{s});
+        CostFunction b1 = factory.buildCostFunction(new Variable[]{s}, 0);
         b1.setValues(new double[]{0.7, 0.3});
-        CostFunction b2 = factory.buildCostFunction(new Variable[]{r});
+        CostFunction b2 = factory.buildCostFunction(new Variable[]{r}, 0);
         b2.setValues(new double[]{0.5, 0.5});
-        CostFunction b3 = factory.buildCostFunction(new Variable[]{w});
+        CostFunction b3 = factory.buildCostFunction(new Variable[]{w}, 0);
         b3.setValues(new double[]{0.4015, 0.5985});
-        CostFunction b4 = factory.buildCostFunction(new Variable[]{c});
+        CostFunction b4 = factory.buildCostFunction(new Variable[]{c}, 0);
         b4.setValues(new double[]{0.5, 0.5});
-        CostFunction b5 = factory.buildCostFunction(new Variable[]{c,s});
+        CostFunction b5 = factory.buildCostFunction(new Variable[]{c,s}, 0);
         b5.setValues(new double[]{0.25, 0.25, 0.45, 0.05});
-        CostFunction b6 = factory.buildCostFunction(new Variable[]{c,r});
+        CostFunction b6 = factory.buildCostFunction(new Variable[]{c,r}, 0);
         b6.setValues(new double[]{0.4, 0.1, 0.1, 0.4});
-        CostFunction b7 = factory.buildCostFunction(new Variable[]{s,r,w});
+        CostFunction b7 = factory.buildCostFunction(new Variable[]{s,r,w}, 0);
         b7.setValues(new double[]{
             0.35, 0, 0.035, 0.3150, 0.015, 0.1350, 0.0015, 0.1485
         });
-        CostFunction b8 = factory.buildCostFunction(new Variable[]{c});
+        CostFunction b8 = factory.buildCostFunction(new Variable[]{c}, 0);
         b8.setValues(new double[]{0.5, 0.5});
 
         ArrayList<CostFunction> solutions = new ArrayList<CostFunction>(8);

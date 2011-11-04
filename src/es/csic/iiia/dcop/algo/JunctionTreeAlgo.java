@@ -77,7 +77,8 @@ public abstract class JunctionTreeAlgo {
 
 
                 if (nlinks < 2) {
-                    factors[i] = new CostFunction[]{sample.getFactory().buildNeutralCostFunction(new Variable[0])};
+                    double nv = sample.getFactory().getCombineOperation().getNeutralValue();
+                    factors[i] = new CostFunction[]{sample.getFactory().buildCostFunction(new Variable[0], nv)};
                 }
             }
 

@@ -116,11 +116,11 @@ public class GDLTest {
         c = new Variable("c", 2);
 
         // Simple cycle with unique solution
-        CostFunction f0 = factory.buildCostFunction(new Variable[] {a, b});
+        CostFunction f0 = factory.buildCostFunction(new Variable[] {a, b}, 0);
         f0.setValues(new double[] {0, 1, 1, 0});
-        CostFunction f1 = factory.buildCostFunction(new Variable[] {b, c});
+        CostFunction f1 = factory.buildCostFunction(new Variable[] {b, c}, 0);
         f1.setValues(new double[] {0, 2, 1, 0});
-        CostFunction f2 = factory.buildCostFunction(new Variable[] {a, c});
+        CostFunction f2 = factory.buildCostFunction(new Variable[] {a, c}, 0);
         f2.setValues(new double[] {0, 2, 1, 0});
         CostFunction[] factors = new CostFunction[] {f0,f1,f2};
 
@@ -172,17 +172,17 @@ public class GDLTest {
         Variable[] variables = new Variable[] {x, y, z, t, u, v};
 
         // Simple cycle with unique solution
-        CostFunction f0 = factory.buildCostFunction(new Variable[] {x, y});
+        CostFunction f0 = factory.buildCostFunction(new Variable[] {x, y}, 0);
         f0.setValues(new double[] {20, 10, 10, 0});
-        CostFunction f1 = factory.buildCostFunction(new Variable[] {y, t});
+        CostFunction f1 = factory.buildCostFunction(new Variable[] {y, t}, 0);
         f1.setValues(new double[] {0, 4, 4, 12});
-        CostFunction f2 = factory.buildCostFunction(new Variable[] {z, t});
+        CostFunction f2 = factory.buildCostFunction(new Variable[] {z, t}, 0);
         f2.setValues(new double[] {14, 10, 14, 10});
-        CostFunction f3 = factory.buildCostFunction(new Variable[] {t, u});
+        CostFunction f3 = factory.buildCostFunction(new Variable[] {t, u}, 0);
         f3.setValues(new double[] {3, 2, 2, 0});
-        CostFunction f4 = factory.buildCostFunction(new Variable[] {z, v});
+        CostFunction f4 = factory.buildCostFunction(new Variable[] {z, v}, 0);
         f4.setValues(new double[] {3, 2, 2, 0});
-        CostFunction f5 = factory.buildCostFunction(new Variable[] {u, v});
+        CostFunction f5 = factory.buildCostFunction(new Variable[] {u, v}, 0);
         f5.setValues(new double[] {0, 10, 10, 0});
         CostFunction[] factors = new CostFunction[] {f0,f1,f2,f3,f4,f5};
 
@@ -238,17 +238,17 @@ public class GDLTest {
         Variable[] variables = new Variable[] {x, y, z, t, u, v};
 
         // Simple cycle with unique solution
-        CostFunction f0 = factory.buildCostFunction(new Variable[] {x, y});
+        CostFunction f0 = factory.buildCostFunction(new Variable[] {x, y}, 0);
         f0.setValues(new double[] {20, 10, 10, 0});
-        CostFunction f1 = factory.buildCostFunction(new Variable[] {y, t});
+        CostFunction f1 = factory.buildCostFunction(new Variable[] {y, t}, 0);
         f1.setValues(new double[] {0, 4, 4, 12});
-        CostFunction f2 = factory.buildCostFunction(new Variable[] {z, t});
+        CostFunction f2 = factory.buildCostFunction(new Variable[] {z, t}, 0);
         f2.setValues(new double[] {14, 10, 14, 10});
-        CostFunction f3 = factory.buildCostFunction(new Variable[] {t, u});
+        CostFunction f3 = factory.buildCostFunction(new Variable[] {t, u}, 0);
         f3.setValues(new double[] {3, 2, 2, 0});
-        CostFunction f4 = factory.buildCostFunction(new Variable[] {z, v});
+        CostFunction f4 = factory.buildCostFunction(new Variable[] {z, v}, 0);
         f4.setValues(new double[] {3, 2, 2, 0});
-        CostFunction f5 = factory.buildCostFunction(new Variable[] {u, v});
+        CostFunction f5 = factory.buildCostFunction(new Variable[] {u, v}, 0);
         f5.setValues(new double[] {0, 10, 10, 0});
         CostFunction[] factors = new CostFunction[] {f0,f1,f2,f3,f4,f5};
 

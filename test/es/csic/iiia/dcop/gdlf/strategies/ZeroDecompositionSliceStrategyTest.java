@@ -47,21 +47,21 @@ public class ZeroDecompositionSliceStrategyTest {
         
         CostFunction fxy,fxz,fxt,fyz,fyt,fyu,fzt,fzu;
         Random r = new Random(0L);
-        fxy = factory.buildCostFunction(new Variable[]{x,y});
+        fxy = factory.buildCostFunction(new Variable[]{x,y}, 0);
         fxy.setValues(new double[]{r.nextDouble(),r.nextDouble(),r.nextDouble(),r.nextDouble()});
-        fxz = factory.buildCostFunction(new Variable[]{x,z});
+        fxz = factory.buildCostFunction(new Variable[]{x,z}, 0);
         fxz.setValues(new double[]{r.nextDouble(),r.nextDouble(),r.nextDouble(),r.nextDouble()});
-        fxt = factory.buildCostFunction(new Variable[]{x,t});
+        fxt = factory.buildCostFunction(new Variable[]{x,t}, 0);
         fxt.setValues(new double[]{r.nextDouble(),r.nextDouble(),r.nextDouble(),r.nextDouble()});
-        fyz = factory.buildCostFunction(new Variable[]{y,z});
+        fyz = factory.buildCostFunction(new Variable[]{y,z}, 0);
         fyz.setValues(new double[]{r.nextDouble(),r.nextDouble(),r.nextDouble(),r.nextDouble()});
-        fyt = factory.buildCostFunction(new Variable[]{y,t});
+        fyt = factory.buildCostFunction(new Variable[]{y,t}, 0);
         fyt.setValues(new double[]{r.nextDouble(),r.nextDouble(),r.nextDouble(),r.nextDouble()});
-        fyu = factory.buildCostFunction(new Variable[]{y,u});
+        fyu = factory.buildCostFunction(new Variable[]{y,u}, 0);
         fyu.setValues(new double[]{r.nextDouble(),r.nextDouble(),r.nextDouble(),r.nextDouble()});
-        fzt = factory.buildCostFunction(new Variable[]{z,t});
+        fzt = factory.buildCostFunction(new Variable[]{z,t}, 0);
         fzt.setValues(new double[]{r.nextDouble(),r.nextDouble(),r.nextDouble(),r.nextDouble()});
-        fzu = factory.buildCostFunction(new Variable[]{z,u});
+        fzu = factory.buildCostFunction(new Variable[]{z,u}, 0);
         fzu.setValues(new double[]{r.nextDouble(),r.nextDouble(),r.nextDouble(),r.nextDouble()});
         
         originalFs = new ArrayList(Arrays.asList(new CostFunction[]{
@@ -94,7 +94,7 @@ public class ZeroDecompositionSliceStrategyTest {
     private void testSliceR(List<CostFunction> fs, CostFunction summ, int r, boolean exact) {
         List<CostFunction> result = instance.slice(fs, r);
         CostFunction res = factory.buildCostFunction(
-                summ.getVariableSet().toArray(new Variable[0])
+                summ.getVariableSet().toArray(new Variable[0]), 0
         );
         for (CostFunction f : result) {
             res = res.combine(f);

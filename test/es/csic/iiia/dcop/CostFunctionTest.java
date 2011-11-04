@@ -85,28 +85,28 @@ public abstract class CostFunctionTest {
             new Variable("b", 3),
             new Variable("c", 3)
         };
-        instance = factory.buildCostFunction(variables);
+        instance = factory.buildCostFunction(variables, 0);
 
         a = new Variable("a", 2);
         b = new Variable("b", 2);
         c = new Variable("c", 3);
         d = new Variable("d", 2);
 
-        f1 = factory.buildCostFunction(new Variable[]{a,b,c});
+        f1 = factory.buildCostFunction(new Variable[]{a,b,c}, 0);
         f1.setValues(new double[]{
             0.1, 0.2, 0.05, 0.2, 0.05, 0.03, 0, 0, 0.03, 0.2, 0.1, 0.04
         });
 
-        fda = factory.buildCostFunction(new Variable[]{d,a});
+        fda = factory.buildCostFunction(new Variable[]{d,a}, 0);
         fda.setValues(new double[]{0.1, 0.4, 0.3, 0.2});
 
-        fdc = factory.buildCostFunction(new Variable[]{d,c});
+        fdc = factory.buildCostFunction(new Variable[]{d,c}, 0);
         fdc.setValues(new double[]{0.1, 0.15, 0.25, 0.15, 0.3, 0.15});
 
-        fa = factory.buildCostFunction(new Variable[]{a});
+        fa = factory.buildCostFunction(new Variable[]{a}, 0);
         fa.setValues(new double[]{0.3, 0.7});
 
-        fb = factory.buildCostFunction(new Variable[]{b});
+        fb = factory.buildCostFunction(new Variable[]{b}, 0);
         fb.setValues(new double[]{0.6, 0.4});
     }
 
@@ -136,7 +136,7 @@ public abstract class CostFunctionTest {
             variables[0],
             variables[2],
             variables[1],
-        });
+        }, 0);
         assertFalse(instance.equals(instance2));
 
 
@@ -286,7 +286,7 @@ public abstract class CostFunctionTest {
             new Variable("b", 2),
             new Variable("c", 3),
         };
-        CostFunction f = factory.buildCostFunction(vars);
+        CostFunction f = factory.buildCostFunction(vars, 0);
         VariableAssignment map = new VariableAssignment();
         map.put(vars[0], 0);
         map.put(vars[1], 1);
@@ -394,7 +394,7 @@ public abstract class CostFunctionTest {
         Variable[] vars = new Variable[]{a};
         factory.setSummarizeOperation(CostFunction.Summarize.SUM);
         CostFunction sum = f1.summarize(vars);
-        CostFunction res = factory.buildCostFunction(vars);
+        CostFunction res = factory.buildCostFunction(vars, 0);
         res.setValues(new double[]{0.63, 0.37});
         assertEquals(res, sum);
         assertSame(sum.getFactory(), res.getFactory());
@@ -408,7 +408,7 @@ public abstract class CostFunctionTest {
         Variable[] vars = new Variable[]{a};
         factory.setSummarizeOperation(CostFunction.Summarize.MAX);
         CostFunction sum = f1.summarize(vars);
-        CostFunction res = factory.buildCostFunction(vars);
+        CostFunction res = factory.buildCostFunction(vars, 0);
         res.setValues(new double[]{0.2, 0.2});
         assertEquals(res, sum);
         assertSame(sum.getFactory(), res.getFactory());
@@ -422,7 +422,7 @@ public abstract class CostFunctionTest {
         Variable[] vars = new Variable[]{a,c};
         factory.setSummarizeOperation(CostFunction.Summarize.SUM);
         CostFunction sum = f1.summarize(vars);
-        CostFunction res = factory.buildCostFunction(vars);
+        CostFunction res = factory.buildCostFunction(vars, 0);
         res.setValues(new double[]{0.3,0.25,0.08,0.2,0.1,0.07});
         assertEquals(sum, res);
         assertSame(sum.getFactory(), res.getFactory());
@@ -436,7 +436,7 @@ public abstract class CostFunctionTest {
         Variable[] vars = new Variable[]{a,c};
         factory.setSummarizeOperation(CostFunction.Summarize.MAX);
         CostFunction sum = f1.summarize(vars);
-        CostFunction res = factory.buildCostFunction(vars);
+        CostFunction res = factory.buildCostFunction(vars, 0);
         res.setValues(new double[]{0.2,0.2,0.05,0.2,0.1,0.04});
         assertEquals(sum, res);
         assertSame(sum.getFactory(), res.getFactory());
@@ -475,7 +475,7 @@ public abstract class CostFunctionTest {
         Variable[] vars = new Variable[]{a,c,d};
         factory.setSummarizeOperation(CostFunction.Summarize.SUM);
         CostFunction sum = f1.summarize(vars);
-        CostFunction res = factory.buildCostFunction(new Variable[]{a,c,d});
+        CostFunction res = factory.buildCostFunction(new Variable[]{a,c,d}, 0);
         res.setValues(new double[]{0.3,0,0.25,0,0.08,0,0.2,0,0.1,0,0.07,0});
         assertEquals(sum, res);
         assertSame(sum.getFactory(), res.getFactory());
@@ -490,7 +490,7 @@ public abstract class CostFunctionTest {
         factory.setSummarizeOperation(CostFunction.Summarize.SUM);
         CostFunction sum = f1.summarize(vars);
         assertSame(sum.getFactory(), f1.getFactory());
-        CostFunction res = factory.buildCostFunction(new Variable[]{a,b,c});
+        CostFunction res = factory.buildCostFunction(new Variable[]{a,b,c}, 0);
         assertSame(sum.getFactory(), res.getFactory());
         res.setValues(new double[]{
             0.1, 0.2, 0.05, 0.2, 0.05, 0.03, 0, 0, 0.03, 0.2, 0.1, 0.04
@@ -508,7 +508,7 @@ public abstract class CostFunctionTest {
         factory.setSummarizeOperation(CostFunction.Summarize.MAX);
         CostFunction sum = f1.summarize(vars);
         assertSame(sum.getFactory(), f1.getFactory());
-        CostFunction res = factory.buildCostFunction(new Variable[]{d});
+        CostFunction res = factory.buildCostFunction(new Variable[]{d}, 0);
         assertSame(sum.getFactory(), res.getFactory());
         res.setValues(new double[]{
             0.2, 0.2
@@ -526,7 +526,7 @@ public abstract class CostFunctionTest {
         factory.setSummarizeOperation(CostFunction.Summarize.MIN);
         CostFunction sum = fa.summarize(vars);
         assertSame(sum.getFactory(), fa.getFactory());
-        CostFunction res = factory.buildCostFunction(new Variable[]{a,b});
+        CostFunction res = factory.buildCostFunction(new Variable[]{a,b}, 0);
         assertSame(sum.getFactory(), res.getFactory());
         res.setValues(new double[]{
             0.3, 0.3, 0.7, 0.7
@@ -544,7 +544,7 @@ public abstract class CostFunctionTest {
         factory.setSummarizeOperation(CostFunction.Summarize.MIN);
         CostFunction sum = fa.summarize(vars);
         assertSame(sum.getFactory(), fa.getFactory());
-        CostFunction res = factory.buildCostFunction(new Variable[]{});
+        CostFunction res = factory.buildCostFunction(new Variable[]{}, 0);
         assertSame(sum.getFactory(), res.getFactory());
         res.setValues(new double[]{
             0.3
@@ -562,11 +562,11 @@ public abstract class CostFunctionTest {
         factory.setSummarizeOperation(CostFunction.Summarize.MAX);
         double ng = CostFunction.Summarize.MAX.getNoGood();
         
-        CostFunction fab = factory.buildCostFunction(new Variable[]{a,b});
+        CostFunction fab = factory.buildCostFunction(new Variable[]{a,b}, 0);
         fab.setValues(new double[]{ng, 0.7, 0.3, ng});
         CostFunction sum = fab.summarize(vars);
         assertSame(sum.getFactory(), fab.getFactory());
-        CostFunction res = factory.buildCostFunction(vars);
+        CostFunction res = factory.buildCostFunction(vars, 0);
         assertSame(sum.getFactory(), res.getFactory());
         res.setValues(new double[]{
             ng, ng, ng, 0.7, 0.7, 0.7,
@@ -584,7 +584,7 @@ public abstract class CostFunctionTest {
         factory.setMode(CostFunction.Summarize.SUM, CostFunction.Combine.SUM, CostFunction.Normalize.NONE);
         CostFunction sum = f1.summarize(new Variable[]{a,c});
         CostFunction com = f1.combine(sum);
-        CostFunction res = factory.buildCostFunction(new Variable[]{a,b,c});
+        CostFunction res = factory.buildCostFunction(new Variable[]{a,b,c}, 0);
         res.setValues(new double[]{
             0.1+0.3, 0.2+.25, 0.05+.08, 0.2+0.3, 0.05+.25, 0.03+.08, 0+0.2,
             0+0.1, 0.03+.07, 0.2+0.2, 0.1+0.1, 0.04+0.07
@@ -601,7 +601,7 @@ public abstract class CostFunctionTest {
         factory.setCombineOperation(CostFunction.Combine.PRODUCT);
         CostFunction sf  = factory.buildCostFunction(new Variable[]{a,b,c,d}, 1);
         CostFunction com = sf.combine(fda);
-        CostFunction res = factory.buildCostFunction(new Variable[]{a,b,c,d});
+        CostFunction res = factory.buildCostFunction(new Variable[]{a,b,c,d}, 0);
         res.setValues(new double[]{
             0.1, 0.3, 0.1, 0.3, 0.1, 0.3,
             0.1, 0.3, 0.1, 0.3, 0.1, 0.3,
@@ -621,13 +621,13 @@ public abstract class CostFunctionTest {
         Variable y = new Variable("y", 2);
         Variable z = new Variable("z", 2);
 
-        CostFunction cf1 = factory.buildCostFunction(new Variable[]{x,y});
+        CostFunction cf1 = factory.buildCostFunction(new Variable[]{x,y}, 0);
         cf1.setValues(new double[]{ng, ng, ng, ng});
-        CostFunction cf2 = factory.buildCostFunction(new Variable[]{y,z});
+        CostFunction cf2 = factory.buildCostFunction(new Variable[]{y,z}, 0);
         cf2.setValues(new double[]{0.3, -0.3, -0.88, -0.12});
 
         CostFunction comb = cf1.combine(cf2);
-        CostFunction res = factory.buildCostFunction(new Variable[]{x,y,z});
+        CostFunction res = factory.buildCostFunction(new Variable[]{x,y,z}, 0);
         res.setValues(new double[]{ng, ng, ng, ng, ng, ng, ng, ng});
         assertEquals(res, comb);
 
@@ -644,7 +644,7 @@ public abstract class CostFunctionTest {
         Variable z = new Variable("z", 2);
         Variable t = new Variable("t", 2);
         Variable u = new Variable("u", 2);
-        CostFunction cf = factory.buildCostFunction(new Variable[]{x,y,z,t,u});
+        CostFunction cf = factory.buildCostFunction(new Variable[]{x,y,z,t,u}, 0);
         cf.setValues(new double[] {
             ng, ng, ng, ng, ng, ng, ng, ng, ng, ng, ng, ng, ng, ng, ng, ng, 4.61, 4.61, 4.61,
             4.61, 4.61, 4.61, 4.61, 4.61, 4.61, 4.61, 4.61, 4.61, 4.61, 4.61,
@@ -685,17 +685,17 @@ public abstract class CostFunctionTest {
         final double v = CostFunction.Summarize.MIN.getNoGood();
         Variable x = new Variable("x", 2);
         Variable y = new Variable("y", 2);
-        CostFunction cf = factory.buildCostFunction(new Variable[]{x,y});
+        CostFunction cf = factory.buildCostFunction(new Variable[]{x,y}, 0);
         cf.setValues(new double[]{v, v, 10, v});
 
         ArrayList<CostFunction> fl = new ArrayList<CostFunction>();
-        CostFunction fi1 = factory.buildCostFunction(new Variable[]{x});
+        CostFunction fi1 = factory.buildCostFunction(new Variable[]{x}, 0);
         fi1.setValues(new double[]{10, 10});
 
 
         CostFunction filtered = cf.filter(fi1, 12);
 
-        CostFunction res = factory.buildCostFunction(new Variable[]{x,y});
+        CostFunction res = factory.buildCostFunction(new Variable[]{x,y}, 0);
         res.setValues(new double[]{v,v,v,v});
 
         assertEquals(res, filtered);
@@ -713,7 +713,8 @@ public abstract class CostFunctionTest {
     @Test
     public void testCombineEmptyFunction1() {
         factory.setCombineOperation(CostFunction.Combine.PRODUCT);
-        CostFunction sf  = factory.buildNeutralCostFunction(new Variable[]{});
+        final double nv = factory.getCombineOperation().getNeutralValue();
+        CostFunction sf  = factory.buildCostFunction(new Variable[]{}, nv);
         assertEquals(1, sf.getSize());
         assertEquals(sf.getValue(0), CostFunction.Combine.PRODUCT.getNeutralValue(), 0.0001);
         CostFunction com = sf.combine(fda);
@@ -727,7 +728,8 @@ public abstract class CostFunctionTest {
     @Test
     public void testCombineEmptyFunction2() {
         factory.setCombineOperation(CostFunction.Combine.PRODUCT);
-        CostFunction sf  = factory.buildNeutralCostFunction(new Variable[]{});
+        final double nv = factory.getCombineOperation().getNeutralValue();
+        CostFunction sf  = factory.buildCostFunction(new Variable[]{}, nv);
         CostFunction com = fda.combine(sf);
         assertEquals(fda, com);
         assertSame(fda.getFactory(), com.getFactory());
@@ -739,10 +741,10 @@ public abstract class CostFunctionTest {
     @Test
     public void testCombineConstantFunction() {
         factory.setCombineOperation(CostFunction.Combine.SUM);
-        CostFunction sf  = factory.buildCostFunction(new Variable[]{});
+        CostFunction sf  = factory.buildCostFunction(new Variable[]{}, 0);
         sf.setValue(0, 0.3);
         CostFunction com = fa.combine(sf);
-        CostFunction res = factory.buildCostFunction(new Variable[]{a});
+        CostFunction res = factory.buildCostFunction(new Variable[]{a}, 0);
         res.setValues(new double[]{0.6, 1.0});
         assertEquals(res, com);
         assertSame(com.getFactory(), res.getFactory());
@@ -754,10 +756,10 @@ public abstract class CostFunctionTest {
     @Test
     public void testCombineConstantFunction2() {
         factory.setCombineOperation(CostFunction.Combine.SUM);
-        CostFunction sf  = factory.buildCostFunction(new Variable[]{});
+        CostFunction sf  = factory.buildCostFunction(new Variable[]{}, 0);
         sf.setValue(0, 0.3);
         CostFunction com = sf.combine(fa);
-        CostFunction res = factory.buildCostFunction(new Variable[]{a});
+        CostFunction res = factory.buildCostFunction(new Variable[]{a}, 0);
         res.setValues(new double[]{0.6, 1.0});
         assertEquals(res, com);
         assertSame(com.getFactory(), res.getFactory());
@@ -772,15 +774,15 @@ public abstract class CostFunctionTest {
         final double ng = factory.getSummarizeOperation().getNoGood();
 
         ArrayList<CostFunction> fs = new ArrayList<CostFunction>();
-        CostFunction sf  = factory.buildCostFunction(new Variable[]{c});
+        CostFunction sf  = factory.buildCostFunction(new Variable[]{c}, ng);
         sf.setValues(new double[]{ng, ng, 1.0});
         fs.add(sf);
         fs.add(fdc);
-        sf = factory.buildCostFunction(new Variable[]{a});
+        sf = factory.buildCostFunction(new Variable[]{a}, ng);
         sf.setValues(new double[]{ng, 1.0});
 
         CostFunction com = sf.combine(fs);
-        CostFunction res = factory.buildCostFunction(new Variable[]{c,a,d});
+        CostFunction res = factory.buildCostFunction(new Variable[]{c,a,d}, 0);
         res.setValues(new double[]{
             ng, ng, ng, ng,
             ng, ng, ng, ng,
@@ -817,14 +819,14 @@ public abstract class CostFunctionTest {
 //                    Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.48, 21.74, Infinity, 19.099, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 19.76, Infinity, 19.34, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 23.599, 23.659, 20.959, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 20.88, 20.939, 18.24, Infinity, Infinity, Infinity, Infinity, Infinity, 21.74, 21.799, 19.099, Infinity, Infinity, Infinity, Infinity, Infinity, 22.419, Infinity, 21.999, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 19.7, 18.959, 19.28, Infinity, Infinity, Infinity, Infinity, Infinity, 20.56, 19.819, 20.14, 19.4, Infinity, Infinity, Infinity, 22.819, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 20.74, 21.98, 21.24, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 21.839, Infinity, Infinity, Infinity, 23.779, Infinity, Infinity, Infinity, 20.979, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.259, Infinity, Infinity, 21.0, 20.259, Infinity, Infinity, Infinity, 23.019, Infinity, Infinity, Infinity, Infinity, 22.599, Infinity, 23.099, 23.159, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 19.88, Infinity, 20.38, 20.439, Infinity, Infinity, Infinity, Infinity, 20.74, Infinity, 21.24, 21.299, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.919, 22.179, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 20.2, 19.459, Infinity, Infinity, 23.079, Infinity, 18.42, Infinity, 21.06, 20.319, Infinity, 21.439, Infinity, Infinity, Infinity, 23.38, Infinity, Infinity, Infinity, 20.579, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 23.299, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 19.459, Infinity, Infinity, Infinity, 21.399, Infinity, Infinity, Infinity, 18.599, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 21.319, Infinity, 20.899, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.04, 22.099, 19.4, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.759, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 23.619, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 20.860, 20.12, 20.44, 19.7, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 21.580, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.439, Infinity, 22.019, Infinity, Infinity, Infinity, Infinity, 20.939, Infinity, Infinity, Infinity, 22.88, Infinity, Infinity, Infinity, 20.079, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.799, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 20.7, 19.959, Infinity, Infinity, Infinity, 21.899, Infinity, Infinity, 19.839, 19.099, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.559, 21.819, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 21.04, Infinity, 21.54, 21.599, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.259, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 23.119, 23.179, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 21.36, 20.619, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.08, 21.339, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.939, 22.199, 22.519, 23.259, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 21.659, 22.399, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 23.299, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 20.94, 21.68, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 23.339, 23.039, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.18, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 21.759, 21.46, Infinity, 21.04, Infinity, Infinity, Infinity, Infinity, 24.659, Infinity, Infinity, Infinity, 21.899, 22.639, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 19.18, 19.919, Infinity, Infinity, 22.059, Infinity, Infinity, Infinity, 20.04, 20.779, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.72, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 20.0, Infinity, Infinity, Infinity, 22.879, Infinity, Infinity, Infinity, 20.86, Infinity, Infinity, Infinity, Infinity, 22.019, Infinity, 22.759, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 21.899, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 20.439, 20.44, 21.18, Infinity, Infinity, Infinity, Infinity, Infinity, 20.899, Infinity, 23.539, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.679, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 19.32, 22.259, 21.959, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 20.899, Infinity, 21.399, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 18.68, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 19.54, Infinity, Infinity, Infinity, Infinity, Infinity, 20.58, Infinity, 23.219, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 20.499, Infinity, Infinity, Infinity, 23.379, Infinity, Infinity, Infinity, Infinity, Infinity, 20.64, 21.38, Infinity, Infinity, Infinity, 23.319, Infinity, Infinity, 19.779, 20.519, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.499, 23.239, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 21.46, 21.159, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 20.599, 20.299, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 23.319, 23.019, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 23.099, Infinity, Infinity, Infinity, 20.34, 21.08, 17.7, Infinity, 22.419, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 21.06, Infinity, Infinity, Infinity, 23.939, Infinity, Infinity, Infinity, 21.919, Infinity, Infinity, Infinity, 23.919, Infinity, Infinity, Infinity, 21.159, 21.82, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 21.879, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 22.739, Infinity, Infinity, Infinity, 19.64, 20.14, 20.14, 20.88, Infinity, Infinity, Infinity, Infinity, Infinity, 19.279, 19.279, 20.019, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 21.999, Infinity, 22.739, Infinity, Infinity, Infinity, Infinity, Infinity, 19.02, 21.959, 21.659, Infinity, Infinity, Infinity, Infinity, Infinity, 18.159, 21.099, 20.799, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 23.519, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 19.34, Infinity, 19.84, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, 19.02, Infinity, 21.659, 22.319, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity
 //        });
         CostFunction left = factory.buildCostFunction(
-                new Variable[]{v46,v3}
+                new Variable[]{v46,v3}, 0
         );
         left.setValues(new double[]{
                     Infinity, 2.1, Infinity, Infinity
         });
         
         CostFunction right = factory.buildCostFunction(
-                new Variable[]{v46,v55,v35}
+                new Variable[]{v46,v55,v35}, 0
         );
         right.setValues(new double[]{
             0.86,1.7,3.5,4.34,0.02,0.86,2.66,3.5
@@ -855,7 +857,7 @@ public abstract class CostFunctionTest {
     public void testNormalize1() {
         factory.setNormalizationType(CostFunction.Normalize.SUM1);
         fa = fa.normalize();
-        CostFunction res = factory.buildCostFunction(new Variable[]{a});
+        CostFunction res = factory.buildCostFunction(new Variable[]{a}, 0);
         res.setValues(new double[]{
             0.3, 0.7
         });
@@ -870,7 +872,7 @@ public abstract class CostFunctionTest {
     public void testNormalize2() {
         factory.setNormalizationType(CostFunction.Normalize.SUM0);
         fa = fa.normalize();
-        CostFunction res = factory.buildCostFunction(new Variable[]{a});
+        CostFunction res = factory.buildCostFunction(new Variable[]{a}, 0);
         res.setValues(new double[]{
             -0.2, 0.2
         });
@@ -884,12 +886,12 @@ public abstract class CostFunctionTest {
     @Test
     public void testNormalize3() {
         factory.setNormalizationType(CostFunction.Normalize.SUM1);
-        CostFunction fac = factory.buildCostFunction(new Variable[]{a,b,c});
+        CostFunction fac = factory.buildCostFunction(new Variable[]{a,b,c}, 0);
         fac.setValues(new double[]{
             0.2, 0.4, 0.1, 0.4, 0.1, 0.06, 0, 0, 0.06, 0.4, 0.2, 0.08
         });
         fac = fac.normalize();
-        CostFunction res = factory.buildCostFunction(new Variable[]{a,b,c});
+        CostFunction res = factory.buildCostFunction(new Variable[]{a,b,c}, 0);
         res.setValues(new double[]{
             0.1, 0.2, 0.05, 0.2, 0.05, 0.03, 0, 0, 0.03, 0.2, 0.1, 0.04
         });
@@ -904,7 +906,7 @@ public abstract class CostFunctionTest {
     public void testNormalize4() {
         factory.setNormalizationType(CostFunction.Normalize.SUM0);
         f1 = f1.normalize();
-        CostFunction res = factory.buildCostFunction(new Variable[]{a,b,c});
+        CostFunction res = factory.buildCostFunction(new Variable[]{a,b,c}, 0);
         final double r = 1d/12d;
         res.setValues(new double[]{
             0.1-r, 0.2-r, 0.05-r, 0.2-r, 0.05-r, 0.03-r,
@@ -920,12 +922,12 @@ public abstract class CostFunctionTest {
     @Test
     public void testNormalize5() {
         factory.setNormalizationType(CostFunction.Normalize.SUM1);
-        CostFunction fac = factory.buildCostFunction(new Variable[]{a,b,c});
+        CostFunction fac = factory.buildCostFunction(new Variable[]{a,b,c}, 0);
         fac.setValues(new double[]{
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
         });
         fac = fac.normalize();
-        CostFunction res = factory.buildCostFunction(new Variable[]{a,b,c});
+        CostFunction res = factory.buildCostFunction(new Variable[]{a,b,c}, 0);
         final double r = 1d/12d;
         res.setValues(new double[]{
             r, r, r, r, r, r, r, r, r, r, r, r
@@ -941,7 +943,7 @@ public abstract class CostFunctionTest {
     public void testNegate1() {
         factory.setCombineOperation(CostFunction.Combine.PRODUCT);
         fa = fa.negate();
-        CostFunction res = factory.buildCostFunction(new Variable[]{a});
+        CostFunction res = factory.buildCostFunction(new Variable[]{a}, 0);
         res.setValues(new double[]{
             1/0.3, 1/0.7
         });
@@ -956,7 +958,7 @@ public abstract class CostFunctionTest {
     public void testNegate2() {
         factory.setCombineOperation(CostFunction.Combine.SUM);
         fa = fa.negate();
-        CostFunction res = factory.buildCostFunction(new Variable[]{a});
+        CostFunction res = factory.buildCostFunction(new Variable[]{a}, 0);
         res.setValues(new double[]{
             -0.3, -0.7
         });
@@ -973,7 +975,7 @@ public abstract class CostFunctionTest {
         map.put(a, 0);
         CostFunction red = f1.reduce(map);
 
-        CostFunction res = factory.buildCostFunction(new Variable[]{b,c});
+        CostFunction res = factory.buildCostFunction(new Variable[]{b,c}, 0);
         res.setValues(new double[]{
             0.1, 0.2, 0.05, 0.2, 0.05, 0.03
         });
@@ -990,7 +992,7 @@ public abstract class CostFunctionTest {
         map.put(b, 0);
         CostFunction red = f1.reduce(map);
 
-        CostFunction res = factory.buildCostFunction(new Variable[]{a,c});
+        CostFunction res = factory.buildCostFunction(new Variable[]{a,c}, 0);
         res.setValues(new double[]{
             0.1, 0.2, 0.05, 0, 0, 0.03
         });
@@ -1007,7 +1009,7 @@ public abstract class CostFunctionTest {
         map.put(c, 0);
         CostFunction red = f1.reduce(map);
 
-        CostFunction res = factory.buildCostFunction(new Variable[]{a,b});
+        CostFunction res = factory.buildCostFunction(new Variable[]{a,b}, 0);
         res.setValues(new double[]{
             0.1, 0.2, 0, 0.2
         });
@@ -1025,7 +1027,7 @@ public abstract class CostFunctionTest {
         map.put(b, 0);
         map.put(c, 0);
         CostFunction red = f1.reduce(map);
-        CostFunction res = factory.buildCostFunction(new Variable[0]);
+        CostFunction res = factory.buildCostFunction(new Variable[0], 0);
         res.setValue(0, 0.1);
         assertEquals(red, res);
     }
@@ -1039,6 +1041,8 @@ public abstract class CostFunctionTest {
         Variable v11 = new Variable("11", 6);
         Variable v12 = new Variable("12", 6);
 
+        factory.setSummarizeOperation(CostFunction.Summarize.MIN);
+        factory.setCombineOperation(CostFunction.Combine.SUM);
         double ng = factory.getSummarizeOperation().getNoGood();
 
         CostFunction fun = factory.buildSparseCostFunction(new Variable[]{v16, v11, v12}, ng);

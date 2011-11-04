@@ -126,12 +126,13 @@ public abstract class AbstractCostFunctionTest extends CostFunctionTest {
      */
     @Test
     public void testindexToSubindex4() {
+        final double nv = factory.getCombineOperation().getNeutralValue();
         AbstractCostFunction f = (AbstractCostFunction)
                 factory.buildCostFunction(new Variable[]{
                     new Variable("a", 2),
                     new Variable("b", 2),
                     new Variable("c", 3),
-                });
+                }, nv);
         int[] sub = {0, 1, 1};
         int index = 4;
         assertArrayEquals(f.indexToSubindex(index), sub);

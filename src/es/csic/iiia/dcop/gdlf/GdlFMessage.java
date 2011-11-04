@@ -102,7 +102,8 @@ public class GdlFMessage implements UPMessage {
         if (belief != null) {
             Variable[] vars = belief.getVariableSet().toArray(new Variable[0]);
             if (combi == null) {
-                combi = belief.getFactory().buildNeutralCostFunction(vars);
+                final double nv = belief.getFactory().getCombineOperation().getNeutralValue();
+                combi = belief.getFactory().buildCostFunction(vars, nv);
             } else {
                 combi = combi.summarize(vars);
             }

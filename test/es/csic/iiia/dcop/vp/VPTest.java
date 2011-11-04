@@ -94,16 +94,16 @@ public class VPTest {
 
         // And now factors
         f = new CostFunction[]{
-            factory.buildCostFunction( new Variable[]{v[0],v[1]} ),
-            factory.buildCostFunction( new Variable[]{v[0],v[1]} ),
-            factory.buildCostFunction( new Variable[]{v[0],v[1]} ),
-            factory.buildCostFunction( new Variable[]{v[0],v[2]} ),
-            factory.buildCostFunction( new Variable[]{v[0],v[2]} ),
-            factory.buildCostFunction( new Variable[]{v[0],v[3]} ),
-            factory.buildCostFunction( new Variable[]{v[0],v[4]} ),
-            factory.buildCostFunction( new Variable[]{v[1],v[2]} ),
-            factory.buildCostFunction( new Variable[]{v[1],v[3]} ),
-            factory.buildCostFunction( new Variable[]{v[3],v[4]} ),
+            factory.buildCostFunction( new Variable[]{v[0],v[1]}, 0 ),
+            factory.buildCostFunction( new Variable[]{v[0],v[1]}, 0 ),
+            factory.buildCostFunction( new Variable[]{v[0],v[1]}, 0 ),
+            factory.buildCostFunction( new Variable[]{v[0],v[2]}, 0 ),
+            factory.buildCostFunction( new Variable[]{v[0],v[2]}, 0 ),
+            factory.buildCostFunction( new Variable[]{v[0],v[3]}, 0 ),
+            factory.buildCostFunction( new Variable[]{v[0],v[4]}, 0 ),
+            factory.buildCostFunction( new Variable[]{v[1],v[2]}, 0 ),
+            factory.buildCostFunction( new Variable[]{v[1],v[3]}, 0 ),
+            factory.buildCostFunction( new Variable[]{v[3],v[4]}, 0 ),
         };
         for (CostFunction fac : f) {
             fac.setValues(new double[]{2, 1, 1, 0});

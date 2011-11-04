@@ -50,23 +50,12 @@ public class HypercubeCostFunctionFactory implements CostFunctionTypeFactory {
         factory = f;
     }
 
-    public CostFunction buildCostFunction(Variable[] variables) {
-        HypercubeCostFunction c = new HypercubeCostFunction(variables);
-        c.setFactory(factory);
-        return c;
-    }
-
-    public CostFunction buildNeutralCostFunction(Variable[] variables) {
-        HypercubeCostFunction c = new HypercubeCostFunction(variables);
-        c.setFactory(factory);
-        c.initialize(factory.getCombineOperation().getNeutralValue());
-        return c;
-    }
-
     public CostFunction buildCostFunction(Variable[] variables, double initialValue) {
         HypercubeCostFunction c = new HypercubeCostFunction(variables);
         c.setFactory(factory);
-        c.initialize(initialValue);
+        if (initialValue != 0) {
+            c.initialize(initialValue);
+        }
         return c;
     }
 

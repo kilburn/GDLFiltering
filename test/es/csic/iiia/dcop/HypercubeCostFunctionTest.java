@@ -63,7 +63,7 @@ public class HypercubeCostFunctionTest extends AbstractCostFunctionTest {
         factory.setMode(CostFunction.Summarize.SUM, CostFunction.Combine.PRODUCT, CostFunction.Normalize.NONE);
         CostFunction sum = f1.summarize(new Variable[]{a,c});
         CostFunction com = f1.combine(sum);
-        CostFunction res = factory.buildCostFunction(new Variable[]{a,b,c});
+        CostFunction res = factory.buildCostFunction(new Variable[]{a,b,c}, 0);
         res.setValues(new double[]{
             0.1*0.3, 0.2*.25, 0.05*.08, 0.2*0.3, 0.05*.25, 0.03*.08, 0,
             0, 0.03*.07, 0.2*0.2, 0.1*0.1, 0.04*0.07

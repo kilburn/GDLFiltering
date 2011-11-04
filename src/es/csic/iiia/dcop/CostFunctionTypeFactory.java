@@ -44,10 +44,6 @@ package es.csic.iiia.dcop;
  */
 public interface CostFunctionTypeFactory {
 
-    CostFunction buildCostFunction(Variable[] variables);
-
-    CostFunction buildNeutralCostFunction(Variable[] variables);
-
     CostFunction buildCostFunction(Variable[] variables, double initialValue);
 
     CostFunction buildCostFunction(CostFunction function);

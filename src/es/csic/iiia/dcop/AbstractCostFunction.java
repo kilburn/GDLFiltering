@@ -678,14 +678,13 @@ public abstract class AbstractCostFunction implements CostFunction {
             }
         }
 
-        CostFunction result = factory.buildCostFunction(vars.toArray(new Variable[0]));
-        if (sparse || result instanceof MapCostFunction) {
+        if (sparse) {
             // Sort functions by sparsity
             Collections.sort(fs, sparseComparator);
             // @TODO : Check if the order is right!!
             Variable[] vs = vars.toArray(new Variable[0]);
             CostFunction left = fs.remove(fs.size()-1).summarize(vs);
-            result = factory.buildSparseCostFunction(vs);
+            CostFunction result = factory.buildSparseCostFunction(vs, nogood);
             sparseCombine(left, fs, result);
             return result;
         }
@@ -694,6 +693,7 @@ public abstract class AbstractCostFunction implements CostFunction {
         // Unoptimized base implementation:
         // Iterate over the result positions, fetching the values from ourselves
         // and all the other factors.
+        CostFunction result = factory.buildCostFunction(vars.toArray(new Variable[0]), operation.getNeutralValue());
         final int niterators = fs.size();
         ConditionedIterator[] iterators = new ConditionedIterator[niterators];
         for (int i=0; i<niterators; i++) {
@@ -779,8 +779,7 @@ public abstract class AbstractCostFunction implements CostFunction {
 
         // Does this factor reduce to a constant?
         if (newVariables.size() == 0) {
-            CostFunction result = factory.buildCostFunction(new Variable[0]);
-            result.setValue(0, getValue(mapping));
+            CostFunction result = factory.buildCostFunction(new Variable[0], getValue(mapping));
             return result;
         }
 
@@ -788,11 +787,11 @@ public abstract class AbstractCostFunction implements CostFunction {
         float sparsity = this.getNumberOfNoGoods() / (float)this.getSize();
         if (sparsity > 0.8) {
             CostFunction result = factory.buildSparseCostFunction(
-                    newVariables.toArray(new Variable[0]));
+                    newVariables.toArray(new Variable[0]), factory.getSummarizeOperation().getNoGood());
             return sparseReduce(result, mapping);
         }
 
-        CostFunction result = factory.buildCostFunction(newVariables.toArray(new Variable[0]));
+        CostFunction result = factory.buildCostFunction(newVariables.toArray(new Variable[0]), 0);
         VariableAssignment map = null;
         for (long i = 0, len = result.getSize(); i < len; i++) {
             map = result.getMapping(i, map);

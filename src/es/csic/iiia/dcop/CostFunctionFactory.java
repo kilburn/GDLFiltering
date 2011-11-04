@@ -84,14 +84,6 @@ public class CostFunctionFactory {
     }
     private CostFunctionTypeFactory sparseFactory = new MapCostFunctionFactory(this);
 
-    public CostFunction buildCostFunction(Variable[] variables) {
-        return denseFactory.buildCostFunction(variables);
-    }
-
-    public CostFunction buildNeutralCostFunction(Variable[] variables) {
-        return denseFactory.buildNeutralCostFunction(variables);
-    }
-
     public CostFunction buildCostFunction(Variable[] variables, double initialValue) {
         return denseFactory.buildCostFunction(variables, initialValue);
     }
@@ -103,23 +95,8 @@ public class CostFunctionFactory {
                 : denseFactory.buildCostFunction(function);
     }
 
-    public CostFunction buildSparseCostFunction(Variable[] variables) {
-        return sparseFactory.buildCostFunction(variables);
-    }
-
-    public CostFunction buildSparseNeutralCostFunction(Variable[] variables) {
-        return sparseFactory.buildNeutralCostFunction(variables);
-    }
-
     public CostFunction buildSparseCostFunction(Variable[] variables, double initialValue) {
         return sparseFactory.buildCostFunction(variables, initialValue);
-    }
-
-    public CostFunction buildSparseCostFunction(CostFunction function) {
-        double sparsity = function.getNumberOfNoGoods()/(double)function.getSize();
-        return sparsity > 0.8
-                ? sparseFactory.buildCostFunction(function)
-                : denseFactory.buildCostFunction(function);
     }
 
     public void setMode(CostFunction.Summarize summarizeOperation,

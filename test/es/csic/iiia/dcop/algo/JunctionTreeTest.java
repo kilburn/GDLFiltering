@@ -106,24 +106,24 @@ public class JunctionTreeTest {
         };
 
         CostFunction[][] factors = new CostFunction[][]{
-            {factory.buildCostFunction( new Variable[]{v[0],v[7]} )},
+            {factory.buildCostFunction( new Variable[]{v[0],v[7]}, 0 )},
             {},
-            {factory.buildCostFunction( new Variable[]{v[1],v[2]} )},
-            {factory.buildCostFunction( new Variable[]{v[2],v[3]} )},
-            {factory.buildCostFunction( new Variable[]{v[3],v[4]} ),
-                     factory.buildCostFunction( new Variable[]{v[1],v[3],v[4]} )},
-            {factory.buildCostFunction( new Variable[]{v[1],v[5]} )},
-            {factory.buildCostFunction( new Variable[]{v[2],v[6]} ),
-                     factory.buildCostFunction( new Variable[]{v[1],v[6],v[7]} ),
-                     factory.buildCostFunction( new Variable[]{v[0],v[6]} )},
-            {factory.buildCostFunction( new Variable[]{v[3],v[7]} )},
-            {factory.buildCostFunction( new Variable[]{v[4],v[8]} ),
-                     factory.buildCostFunction( new Variable[]{v[5],v[8]} ),
-                     factory.buildCostFunction( new Variable[]{v[0],v[8]} )},
-            {factory.buildCostFunction( new Variable[]{v[2],v[5],v[9]} ),
-                     factory.buildCostFunction( new Variable[]{v[5],v[6],v[9]} ),
-                     factory.buildCostFunction( new Variable[]{v[4],v[7],v[9]} ),
-                     factory.buildCostFunction( new Variable[]{v[0],v[8],v[9]} )},
+            {factory.buildCostFunction( new Variable[]{v[1],v[2]}, 0 )},
+            {factory.buildCostFunction( new Variable[]{v[2],v[3]}, 0 )},
+            {factory.buildCostFunction( new Variable[]{v[3],v[4]}, 0 ),
+                     factory.buildCostFunction( new Variable[]{v[1],v[3],v[4]}, 0 )},
+            {factory.buildCostFunction( new Variable[]{v[1],v[5]}, 0 )},
+            {factory.buildCostFunction( new Variable[]{v[2],v[6]}, 0 ),
+                     factory.buildCostFunction( new Variable[]{v[1],v[6],v[7]}, 0 ),
+                     factory.buildCostFunction( new Variable[]{v[0],v[6]}, 0 )},
+            {factory.buildCostFunction( new Variable[]{v[3],v[7]}, 0 )},
+            {factory.buildCostFunction( new Variable[]{v[4],v[8]}, 0 ),
+                     factory.buildCostFunction( new Variable[]{v[5],v[8]}, 0 ),
+                     factory.buildCostFunction( new Variable[]{v[0],v[8]}, 0 )},
+            {factory.buildCostFunction( new Variable[]{v[2],v[5],v[9]}, 0 ),
+                     factory.buildCostFunction( new Variable[]{v[5],v[6],v[9]}, 0 ),
+                     factory.buildCostFunction( new Variable[]{v[4],v[7],v[9]}, 0 ),
+                     factory.buildCostFunction( new Variable[]{v[0],v[8],v[9]}, 0 )},
         };
 
         GdlFactory gf = new GdlFactory();
@@ -138,16 +138,16 @@ public class JunctionTreeTest {
     public void testBuildGraph_FactorArr() {
         // And now factors
         CostFunction[] factors = new CostFunction[]{
-            factory.buildCostFunction( new Variable[]{v[0],v[1]} ),
-            factory.buildCostFunction( new Variable[]{v[0],v[1]} ),
-            factory.buildCostFunction( new Variable[]{v[0],v[1]} ),
-            factory.buildCostFunction( new Variable[]{v[0],v[2]} ),
-            factory.buildCostFunction( new Variable[]{v[0],v[2]} ),
-            factory.buildCostFunction( new Variable[]{v[0],v[3]} ),
-            factory.buildCostFunction( new Variable[]{v[0],v[4]} ),
-            factory.buildCostFunction( new Variable[]{v[1],v[2]} ),
-            factory.buildCostFunction( new Variable[]{v[1],v[3]} ),
-            factory.buildCostFunction( new Variable[]{v[3],v[4]} ),
+            factory.buildCostFunction( new Variable[]{v[0],v[1]}, 0 ),
+            factory.buildCostFunction( new Variable[]{v[0],v[1]}, 0 ),
+            factory.buildCostFunction( new Variable[]{v[0],v[1]}, 0 ),
+            factory.buildCostFunction( new Variable[]{v[0],v[2]}, 0 ),
+            factory.buildCostFunction( new Variable[]{v[0],v[2]}, 0 ),
+            factory.buildCostFunction( new Variable[]{v[0],v[3]}, 0 ),
+            factory.buildCostFunction( new Variable[]{v[0],v[4]}, 0 ),
+            factory.buildCostFunction( new Variable[]{v[1],v[2]}, 0 ),
+            factory.buildCostFunction( new Variable[]{v[1],v[3]}, 0 ),
+            factory.buildCostFunction( new Variable[]{v[3],v[4]}, 0 ),
         };
 
         MCS mcs = new MCS(Arrays.asList(factors));

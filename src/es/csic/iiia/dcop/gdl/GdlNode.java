@@ -118,7 +118,8 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
 
         // Calculate our potential
         previousBelief = null;
-        potential = factory.buildNeutralCostFunction(new Variable[0]);
+        final double nv = factory.getCombineOperation().getNeutralValue();
+        potential = factory.buildCostFunction(new Variable[0], nv);
         potential = potential.combine(relations);
         
         // And our belief
@@ -140,7 +141,8 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
         final Modes mode = getMode();
 
         // Combine incoming messages
-        CostFunction combi = getFactory().buildNeutralCostFunction(new Variable[0]);
+        final double nv = factory.getCombineOperation().getNeutralValue();
+        CostFunction combi = getFactory().buildCostFunction(new Variable[0], nv);
 
         ArrayList<CostFunction> fns = new ArrayList<CostFunction>();
         if (mode == Modes.GRAPH) {

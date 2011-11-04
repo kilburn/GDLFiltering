@@ -62,7 +62,6 @@ public class UAIDatasetReader {
         this.factory = factory;
         StreamTokenizer sTokenizer = null;
 
-
         int nvars = 0;
         Variable[] vars = null;
         int nfactors = 0;
@@ -136,7 +135,7 @@ public class UAIDatasetReader {
                     case 4:
                         factorVars[j++] = vars[(int)v];
                         if (j == nFactorVars) {
-                            factors.add(i++, factory.buildCostFunction(factorVars));
+                            factors.add(i++, factory.buildCostFunction(factorVars, 0));
                             if (i == nfactors) {
                                 state = 5;
                                 i=0;

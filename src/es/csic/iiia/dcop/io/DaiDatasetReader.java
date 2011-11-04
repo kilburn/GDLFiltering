@@ -60,6 +60,7 @@ public class DaiDatasetReader {
     public List<CostFunction> read(BufferedReader input, CostFunctionFactory factory) {
         StreamTokenizer sTokenizer = null;
         List<CostFunction> factors = new ArrayList<CostFunction>();
+        final double nogood = factory.getSummarizeOperation().getNoGood();
 
         /**
          * FSM States:
@@ -138,7 +139,7 @@ public class DaiDatasetReader {
                             for (int ii=0; ii<nvars; ii++) {
                                 vars2[ii] = vars[nvars-1-ii];
                             }
-                            f = factory.buildSparseCostFunction(vars2);
+                            f = factory.buildSparseCostFunction(vars2, nogood);
                             fsize = f.getSize();
                             factors.add(f);
                             state = 4;

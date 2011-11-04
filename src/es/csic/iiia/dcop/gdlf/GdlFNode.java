@@ -198,7 +198,8 @@ public class GdlFNode extends UPNode<UPEdge<GdlFNode, GdlFMessage>, UPResult> {
         
         CostFunction belief = null;
         if (log.isTraceEnabled()) {
-            belief = factory.buildNeutralCostFunction(new Variable[0]);
+            final double nv = factory.getCombineOperation().getNeutralValue();
+            belief = factory.buildCostFunction(new Variable[0], nv);
             belief = belief.combine(costFunctions);
         }
 

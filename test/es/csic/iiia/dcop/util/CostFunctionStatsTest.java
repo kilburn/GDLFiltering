@@ -133,7 +133,7 @@ public class CostFunctionStatsTest {
      */
     @Test
     public void testGetRank() {
-        CostFunction f = factory.buildCostFunction(new Variable[]{x});
+        CostFunction f = factory.buildCostFunction(new Variable[]{x}, 0);
         f.setValues(new double[]{0.2, 0.8});
         double expResult = 0.6;
         double result = CostFunctionStats.getRank(f);
@@ -160,7 +160,7 @@ public class CostFunctionStatsTest {
      */
     @Test
     public void testGetSum() {
-        CostFunction f = factory.buildCostFunction(new Variable[]{x,y});
+        CostFunction f = factory.buildCostFunction(new Variable[]{x,y}, 0);
         f.setValues(new double[]{0.2, 0.8, 0.4, 0.3});
         double expResult = 1.7;
         double result = CostFunctionStats.getSum(f);
@@ -177,7 +177,7 @@ public class CostFunctionStatsTest {
      */
     @Test
     public void testGetInformationGains() {
-        CostFunction f = factory.buildCostFunction(new Variable[]{x,y});
+        CostFunction f = factory.buildCostFunction(new Variable[]{x,y}, 0);
         f.setValues(new double[]{0.2, 0.8, 0.1, 0.3});
         double[] expResult = new double[]{0.6, 0.8};
         double[] result = CostFunctionStats.getInformationGains(f);
@@ -193,7 +193,7 @@ public class CostFunctionStatsTest {
     public void testGet0Norm() {
         Metric metric = new Norm0();
 
-        CostFunction f = factory.buildCostFunction(new Variable[]{x,y});
+        CostFunction f = factory.buildCostFunction(new Variable[]{x,y}, 0);
         f.setValues(new double[]{0.2, 0, 0.4, 0});
         double expResult = 2;
         double result = metric.getValue(f);
@@ -212,7 +212,7 @@ public class CostFunctionStatsTest {
     public void testGet1Norm() {
         Metric metric = new Norm1();
 
-        CostFunction f = factory.buildCostFunction(new Variable[]{x,y});
+        CostFunction f = factory.buildCostFunction(new Variable[]{x,y}, 0);
         f.setValues(new double[]{0.2, 0.8, 0.4, 0.3});
         double expResult = 1.7;
         double result = metric.getValue(f);
@@ -231,7 +231,7 @@ public class CostFunctionStatsTest {
     public void testGet2Norm() {
         Metric metric = new Norm2();
 
-        CostFunction f = factory.buildCostFunction(new Variable[]{x,y});
+        CostFunction f = factory.buildCostFunction(new Variable[]{x,y}, 0);
         f.setValues(new double[]{0.2, 0.8, 0.4, 0.3});
         double expResult = 0.93;
         double result = metric.getValue(f);
@@ -250,7 +250,7 @@ public class CostFunctionStatsTest {
     public void testGetInfNorm() {
         Metric metric = new NormInf();
 
-        CostFunction f = factory.buildCostFunction(new Variable[]{x,y});
+        CostFunction f = factory.buildCostFunction(new Variable[]{x,y}, 0);
         f.setValues(new double[]{0.2, 0.8, 0.4, 0.3});
         double expResult = 0.8;
         double result = metric.getValue(f);
@@ -292,17 +292,17 @@ public class CostFunctionStatsTest {
         yy = new Variable("y", 3);
         zz = new Variable("z", 2);
         tt = new Variable("t", 2);
-        CostFunction f1 = factory.buildCostFunction(new Variable[]{xx, zz});
+        CostFunction f1 = factory.buildCostFunction(new Variable[]{xx, zz}, 0);
         f1.setValues(new double[]{Math.random(), Math.random(), Math.random(),
             Math.random(), Math.random(), Math.random(), });
-        CostFunction f2 = factory.buildCostFunction(new Variable[]{yy, zz});
+        CostFunction f2 = factory.buildCostFunction(new Variable[]{yy, zz}, 0);
         f2.setValues(new double[]{Math.random(), Math.random(), Math.random(),
             Math.random(), Math.random(), Math.random(), });
-        CostFunction f3 = factory.buildCostFunction(new Variable[]{xx, yy});
+        CostFunction f3 = factory.buildCostFunction(new Variable[]{xx, yy}, 0);
         f3.setValues(new double[]{Math.random(), Math.random(), Math.random(),
             Math.random(), Math.random(), Math.random(),
             Math.random(), Math.random(), Math.random(), });
-        CostFunction f4 = factory.buildCostFunction(new Variable[]{tt, zz});
+        CostFunction f4 = factory.buildCostFunction(new Variable[]{tt, zz}, 0);
         f4.setValues(new double[]{Math.random(), Math.random(), Math.random(),
             Math.random(), });
 
@@ -392,7 +392,7 @@ public class CostFunctionStatsTest {
         Variable z = new Variable("z", 2);
         Variable t = new Variable("t", 2);
         Variable u = new Variable("u", 2);
-        CostFunction cf = factory.buildSparseCostFunction(new Variable[]{x,y,z,t,u});
+        CostFunction cf = factory.buildSparseCostFunction(new Variable[]{x,y,z,t,u}, 0);
         cf.setValues(new double[] {
             v, v, v, 5.15, v, v, v, v, v, v, 3.12, v, v, v, v, v, 4.61, 4.61, 4.61,
             4.61, 4.61, 4.61, 4.61, 4.61, 4.61, 4.21, 4.61, 4.61, 4.61, 4.61,

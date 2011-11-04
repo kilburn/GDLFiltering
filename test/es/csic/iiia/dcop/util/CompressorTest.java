@@ -85,7 +85,7 @@ public class CompressorTest {
         v = new Variable("t", 2);
         vars = new Variable[]{x, y, z, t, v};
 
-        f1 = factory.buildCostFunction(vars);
+        f1 = factory.buildCostFunction(vars, 0);
         f1.setValues(new double[]{
             0.369,4.41,4.550,3.090,1.329,6.309,6.309,4.989,4.910,4.170,10.030,3.309,2.830,3.030,8.23,2.13,2.070,8.29,2.769,2.849,3.37,10.129,3.909,5.010,4.73,6.009,6.009,1.149,2.830,4.330,4.11,0.270
         });

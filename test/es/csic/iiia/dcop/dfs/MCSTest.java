@@ -84,16 +84,16 @@ public class MCSTest {
 
         // And now factors
         CostFunction[] fs = new CostFunction[]{
-            factory.buildCostFunction( new Variable[]{v[0],v[1]} ),
-            factory.buildCostFunction( new Variable[]{v[0],v[1]} ),
-            factory.buildCostFunction( new Variable[]{v[0],v[1]} ),
-            factory.buildCostFunction( new Variable[]{v[0],v[2]} ),
-            factory.buildCostFunction( new Variable[]{v[0],v[2]} ),
-            factory.buildCostFunction( new Variable[]{v[0],v[3]} ),
-            factory.buildCostFunction( new Variable[]{v[0],v[4]} ),
-            factory.buildCostFunction( new Variable[]{v[1],v[2]} ),
-            factory.buildCostFunction( new Variable[]{v[1],v[3]} ),
-            factory.buildCostFunction( new Variable[]{v[3],v[4]} ),
+            factory.buildCostFunction( new Variable[]{v[0],v[1]}, 0 ),
+            factory.buildCostFunction( new Variable[]{v[0],v[1]}, 0 ),
+            factory.buildCostFunction( new Variable[]{v[0],v[1]}, 0 ),
+            factory.buildCostFunction( new Variable[]{v[0],v[2]}, 0 ),
+            factory.buildCostFunction( new Variable[]{v[0],v[2]}, 0 ),
+            factory.buildCostFunction( new Variable[]{v[0],v[3]}, 0 ),
+            factory.buildCostFunction( new Variable[]{v[0],v[4]}, 0 ),
+            factory.buildCostFunction( new Variable[]{v[1],v[2]}, 0 ),
+            factory.buildCostFunction( new Variable[]{v[1],v[3]}, 0 ),
+            factory.buildCostFunction( new Variable[]{v[3],v[4]}, 0 ),
         };
         f = Arrays.asList(fs);
     }

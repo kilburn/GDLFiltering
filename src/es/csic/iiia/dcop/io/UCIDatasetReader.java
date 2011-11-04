@@ -151,7 +151,7 @@ public class UCIDatasetReader {
             }
         }
 
-        lastFactor = factory.buildCostFunction(vars.toArray(new Variable[0]));
+        lastFactor = factory.buildCostFunction(vars.toArray(new Variable[0]), 0);
         factors.add(lastFactor);
     }
 

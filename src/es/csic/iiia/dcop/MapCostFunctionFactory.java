@@ -50,27 +50,14 @@ public class MapCostFunctionFactory implements CostFunctionTypeFactory {
         factory = f;
     }
 
-    public CostFunction buildCostFunction(Variable[] variables) {
-        MapCostFunction c = new MapCostFunction(variables,
-                factory.getSummarizeOperation().getNoGood());
-        c.setFactory(factory);
-        return c;
-    }
-
-    public CostFunction buildNeutralCostFunction(Variable[] variables) {
-        MapCostFunction c = new MapCostFunction(variables,
-                factory.getSummarizeOperation().getNoGood());
-        c.setFactory(factory);
-        c.initialize(factory.getCombineOperation().getNeutralValue());
-        return c;
-    }
-
     public CostFunction buildCostFunction(Variable[] variables, double initialValue) {
-        MapCostFunction c = new MapCostFunction(variables,
-                factory.getSummarizeOperation().getNoGood());
+        final double ng = factory.getSummarizeOperation().getNoGood();
+
+        MapCostFunction c = new MapCostFunction(variables, ng);
         c.setFactory(factory);
-        if (initialValue != factory.getSummarizeOperation().getNoGood())
+        if (initialValue != ng) {
             c.initialize(initialValue);
+        }
         return c;
     }
 
