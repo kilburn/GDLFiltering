@@ -77,8 +77,8 @@ public class VPStrategy {
 
 
         int solutionsToExpand = 0;
-        if (upnode instanceof GdlFNode) {
-            GdlFNode finode = (GdlFNode)upnode;
+        if (upnode instanceof UPNode) {
+            UPNode finode = (UPNode)upnode;
             solutionsToExpand = expansion.getNumberOfSolutionsToExpand(mappings, finode);
         }
 //        if (solutionsToExpand > 0) {

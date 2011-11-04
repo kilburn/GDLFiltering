@@ -552,6 +552,29 @@ public abstract class CostFunctionTest {
         assertEquals(sum, res);
         assertSame(sum.getFactory(), res.getFactory());
     }
+    
+    /**
+     * Test of summarize method, of class CostFunction.
+     */
+    @Test
+    public void testSummarize12() {
+        Variable[] vars = new Variable[]{a,b,c};
+        factory.setSummarizeOperation(CostFunction.Summarize.MAX);
+        double ng = CostFunction.Summarize.MAX.getNoGood();
+        
+        CostFunction fab = factory.buildCostFunction(new Variable[]{a,b});
+        fab.setValues(new double[]{ng, 0.7, 0.3, ng});
+        CostFunction sum = fab.summarize(vars);
+        assertSame(sum.getFactory(), fab.getFactory());
+        CostFunction res = factory.buildCostFunction(vars);
+        assertSame(sum.getFactory(), res.getFactory());
+        res.setValues(new double[]{
+            ng, ng, ng, 0.7, 0.7, 0.7,
+            0.3, 0.3, 0.3, ng, ng, ng
+        });
+        assertEquals(res, sum);
+        assertSame(sum.getFactory(), res.getFactory());
+    }
 
     /**
      * Test of combine method, of class CostFunction.

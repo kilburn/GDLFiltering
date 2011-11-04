@@ -1111,6 +1111,9 @@ public abstract class AbstractCostFunction implements CostFunction {
                 noffsets = 1;
                 for (int i : freeVars) {
                     noffsets *= variables[i].getDomain();
+                    if (noffsets < 0) {
+                        throw new RuntimeException("Offset index overflow.");
+                    }
                 }
                 
                 // Compute the actual offsets

@@ -195,7 +195,7 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
         }
 
         if (!(other instanceof MapCostFunction)) {
-            super.equals(other);
+            return super.equals(other, delta);
         }
 
         MapCostFunction o = (MapCostFunction)other;
