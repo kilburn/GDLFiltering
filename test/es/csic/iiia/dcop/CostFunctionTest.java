@@ -1031,6 +1031,44 @@ public abstract class CostFunctionTest {
     }
 
     /**
+     * Test of reduce method, of class CostFunction.
+     */
+    @Test
+    public void testSparseReduction() {
+        Variable v16 = new Variable("16", 6);
+        Variable v11 = new Variable("11", 6);
+        Variable v12 = new Variable("12", 6);
+
+        double ng = factory.getSummarizeOperation().getNoGood();
+
+        CostFunction fun = factory.buildSparseCostFunction(new Variable[]{v16, v11, v12}, ng);
+        fun.setValue(163, 73.96631371727);
+        fun.setValue(151, 72.77008262756101);
+        fun.setValue(167, 70.895384223334);
+        fun.setValue(153, 71.26213721527401);
+        fun.setValue(131, 73.6741710718003);
+        fun.setValue(130, 71.74955594174881);
+        fun.setValue(44, 74.085396688162);
+        fun.setValue(128, 73.48129298753511);
+        fun.setValue(165, 70.635340278851);
+        fun.setValue(166, 71.60852687730981);
+        fun.setValue(171, 74.269790733479);
+        fun.setValue(68, 71.89464128218279);
+
+        VariableAssignment map = new VariableAssignment();
+        map.put(v11, 3);
+        map.put(v12, 5);
+
+        CostFunction actual = fun.reduce(map);
+
+        CostFunction expected = factory.buildSparseCostFunction(new Variable[]{v16}, ng);
+        expected.setValue(4, 70.895384223334);
+        expected.setValue(3, 73.6741710718003);
+
+        assertEquals(expected, actual);
+    }
+
+    /**
      * Test of iterator method, of class CostFunction.
      */
     @Test

@@ -821,6 +821,7 @@ public abstract class AbstractCostFunction implements CostFunction {
                     break;
                 }
             }
+            if (!ok) continue;
 
             result.setValue(result.getIndex(map), getValue(i));
         }
