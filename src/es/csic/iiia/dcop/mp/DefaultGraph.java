@@ -117,7 +117,7 @@ public abstract class DefaultGraph<N extends Node, E extends Edge, R extends Res
                 }
             }
             if (converged) {
-                log.info("Convergence achieved.");
+                log.debug("Convergence achieved.");
             }
         }
 
