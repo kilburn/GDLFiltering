@@ -46,7 +46,7 @@ import es.csic.iiia.dcop.util.BytesSent;
  *
  * @param <N> Connected nodes type.
  * @param <M> Message type.
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public abstract class AbstractEdge<N extends Node, M extends Message> implements Edge<N,M> {
 
@@ -73,7 +73,7 @@ public abstract class AbstractEdge<N extends Node, M extends Message> implements
     /**
      * Builds a new edge copying the given one.
      *
-     * @param c1 node on one side of the edge.
+     * @param e edge to copy
      */
     public AbstractEdge(AbstractEdge<N,M> e) {
         copyFrom(e);

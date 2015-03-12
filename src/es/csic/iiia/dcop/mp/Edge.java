@@ -42,7 +42,7 @@ package es.csic.iiia.dcop.mp;
  *
  * @param <N>
  * @param <M>
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public interface Edge<N extends Node, M extends Message> {
 

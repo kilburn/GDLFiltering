@@ -60,7 +60,7 @@ import java.util.Set;
  * be made over cost functions, while delegating the actual cost/utility values
  * representation/storage to the concrete class that extends lit.
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public abstract class AbstractCostFunction implements CostFunction {
 
@@ -130,19 +130,16 @@ public abstract class AbstractCostFunction implements CostFunction {
         }
     }
 
-    /** {@inheritDoc} */
     public void initialize(Double initialValue) {
         for (long i=0; i<size; i++) {
             setValue(i, initialValue);
         }
     }
 
-    /** {@inheritDoc} */
     public void setFactory(CostFunctionFactory factory) {
         this.factory = factory;
     }
 
-    /** {@inheritDoc} */
     public CostFunctionFactory getFactory() {
         return factory;
     }
@@ -171,7 +168,6 @@ public abstract class AbstractCostFunction implements CostFunction {
         }
     }
 
-    /** {@inheritDoc} */
     public VariableAssignment getOptimalConfiguration(VariableAssignment mapping) {
         if (mapping == null) {
             mapping = new VariableAssignment(variables.length);
@@ -231,9 +227,6 @@ public abstract class AbstractCostFunction implements CostFunction {
         }
     }
 
-
-
-    /** {@inheritDoc} */
     public long getOptimalConfiguration() {
         // Find the maximal value
         Summarize operation = factory.getSummarizeOperation();
@@ -367,7 +360,6 @@ public abstract class AbstractCostFunction implements CostFunction {
         return sizes;
     }
 
-    /** {@inheritDoc} */
     public String getName() {
         StringBuilder buf = new StringBuilder();
         buf.append("F(");
@@ -422,12 +414,10 @@ public abstract class AbstractCostFunction implements CostFunction {
         return buf.toString();
     }
 
-    /** {@inheritDoc} */
     public double getValue(int[] index) {
         return getValue(subindexToIndex(index));
     }
 
-    /** {@inheritDoc} */
     public double getValue(VariableAssignment mapping) {
         long idx = this.getIndex(mapping);
         if (idx < 0)
@@ -435,22 +425,18 @@ public abstract class AbstractCostFunction implements CostFunction {
         return getValue(idx);
     }
 
-    /** {@inheritDoc} */
     public Set<Variable> getVariableSet() {
         return variableSet;
     }
 
-    /** {@inheritDoc} */
     public Set<Variable> getSharedVariables(CostFunction factor) {
         return getSharedVariables(factor.getVariableSet());
     }
 
-    /** {@inheritDoc} */
     public Set<Variable> getSharedVariables(Variable[] variables) {
         return getSharedVariables(Arrays.asList(variables));
     }
 
-    /** {@inheritDoc} */
     public Set<Variable> getSharedVariables(Collection variables) {
         HashSet<Variable> res = new HashSet<Variable>(variableSet);
         res.retainAll(variables);
@@ -460,7 +446,6 @@ public abstract class AbstractCostFunction implements CostFunction {
     /**
      * Returns the subindices list (ordered list of values for each variable of
      * this factor) corresponding to the given values array index.
-     * index.
      *
      * @param index values array index.
      * @return subindices list.
@@ -476,6 +461,13 @@ public abstract class AbstractCostFunction implements CostFunction {
         return idx;
     }
     
+    /**
+     * Fills in the subindices list (ordered list of values for each variable of
+     * this factor) corresponding to the given values array index.
+     *
+     * @param index values array index.
+     * @param idx subindices list to fill.
+     */
     protected void indexToSubindex(long index, int[] idx) {
         final int len = variables.length;
         for (int i = 0; i < len; i++) {
@@ -485,7 +477,6 @@ public abstract class AbstractCostFunction implements CostFunction {
         }
     }
 
-    /** {@inheritDoc} */
     public CostFunction negate() {
         Combine operation = factory.getCombineOperation();
         CostFunction result = factory.buildCostFunction(this);
@@ -501,7 +492,6 @@ public abstract class AbstractCostFunction implements CostFunction {
         return result;
     }
     
-    /** {@inheritDoc} */
     public CostFunction invert() {
         Combine operation = factory.getCombineOperation();
         CostFunction result = factory.buildCostFunction(this);
@@ -513,7 +503,6 @@ public abstract class AbstractCostFunction implements CostFunction {
         return result;
     }
 
-    /** {@inheritDoc} */
     public CostFunction combine(CostFunction factor) {
         final double ng = factory.getSummarizeOperation().getNoGood();
 
@@ -633,7 +622,6 @@ public abstract class AbstractCostFunction implements CostFunction {
     }
 
 
-    /** {@inheritDoc} */
     public CostFunction combine(List<CostFunction> fs) {
         fs = new ArrayList<CostFunction>(fs);
 
@@ -720,7 +708,6 @@ public abstract class AbstractCostFunction implements CostFunction {
         return result;
     }
 
-    /** {@inheritDoc} */
     public CostFunction normalize() {
         Normalize mode = factory.getNormalizationType();
         if (mode == Normalize.NONE) {
@@ -768,7 +755,6 @@ public abstract class AbstractCostFunction implements CostFunction {
         return result;
     }
 
-    /** {@inheritDoc} */
     public CostFunction reduce(VariableAssignment mapping) {
         if (mapping == null || mapping.isEmpty())
             return factory.buildCostFunction(this);
@@ -828,7 +814,6 @@ public abstract class AbstractCostFunction implements CostFunction {
         return result;
     }
 
-    /** {@inheritDoc} */
     public CostFunction filter(CostFunction f, double bound) {
         CostFunction result = factory.buildCostFunction(this);
         Summarize operation = factory.getSummarizeOperation();
@@ -910,7 +895,6 @@ public abstract class AbstractCostFunction implements CostFunction {
         return result;
     }
 
-    /** {@inheritDoc} */
     public void setValue(int[] index, double value) {
         setValue(subindexToIndex(index), value);
     }
@@ -939,7 +923,6 @@ public abstract class AbstractCostFunction implements CostFunction {
         return idx;
     }
 
-    /** {@inheritDoc} */
     public CostFunction summarize(Variable[] vars) {
         Summarize operation = factory.getSummarizeOperation();
 
@@ -970,8 +953,8 @@ public abstract class AbstractCostFunction implements CostFunction {
         return result;
     }
 
-    /** {@inheritDoc} */
-    @Override public long getNumberOfZeros() {
+    @Override
+    public long getNumberOfZeros() {
         int zeros = 0;
         for(TLongIterator it = iterator(); it.hasNext();){
             if (getValue(it.next()) == 0) {
@@ -981,7 +964,6 @@ public abstract class AbstractCostFunction implements CostFunction {
         return zeros;
     }
 
-    /** {@inheritDoc} */
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -1045,7 +1027,6 @@ public abstract class AbstractCostFunction implements CostFunction {
         return true;
     }
 
-    /** {@inheritDoc} */
     @Override
     public int hashCode() {
         int hash = 3;
@@ -1053,6 +1034,9 @@ public abstract class AbstractCostFunction implements CostFunction {
         return hash;
     }
 
+    /**
+     * Default implementation of conditioned iterator.
+     */
     public class DefaultConditionedIterator implements ConditionedIterator {
         private int[] referenceIdxs;
         private int[] idxsToReference;
@@ -1063,6 +1047,11 @@ public abstract class AbstractCostFunction implements CostFunction {
         private long idx;
         private int currentOffset;
         
+        /**
+         * Builds a conditioned iterator.
+         * @param reference conditioner cost function whose natural order should
+         * be followed.
+         */
         public DefaultConditionedIterator(CostFunction reference) {
             if (!(reference instanceof AbstractCostFunction)) {
                 throw new RuntimeException("Unable to build custom iterator for arbitrary CostFunction subtypes");

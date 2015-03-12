@@ -43,7 +43,7 @@ import es.csic.iiia.dcop.mp.Message;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class UBMessage implements Message {
 
@@ -58,7 +58,7 @@ public class UBMessage implements Message {
     }
 
     /**
-     * @param value the value to set
+     * @param ubs the values to set
      */
     public void setUBs(ValuesArray ubs) {
         this.ubs = ubs;
@@ -72,7 +72,7 @@ public class UBMessage implements Message {
     }
 
     /**
-     * @param value the value to set
+     * @param lb the lower bound to set
      */
     public void setLB(double lb) {
         this.lb = lb;

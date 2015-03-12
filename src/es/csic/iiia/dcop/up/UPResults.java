@@ -43,7 +43,8 @@ import es.csic.iiia.dcop.mp.DefaultResults;
 /**
  * Utility propagation algorithm results collection.
  * 
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
+ * @param <T> type of per-agent result to aggregate
  */
 public class UPResults<T extends UPResult> extends DefaultResults<T> {
 

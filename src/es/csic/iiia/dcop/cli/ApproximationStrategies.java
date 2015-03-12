@@ -43,7 +43,7 @@ import java.util.logging.Level;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public enum ApproximationStrategies {
     AAMAS_TOP_DOWN (es.csic.iiia.dcop.gdlf.strategies.UnlimitedComputationTopDown.class),

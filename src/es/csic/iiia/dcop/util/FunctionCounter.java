@@ -46,7 +46,7 @@ import java.text.DecimalFormatSymbols;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class FunctionCounter {
     private static long nSparse;

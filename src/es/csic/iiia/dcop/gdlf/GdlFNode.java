@@ -58,7 +58,7 @@ import org.slf4j.LoggerFactory;
 /**
  * GDL algorithm node.
  * 
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class GdlFNode extends UPNode<UPEdge<GdlFNode, GdlFMessage>, UPResult> {
 
@@ -153,8 +153,6 @@ public class GdlFNode extends UPNode<UPEdge<GdlFNode, GdlFMessage>, UPResult> {
     /**
      * Performs one "step" of the GDL algorithm, updating the clique's belief
      * and sending new messages to it's neighboors.
-     *
-     * @return number of constraint checks consumed.
      */
     public void run() {
         // Rebuild cost function list

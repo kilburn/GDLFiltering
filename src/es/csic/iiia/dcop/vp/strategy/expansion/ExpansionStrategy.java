@@ -44,7 +44,7 @@ import java.util.ArrayList;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public interface ExpansionStrategy {
     public int getNumberOfSolutionsToExpand(

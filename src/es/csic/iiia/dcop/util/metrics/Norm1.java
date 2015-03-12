@@ -44,7 +44,7 @@ import java.util.Iterator;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class Norm1 implements Metric {
 

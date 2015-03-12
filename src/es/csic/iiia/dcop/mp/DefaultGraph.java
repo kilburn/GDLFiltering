@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
  * @param <N>
  * @param <E>
  * @param <R>
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public abstract class DefaultGraph<N extends Node, E extends Edge, R extends Results>
         extends AbstractGraph<N, E, R> {

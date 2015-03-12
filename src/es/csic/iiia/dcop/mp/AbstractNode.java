@@ -45,7 +45,7 @@ import java.util.Collection;
  *
  * @param <E>
  * @param <R>
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public abstract class AbstractNode<E extends Edge, R extends Result> implements Node<E,R> {
 
@@ -105,6 +105,7 @@ public abstract class AbstractNode<E extends Edge, R extends Result> implements 
     /**
      * Returns true if the node has converged or false otherwise (only valid
      * for nodes operating in graph mode).
+     * @return true if the node has converged or false otherwise
      */
     public abstract boolean isConverged();
 
@@ -216,6 +217,7 @@ public abstract class AbstractNode<E extends Edge, R extends Result> implements 
 
     /**
      * Check if this node has finished operating.
+     * @return true if this node has finished operating or false otherwise
      */
     public boolean isFinished() {
         return finished;
@@ -274,21 +276,18 @@ public abstract class AbstractNode<E extends Edge, R extends Result> implements 
         return !isChild(edge);
     }
 
-    /** {@inheritDoc} */
     public void initialize() {
         sentBytes = 0;
     }
 
-    /** {@inheritDoc} */
     public boolean isRoot() {
         return root;
     }
 
-    /** {@inheritDoc} */
     public void setRoot() {
         this.root = true;
     }
-    /** {@inheritDoc} */
+    
     public void unsetRoot() {
         this.root = false;
     }

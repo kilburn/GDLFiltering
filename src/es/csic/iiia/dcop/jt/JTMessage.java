@@ -46,7 +46,7 @@ import java.util.Set;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class JTMessage implements Message {
 

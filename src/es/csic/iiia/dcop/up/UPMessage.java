@@ -42,7 +42,7 @@ import es.csic.iiia.dcop.mp.Message;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public interface UPMessage extends Message {
     public static boolean DIR_UP   = true;

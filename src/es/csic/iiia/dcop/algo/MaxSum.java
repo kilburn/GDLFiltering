@@ -51,7 +51,7 @@ import java.util.Set;
 /**
  * Max-Sum initialization algorithm.
  * 
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public abstract class MaxSum {
 

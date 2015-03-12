@@ -44,7 +44,7 @@ import java.util.ArrayList;
  * Cycle Based Runtime result collector.
  *
  * @param <R>
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class DefaultResults<R extends Result> implements Results<R> {
 
@@ -155,6 +155,12 @@ public class DefaultResults<R extends Result> implements Results<R> {
      *
      * @param maxCc Maximal cycle checks for a single agent during this cycle.
      * @param totalCc Total cycle checks amongs all agents during this cycle.
+     * @param maxBytes Maximum number of bytes transmitted by a single agent 
+     * during this cycle.
+     * @param totalBytes Total number of bytes transmitted by all agents during
+     * this cycle.
+     * @param maxMemory (rough approximation) of the maximum memory used by a
+     * single agent in this iteration.
      */
     public void addCycle(long maxCc, long totalCc, long maxBytes, long totalBytes,
             long maxMemory) {
@@ -176,6 +182,7 @@ public class DefaultResults<R extends Result> implements Results<R> {
     /**
      * Merges the given results object with this one.
      *
+     * @param other results object to merge with.
      */
     public void mergeResults(DefaultResults other) {
         for (int i=0; i<other.iterations; i++) {
@@ -190,7 +197,7 @@ public class DefaultResults<R extends Result> implements Results<R> {
     }
 
     /**
-     * Returns the <abbr title="Cycle Based Runtime">CBR</abbr> time of the
+     * Returns the CBR <em>(Cycle Based Runtime)</em> time of the
      * algorithm run, using <em>L = communicationCost * t</em>.
      *
      * @param communicationCost communication cost in respect to cycle check

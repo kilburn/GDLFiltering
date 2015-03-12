@@ -39,19 +39,45 @@
 package es.csic.iiia.dcop;
 
 /**
- *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * CostFunction iterator that follows the natural iteration order of another
+ * cost function (the conditioner).
+ * 
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
-
-
 public interface ConditionedIterator {
     
+    /** 
+     * Fetch the next element index given some index from the conditioner
+     * function.
+     * 
+     * @param referenceIdx index from the conditioner function
+     * @return index of the conditioned (local) function.
+     */
     public long next(long referenceIdx);
     
+    /**
+     * Fetch the next element index given some subindices from the
+     * conditioner function.
+     * 
+     * @param subidx subindices from the conditioner function.
+     * @return index of the conditioned (local) function.
+     */
     public long nextSubidxs(int[] subidx);
     
+    /**
+     * Checks wether there are more values in the local function that map
+     * to the last indicated conditioner index.
+     * 
+     * @return true if there are more elements matching the current conditioner
+     * index, or false otherwise.
+     */
     public boolean hasNextOffset();
 
+    /**
+     * Get the next element matching the latest conditioner index.
+     * 
+     * @return next element matching the latest conditioner index.
+     */
     public long nextOffset();
     
 }

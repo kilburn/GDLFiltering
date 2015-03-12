@@ -43,7 +43,7 @@ import es.csic.iiia.dcop.mp.DefaultResults;
 /**
  * Value Propagation algorithm's collection of results.
  * 
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class VPResults extends DefaultResults<VPResult> {
 

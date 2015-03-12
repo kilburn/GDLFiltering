@@ -45,7 +45,7 @@ import es.csic.iiia.dcop.util.Compressor;
 /**
  * GDL Utility message.
  * 
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class GdlMessage implements UPMessage {
     private CostFunction factor;

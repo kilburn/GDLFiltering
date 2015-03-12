@@ -44,7 +44,7 @@ import java.util.Collection;
  *
  * @param <E> 
  * @param <R>
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public interface Node<E extends Edge, R extends Result> {
 

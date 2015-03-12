@@ -45,7 +45,7 @@ import java.util.HashMap;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class MemoryTracker {
 

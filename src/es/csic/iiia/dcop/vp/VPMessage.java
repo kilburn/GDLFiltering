@@ -49,7 +49,7 @@ import java.util.Set;
  * Value propagation message, carrying the variable/value pairs assigned by
  * the ancestor nodes.
  * 
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class VPMessage implements Message {
     final static double log2 = Math.log(2);

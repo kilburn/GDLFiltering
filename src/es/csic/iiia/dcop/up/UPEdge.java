@@ -46,7 +46,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Utility Propagation edge.
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
+ * @param <N>
+ * @param <M>
  */
 public class UPEdge<N extends UPNode, M extends UPMessage> extends AbstractEdge<N, M> {
 

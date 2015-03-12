@@ -40,7 +40,12 @@ package es.csic.iiia.dcop.mp;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
+ * @param <G> Type of graph
+ * @param <N> Type of nodes
+ * @param <E> Type of edges
+ * @param <R> Type of per-agent result
+ * @param <RS> Type of aggregated results
  */
 public interface GraphFactory<G extends Graph, N extends Node, E extends Edge,
         R extends Result, RS extends Results> {

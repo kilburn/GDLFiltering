@@ -51,7 +51,7 @@ import java.util.HashSet;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class DSASolvingStrategy implements SolvingStrategy {
 

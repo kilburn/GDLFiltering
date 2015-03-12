@@ -51,7 +51,7 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class Compressor {
 

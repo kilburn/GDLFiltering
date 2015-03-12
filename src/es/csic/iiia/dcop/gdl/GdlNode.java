@@ -50,7 +50,7 @@ import java.util.HashSet;
 /**
  * GDL algorithm node.
  * 
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
 
@@ -134,8 +134,6 @@ public class GdlNode extends UPNode<UPEdge<GdlNode, GdlMessage>, UPResult> {
     /**
      * Performs one "step" of the GDL algorithm, updating the clique's belief
      * and sending new messages to it's neighboors.
-     *
-     * @return number of constraint checks consumed.
      */
     public void run() {
         final Modes mode = getMode();

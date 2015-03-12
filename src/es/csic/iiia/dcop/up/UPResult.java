@@ -47,7 +47,7 @@ import java.util.HashSet;
 /**
  * Utility Propagation result object for a single node.
  * 
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class UPResult implements Result {
     private CostFunction factor;

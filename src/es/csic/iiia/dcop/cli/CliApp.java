@@ -98,7 +98,7 @@ import org.slf4j.LoggerFactory;
  * Command Line Interface application logic handler.
  *
  * 
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class CliApp {
 

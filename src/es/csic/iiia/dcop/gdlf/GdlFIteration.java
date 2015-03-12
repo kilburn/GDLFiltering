@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
  * Utility Propagation message passing algorithm implementation using the GDL
  * algorithm as described in the Action-GDL paper.
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class GdlFIteration extends UPGraph<GdlFNode,UPEdge<GdlFNode, GdlFMessage>,UPResults> {
 

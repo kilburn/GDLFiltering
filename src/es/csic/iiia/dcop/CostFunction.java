@@ -46,7 +46,7 @@ import java.util.Set;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public interface CostFunction {
 
@@ -98,8 +98,8 @@ public interface CostFunction {
         /**
          * Returns the inverse of the given value.
          *
-         * Given {@link #eval(x, y)} and {@link #getNeutralValue()}, this function
-         * returns the value such that
+         * Given {@link #eval(double x, double y)} and 
+         * {@link #getNeutralValue()}, this function returns the value such that
          * <code>
          * eval(x, negate(x)) == getNeutralValue()
          * </code>
@@ -116,8 +116,8 @@ public interface CostFunction {
         /**
          * Returns the inverse of the given value.
          *
-         * Given {@link #eval(x, y)} and {@link #getNeutralValue()}, this function
-         * returns the value such that
+         * Given {@link #eval(double x, double y)} and 
+         * {@link #getNeutralValue()}, this function returns the value such that
          * <code>
          * eval(x, inverse(x)) == getNeutralValue()
          * </code>
@@ -224,7 +224,6 @@ public interface CostFunction {
      * operation.
      *
      * @param vars variables to summarize.
-     * @param operation operation to use.
      * @return a new CostFunction which is the result of summarizing this one over
      * the specified variables.
      */
@@ -252,6 +251,7 @@ public interface CostFunction {
      * Negates this factor, converting all its values into their negative
      * counterparts.
      *
+     * @return reference to the (newly created) negated cost function.
      * @see Combine#negate(double)
      * @see #combine(es.csic.iiia.dcop.CostFunction) 
      */
@@ -264,12 +264,16 @@ public interface CostFunction {
      * This function is intended to convert a minimization problem CostFunction 
      * into a maximization one, or vice-versa.
      *
+     * @return reference to the (newly created) inverted cost function.
      * @see Combine#invert(double)
      */
     CostFunction invert();
 
     /**
      * Normalizes this factor in the specified mode.
+     * @return reference to the normalized cost function (this is the same
+     * input function if it was already normalized, or a newly built one if it
+     * was not normalized previously).
      */
     CostFunction normalize();
 
@@ -308,9 +312,6 @@ public interface CostFunction {
      */
     CostFunction filter(List<CostFunction> fs, double bound);
 
-    /**
-     * {@inheritDoc}
-     */
     @Override boolean equals(Object obj);
 
     /**
@@ -332,9 +333,10 @@ public interface CostFunction {
      * MIN and it receives {x:1,z:1} through the mapping, it will return
      * {x:0,z:1,y:0} as the new mapping. If you want to ensure an assignment
      * consistent with an existing mapping, use
-     * {@link #reduce(java.util.Hashtable)} first.
+     * {@link #reduce(es.csic.iiia.dcop.VariableAssignment)} first.
      *
      * @param mapping current variable mappings.
+     * @return reference to the new mapping.
      */
     VariableAssignment getOptimalConfiguration(VariableAssignment mapping);
 
@@ -428,6 +430,12 @@ public interface CostFunction {
      */
     double getValue(VariableAssignment mapping);
 
+    /**
+     * Gets an array of all values in this function (ordered according to the
+     * variables array)
+     * 
+     * @return array of function's values
+     */
     double[] getValues();
 
     /**
@@ -440,7 +448,7 @@ public interface CostFunction {
     /**
      * Gets the set of variables shared with the given factor.
      *
-     * @parameter factor to compare against.
+     * @param factor to compare against.
      * @return set of variables shared with the given factor.
      */
     Set<Variable> getSharedVariables(CostFunction factor);
@@ -448,7 +456,7 @@ public interface CostFunction {
     /**
      * Gets the set of variables shared with the given variable collection.
      *
-     * @parameter variable collection to compare against.
+     * @param variables collection to compare against.
      * @return set of variables shared with the given variable collection.
      */
     Set<Variable> getSharedVariables(Collection variables);
@@ -456,7 +464,7 @@ public interface CostFunction {
     /**
      * Gets the set of variables shared with the array of variables.
      *
-     * @parameter array of variables to compare against.
+     * @param variables variables to compare against.
      * @return set of variables shared with the given array of variables.
      */
     Set<Variable> getSharedVariables(Variable[] variables);
@@ -504,7 +512,7 @@ public interface CostFunction {
      * Obtains an iterator over the linearized indices of this cost function,
      * following the natural order of the master's CostFunction indices.
      * 
-     * @parameter master CostFunction whose natural indices will be followed.
+     * @param master CostFunction whose natural indices will be followed.
      * @return Iterator over the indices of this cost function.
      */
     public ConditionedIterator conditionedIterator(CostFunction master);

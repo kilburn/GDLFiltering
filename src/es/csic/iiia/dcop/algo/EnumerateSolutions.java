@@ -43,7 +43,7 @@ import es.csic.iiia.dcop.CostFunction;
 /**
  * Enumerates all the possible combinations of any set of factors.
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class EnumerateSolutions {
 
@@ -56,7 +56,6 @@ public class EnumerateSolutions {
      * Enumerates all the possible combinations of the given set of factors.
      *
      * @param factors factors to combine.
-     * @param combineOperation combine operation to use.
      * @return bigger factor that enumerates the outcome of all the possible
      * combinations of the given factors.
      */

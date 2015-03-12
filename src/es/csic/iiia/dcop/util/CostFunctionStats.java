@@ -54,7 +54,7 @@ import java.util.TreeMap;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class CostFunctionStats {
 
@@ -123,6 +123,8 @@ public class CostFunctionStats {
 
     /**
      * Test stuff
+     * @param f
+     * @return 
      */
     public static double getEntropy(CostFunction f) {
         // Normalize to probabilities

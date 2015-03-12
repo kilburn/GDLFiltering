@@ -50,7 +50,7 @@ import java.util.NoSuchElementException;
  * algorithms that use filtering techniques will prefer to use other (sparse)
  * representations of the hypercubes.
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public final class HypercubeCostFunction extends AbstractCostFunction implements Serializable {
 
@@ -88,12 +88,10 @@ public final class HypercubeCostFunction extends AbstractCostFunction implements
         nNoGoods = factor.getNumberOfNoGoods();
     }
 
-    /** {@inheritDoc} */
     public double[] getValues() {
         return values;
     }
 
-    /** {@inheritDoc} */
     public void setValues(double[] values) {
         
         if (values.length != this.values.length) {
@@ -107,23 +105,19 @@ public final class HypercubeCostFunction extends AbstractCostFunction implements
         }
     }
 
-    /** {@inheritDoc} */
     @Override public TLongIterator iterator() {
         return new HypercubeIterator();
     }
     
-    /** {@inheritDoc} */
     @Override public MasterIterator masterIterator() {
         return new HypercubeMasterIterator();
     }
 
-    /** {@inheritDoc} */
     @Override public double getValue(long index) {
         ConstraintChecks.inc();
         return values[(int)index];
     }
 
-    /** {@inheritDoc} */
     public void setValue(long index, double value) {
         final double ng = getFactory().getSummarizeOperation().getNoGood();
         final double prev = values[(int)index];
@@ -136,17 +130,14 @@ public final class HypercubeCostFunction extends AbstractCostFunction implements
         values[(int)index] = value;
     }
 
-    /** {@inheritDoc} */
     public long getNumberOfNoGoods() {
         return nNoGoods;
     }
 
-    /** {@inheritDoc} */
     @Override public String getName() {
         return "H" + super.getName();
     }
 
-    /** {@inheritDoc} */
     /*public String toString() {
         StringBuffer buf = new StringBuffer();
         buf.append(getName());

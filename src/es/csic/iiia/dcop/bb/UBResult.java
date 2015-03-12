@@ -43,7 +43,7 @@ import es.csic.iiia.dcop.mp.Result;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class UBResult implements Result {
 

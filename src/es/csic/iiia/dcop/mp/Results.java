@@ -41,7 +41,7 @@ package es.csic.iiia.dcop.mp;
 /**
  *
  * @param <R> 
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public interface Results<R extends Result> {
 

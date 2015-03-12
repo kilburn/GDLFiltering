@@ -44,7 +44,7 @@ import java.util.List;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class FactorGraph {
 

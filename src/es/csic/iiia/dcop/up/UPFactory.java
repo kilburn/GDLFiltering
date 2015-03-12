@@ -45,7 +45,12 @@ import es.csic.iiia.dcop.mp.GraphFactory;
  * Factory interface for Utility Propagation message passing algorithms
  * over a graph.
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
+ * @param <G> Type of graph
+ * @param <N> Type of nodes
+ * @param <E> Type of edges
+ * @param <R> Type of per-agent result
+ * @param <RS> Type of aggregated results
  */
 public interface UPFactory<G extends UPGraph, N extends UPNode,
     E extends Edge, R extends UPResult, RS extends UPResults> extends

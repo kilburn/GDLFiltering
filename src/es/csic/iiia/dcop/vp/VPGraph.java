@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Value Propagation graph.
  * 
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class VPGraph extends DefaultGraph<VPNode,VPEdge,VPResults> {
 

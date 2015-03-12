@@ -45,7 +45,7 @@ import java.util.TreeSet;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class ValuesArray extends ArrayList<Double> {
 

@@ -41,7 +41,7 @@ package es.csic.iiia.dcop.util;
 /**
  * Integer identifier generator, to speed up object comoparison and hashing.
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class IdGenerator {
 

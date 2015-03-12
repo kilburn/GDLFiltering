@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class DaiDatasetReader {
     private static Logger log = LoggerFactory.getLogger(DaiDatasetReader.class);

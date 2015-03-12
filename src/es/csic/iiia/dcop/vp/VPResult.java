@@ -45,7 +45,7 @@ import java.util.ArrayList;
 /**
  * Value Propagation results for a single node.
  * 
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class VPResult implements Result {
 

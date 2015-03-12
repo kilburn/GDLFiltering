@@ -45,7 +45,7 @@ import java.util.ArrayList;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class StochasticalExpansion implements ExpansionStrategy {
     public static double p = 0.9;

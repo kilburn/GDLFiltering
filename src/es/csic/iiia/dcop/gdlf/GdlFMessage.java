@@ -50,7 +50,7 @@ import java.util.List;
 /**
  * GDL Utility message.
  * 
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class GdlFMessage implements UPMessage {
 

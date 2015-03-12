@@ -52,7 +52,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Utility Propagation message passing algorithm node.
  * 
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
+ * @param <E> Type of edges
+ * @param <R> Type of per-agent result
  */
 public abstract class UPNode<E extends UPEdge, R extends UPResult> extends
         AbstractNode<E, R> {

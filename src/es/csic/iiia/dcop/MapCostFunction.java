@@ -52,12 +52,12 @@ import gnu.trove.procedure.TLongDoubleProcedure;
  * algorithms that use filtering techniques will prefer to use other (sparse)
  * representations of the hypercubes.
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public final class MapCostFunction extends AbstractCostFunction implements Serializable {
 
     /**
-     * Configuration -> value mapping.
+     * Configuration to value mapping.
      */
     private TLongDoubleHashMap map;
 
@@ -70,6 +70,7 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
      * Creates a new CostFunction, initialized to the zero value.
      *
      * @param variables involved in this factor.
+     * @param zeroValue value to consider as zero.
      */
     protected MapCostFunction(Variable[] variables, double zeroValue) {
         super(variables);
@@ -105,7 +106,7 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
         map.clear();
     }
 
-    /** {@inheritDoc} */
+    @Override
     public double[] getValues() {
         double[] v = new double[(int)size];
         for (int i=0; i<size; i++) {
@@ -114,7 +115,7 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
         return v;
     }
 
-    /** {@inheritDoc} */
+    @Override
     public void setValues(double[] values) {
         reset();
 
@@ -127,17 +128,14 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
         }
     }
 
-    /** {@inheritDoc} */
     @Override public TLongIterator iterator() {
         return map.keySet().iterator();
     }
     
-    /** {@inheritDoc} */
     @Override public MasterIterator masterIterator() {
         return new MapMasterIterator();
     }
 
-    /** {@inheritDoc} */
     public double getValue(long index) {
         if (index < 0 || index >= size) 
             throw new IndexOutOfBoundsException(Long.toString(index));
@@ -147,7 +145,6 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
         return v;
     }
 
-    /** {@inheritDoc} */
     @Override public void setValue(long index, double value) {
         if (index < 0 || index >= size)
             throw new IndexOutOfBoundsException(Long.toString(index) + " out of "
@@ -160,17 +157,14 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
         }
     }
 
-    /** {@inheritDoc} */
     @Override public long getNumberOfNoGoods() {
         return size - map.size();
     }
 
-    /** {@inheritDoc} */
     @Override public String getName() {
         return "S" + super.getName();
     }
 
-    /** {@inheritDoc} */
     public boolean equals(CostFunction other, double delta) {
 
         if (other == null) {
@@ -222,7 +216,6 @@ public final class MapCostFunction extends AbstractCostFunction implements Seria
         return true;
     }
 
-    /** {@inheritDoc} */
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();

@@ -43,7 +43,7 @@ import java.util.Enumeration;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 
 

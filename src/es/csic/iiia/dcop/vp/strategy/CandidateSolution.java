@@ -42,7 +42,7 @@ import es.csic.iiia.dcop.VariableAssignment;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public abstract class CandidateSolution {
     protected double cost;

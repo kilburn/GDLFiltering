@@ -48,7 +48,7 @@ import java.util.ArrayList;
  * @param <N>
  * @param <E>
  * @param <R>
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public abstract class AbstractGraph<N extends Node,E extends Edge,R extends Results>
         implements Graph<N, E, R> {

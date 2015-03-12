@@ -45,7 +45,7 @@ import java.io.Serializable;
  * Immutable discrete variable, represented by a name and it's domain (number
  * of possible states).
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public final class Variable implements Serializable, Comparable<Variable> {
 

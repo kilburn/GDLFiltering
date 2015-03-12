@@ -42,7 +42,7 @@ import es.csic.iiia.dcop.mp.DefaultResults;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class JTResults extends DefaultResults<JTResult> {
 

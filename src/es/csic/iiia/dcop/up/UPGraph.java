@@ -47,7 +47,10 @@ import org.slf4j.LoggerFactory;
 /**
  * Utility propagation graph.
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
+ * @param <N> Type of nodes
+ * @param <E> Type of edges
+ * @param <R> Type of per-agent result
  */
 public abstract class UPGraph<N extends UPNode, E extends UPEdge, R extends UPResults>
         extends DefaultGraph<N,E,R> {

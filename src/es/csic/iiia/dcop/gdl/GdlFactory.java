@@ -47,7 +47,7 @@ import es.csic.iiia.dcop.up.UPFactory;
 /**
  * Factory for the Utility Propagation GDL implementation.
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class GdlFactory implements UPFactory<GdlGraph, GdlNode, UPEdge<GdlNode, GdlMessage>,
     UPResult, UPResults> {

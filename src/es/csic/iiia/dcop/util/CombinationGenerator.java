@@ -45,7 +45,7 @@ import java.util.Set;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class CombinationGenerator implements Iterator<Set<Variable>> {
     private int n;

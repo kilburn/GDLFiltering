@@ -41,7 +41,7 @@ import es.csic.iiia.dcop.gdlf.Limits;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class UnlimitedComputationTopDownControlStrategy implements ControlStrategy {
 

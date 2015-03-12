@@ -49,7 +49,7 @@ import org.apache.tools.bzip2.CBZip2OutputStream;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class CompressOutputStream extends OutputStream {
 

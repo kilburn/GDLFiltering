@@ -43,7 +43,7 @@ import gnu.trove.iterator.TLongIterator;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class Norm2 implements Metric {
 

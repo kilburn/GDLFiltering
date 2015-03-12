@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Value Propagation algorithm node.
  * 
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class VPNode extends AbstractNode<VPEdge, VPResult> {
 

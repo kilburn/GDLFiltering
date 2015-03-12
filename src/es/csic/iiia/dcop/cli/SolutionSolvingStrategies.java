@@ -43,7 +43,7 @@ import java.util.logging.Level;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public enum SolutionSolvingStrategies {
     OPTIMAL (es.csic.iiia.dcop.vp.strategy.solving.OptimalSolvingStrategy.class),

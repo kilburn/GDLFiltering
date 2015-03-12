@@ -44,7 +44,7 @@ import es.csic.iiia.dcop.CostFunction.Summarize;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class CostFunctionFactory {
 

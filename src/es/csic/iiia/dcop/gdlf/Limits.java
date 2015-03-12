@@ -40,7 +40,7 @@ package es.csic.iiia.dcop.gdlf;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 
 

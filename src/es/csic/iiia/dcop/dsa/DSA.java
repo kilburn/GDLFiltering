@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class DSA extends DefaultGraph<DSANode, DSAEdge, DSAResults> {
 
@@ -64,7 +64,7 @@ public class DSA extends DefaultGraph<DSANode, DSAEdge, DSAResults> {
      * Creates a DSA Message passing graph to approximately solve the
      * given factor graph.
      *
-     * @param cg
+     * @param fg
      */
     public DSA(FactorGraph fg) {
 

@@ -44,7 +44,7 @@ import java.util.TreeMap;
 
 /**
  *
- * @author Marc Pujol <mpujol at iiia.csic.es>
+ * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class VariableAssignment extends HashMap<Variable, Integer> {
 
