@@ -42,7 +42,7 @@ import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunction.Summarize;
 import es.csic.iiia.dcop.bb.UBGraph;
 import es.csic.iiia.dcop.bb.UBResults;
-import es.csic.iiia.dcop.gdlf.strategies.GdlFStrategy;
+import es.csic.iiia.dcop.gdlf.strategies.control.ControlStrategy;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.up.UPResult;
@@ -63,23 +63,23 @@ import org.slf4j.LoggerFactory;
  */
 public class GdlFGraph extends UPGraph<GdlFNode,UPEdge<GdlFNode, GdlFMessage>,UPResults> {
 
-    private static Logger log = LoggerFactory.getLogger(UPGraph.class);
+    private static final Logger log = LoggerFactory.getLogger(UPGraph.class);
     
     /**
      * Control parameters
      */
-    private GdlFStrategy strategy;
+    private final ControlStrategy strategy;
     
-    private double constant;
-    private boolean inverted;
+    private final double constant;
+    private final boolean inverted;
     
     private static VPStrategy solutionStrategy;
     
     private UBResults ubResults;
 
-    private GdlFIteration iteration = new GdlFIteration();
+    private final GdlFIteration iteration = new GdlFIteration();
     
-    public GdlFGraph(CostFunction constant, boolean inverted, GdlFStrategy strategy) {
+    public GdlFGraph(CostFunction constant, boolean inverted, ControlStrategy strategy) {
         super();
         this.constant = constant.getValue(0);
         this.inverted = inverted;
@@ -138,6 +138,9 @@ public class GdlFGraph extends UPGraph<GdlFNode,UPEdge<GdlFNode, GdlFMessage>,UP
                         summarize = n.getRelations().get(0).getFactory().getSummarizeOperation();
                         break;
                     }
+                }
+                if (summarize == null) {
+                    throw new RuntimeException("Unable to fetch summarization operation.");
                 }
 
 

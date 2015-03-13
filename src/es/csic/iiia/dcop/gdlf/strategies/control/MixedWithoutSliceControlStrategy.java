@@ -35,7 +35,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package es.csic.iiia.dcop.gdlf.strategies;
+package es.csic.iiia.dcop.gdlf.strategies.control;
 
 import es.csic.iiia.dcop.gdlf.Limits;
 
@@ -43,22 +43,9 @@ import es.csic.iiia.dcop.gdlf.Limits;
  *
  * @author Marc Pujol (mpujol at iiia.csic.es)
  */
-public class LimitedComputationBottomUpControlStrategy implements ControlStrategy {
-
-    private int r = 1;
-    private int maxr;
-
-    public boolean hasMoreElements() {
-        return r < maxr;
-    }
-
+public class MixedWithoutSliceControlStrategy extends AbstractControlStrategy {
     public Limits nextElement() {
         r++;
-        return new Limits(r, r, r);
+        return new Limits(r+delta, r, r);
     }
-
-    public void setMaxR(int r) {
-        this.maxr = r;
-    }
-    
 }

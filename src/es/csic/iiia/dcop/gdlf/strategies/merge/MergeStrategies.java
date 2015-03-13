@@ -36,19 +36,74 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.gdlf.strategies;
+package es.csic.iiia.dcop.gdlf.strategies.merge;
 
-import es.csic.iiia.dcop.CostFunction;
-import java.util.List;
+import es.csic.iiia.dcop.util.metrics.Metric;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- *
+ * Singleton control strategy builder.
+ * 
  * @author Marc Pujol (mpujol at iiia.csic.es)
  */
-public class DummySliceStrategy implements SliceStrategy {
+public enum MergeStrategies {
+    CONTENT_BASED (ContentBasedMergeStrategy.class, true),
+    SCOPE_BASED (ScopeBasedMergeStrategy.class, false),
+    ;
+    private static final Logger LOG = Logger.getLogger(MergeStrategies.class.getName());
 
-    public List<CostFunction> slice(List<CostFunction> fs, int r) {
-        return fs;
+    private final Class<? extends MergeStrategy> strategy;
+    private final boolean usesMetric;
+    
+    private MergeStrategy instance;
+    private static Metric metric;
+    
+    MergeStrategies(Class<? extends MergeStrategy> c, boolean usesMetric) {
+        this.strategy = c;
+        this.usesMetric = usesMetric;
     }
 
+    public boolean usesMetric() {
+        return usesMetric;
+    }
+
+    public Metric getMetric() {
+        return metric;
+    }
+    
+    public static void setMetric(Metric m) {
+        metric = m;
+    }
+    
+    public MergeStrategy getInstance() {
+        if (instance == null) {
+            instance = buildInstance();
+        }
+        
+        return instance;
+    }
+    
+    private MergeStrategy buildInstance() {
+        MergeStrategy result = null;
+        
+        if (usesMetric && metric == null) {
+            System.err.println("Error: you must specify a metric for the \""
+                    + toString().toLowerCase().replace('_', '-') + 
+                    "\" merge strategy.");
+            System.exit(1);
+        }
+        
+        try {
+            if (usesMetric) {
+                result = strategy.getDeclaredConstructor(Metric.class).newInstance(metric);
+            } else {
+                result = strategy.newInstance();
+            }
+        } catch (Exception ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
+        
+        return result;
+    }
 }

@@ -36,52 +36,29 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.gdlf.strategies;
+package es.csic.iiia.dcop.gdlf.strategies.filter;
 
 import es.csic.iiia.dcop.CostFunction;
-import es.csic.iiia.dcop.util.MemoryTracker;
-import java.util.ArrayList;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- *
+ * Filering strategy that defines how sub-optimal tuples are detected and
+ * removed from outgoing messages.
+ * 
  * @author Marc Pujol (mpujol at iiia.csic.es)
  */
-public class OneSidedFilterStrategy implements FilterStrategy {
+public interface FilterStrategy {
     
-    private static Logger log = LoggerFactory.getLogger(OneSidedFilterStrategy.class);
-
-    // TODO: Memory tracking
-    public List<CostFunction> filter(List<CostFunction> fs, List<CostFunction> pfs, double ub) {
-        
-        if (Double.isNaN(ub)) {
-            return fs;
-        }
-
-        // Filtering requires copying the filtered function at each step,
-        // so we account for the biggest one.
-        long maxmem = Long.MIN_VALUE;
-        ArrayList<CostFunction> res = new ArrayList<CostFunction>();
-        for (int i=0, len=fs.size(); i<len; i++) {
-            List<CostFunction> filterers = pfs;
-
-            final CostFunction outf = fs.get(i);
-            maxmem = Math.max(maxmem, MemoryTracker.getRequiredMemory(outf));
-            
-            final CostFunction filtered = outf.filter(filterers, ub);
-            if (log.isTraceEnabled()) {
-                log.trace("Input b:" + ub + " f:" + outf);
-                log.trace("Filtered: " + filtered);
-            }
-            res.add(filtered);
-        }
-        
-        MemoryTracker.add(maxmem);
-        return res;        
-    }
-
+    /**
+     * Filters the outgoing functions using the given previously received
+     * functions and the specified global upper bound.
+     * 
+     * @param outgoingFunctions
+     * @param previousFunctions
+     * @param upperBound
+     * @return a list of filtered cost functions.
+     */
+    public List<CostFunction> filter(List<CostFunction> outgoingFunctions, 
+            List<CostFunction> previousFunctions, double upperBound);
     
-
 }

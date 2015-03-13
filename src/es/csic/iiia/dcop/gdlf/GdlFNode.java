@@ -42,7 +42,9 @@ import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.VariableAssignment;
-import es.csic.iiia.dcop.gdlf.strategies.GdlFStrategy;
+import es.csic.iiia.dcop.gdlf.strategies.filter.FilterStrategy;
+import es.csic.iiia.dcop.gdlf.strategies.merge.MergeStrategy;
+import es.csic.iiia.dcop.gdlf.strategies.slice.SliceStrategy;
 import es.csic.iiia.dcop.up.UPEdge;
 import es.csic.iiia.dcop.up.UPGraph;
 import es.csic.iiia.dcop.up.UPNode;
@@ -84,10 +86,9 @@ public class GdlFNode extends UPNode<UPEdge<GdlFNode, GdlFMessage>, UPResult> {
      */
     private HashMap<UPEdge, List<CostFunction>> receivedFunctions;
     
-    /**
-     * Strategies
-     */
-    private GdlFStrategy strategy;
+    private MergeStrategy mergeStrategy;
+    private FilterStrategy filterStrategy;
+    private SliceStrategy sliceStrategy;
 
     /**
      * Constructs a new clique with the specified member variable and null
@@ -221,7 +222,7 @@ public class GdlFNode extends UPNode<UPEdge<GdlFNode, GdlFMessage>, UPResult> {
 
             // Merge
             List<Variable> vs = Arrays.asList(e.getVariables());
-            fs = strategy.merge(fs, vs, limits.getMergeComputation(), limits.getMergeCommunication());
+            fs = mergeStrategy.merge(fs, vs, limits.getMergeComputation(), limits.getMergeCommunication());
             
             // Summarize
             for (int i=0, len=fs.size(); i<len; i++) {
@@ -234,11 +235,11 @@ public class GdlFNode extends UPNode<UPEdge<GdlFNode, GdlFMessage>, UPResult> {
             // Filter
             if (!Double.isNaN(bound)) {
                 List<CostFunction> pfs = receivedFunctions.get(e);
-                fs = strategy.filter(fs, pfs, bound);
+                fs = filterStrategy.filter(fs, pfs, bound);
             }
             
             // Slice
-            fs = strategy.slice(fs, limits.getSplitCommunication());
+            fs = sliceStrategy.slice(fs, limits.getSplitCommunication());
             
             GdlFMessage msg = new GdlFMessage(fs);
             
@@ -278,8 +279,16 @@ public class GdlFNode extends UPNode<UPEdge<GdlFNode, GdlFMessage>, UPResult> {
         this.limits = limits;
     }
 
-    void setStrategy(GdlFStrategy strategy) {
-        this.strategy = strategy;
+    public void setMergeStrategy(MergeStrategy mergeStrategy) {
+        this.mergeStrategy = mergeStrategy;
+    }
+
+    public void setFilterStrategy(FilterStrategy filterStrategy) {
+        this.filterStrategy = filterStrategy;
+    }
+
+    public void setSliceStrategy(SliceStrategy sliceStrategy) {
+        this.sliceStrategy = sliceStrategy;
     }
 
 }

@@ -40,6 +40,12 @@ package es.csic.iiia.dcop.cli;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.dsa.DSA;
+import es.csic.iiia.dcop.gdlf.strategies.control.ControlStrategies;
+import es.csic.iiia.dcop.gdlf.strategies.filter.FilterStrategies;
+import es.csic.iiia.dcop.gdlf.strategies.merge.MergeStrategies;
+import es.csic.iiia.dcop.gdlf.strategies.slice.SliceStrategies;
+import es.csic.iiia.dcop.util.metrics.Metric;
+import es.csic.iiia.dcop.util.metrics.Metrics;
 import es.csic.iiia.dcop.vp.strategy.VPStrategy;
 import es.csic.iiia.dcop.vp.strategy.expansion.StochasticalExpansion;
 import gnu.getopt.Getopt;
@@ -85,6 +91,8 @@ public class Cli {
         System.err.println("      - figdl : Filtered IGDL over junction tree solver.");
         System.err.println("      - max-sum : max-sum approximation.");
         System.err.println("      - dsa : dsa approximation (p=0.9).");
+        System.err.println("  --probability=<value> (0.9)");
+        System.err.println("    Sets the probability for the DSA algorithm.");
         
         System.err.println();
         System.err.println("-- Commutative semiring specification");
@@ -148,30 +156,55 @@ public class Cli {
 
         System.err.println();
         System.err.println("-- GDL with filtering settings");
-        System.err.println("  -i value, --igdl-r value (2)");
-        System.err.println("    Sets the 'r' to value in igdl.");
         System.err.println("  --nsols=<number> (1)");
         System.err.println("    Sets figdl to test <number> number of possible solutions at each iteration");
-        System.err.println("  --old-style-filtering");
-        System.err.println("    Uses the old-style filtering method (filter using outgoing functions only).");
+        System.err.println("  -F strategy, --filter-strategy=strategy (two-sided)");
+        System.err.println("    Uses the specified filtering strategy, where strategy is one of:");
+        System.err.println("      - one-sided : one-sided (traditional) filtering");
+        System.err.println("      - two-sided : two-sided (improved) filtering");
         System.err.println("  -p strategy, --approximation-strategy=strategy (dcr-bottom-up)");
-        System.err.println("    Uses the specified approximation strategy, where strategy is one of: ");
-        System.err.println("      - aamas-top-down  : zero-tracking decomposition unlimited memory");
-        System.err.println("      - aamas-bottom-up : scope-based partitioning unlimited memory");
-        System.err.println("      - dcr-bottom-up   : scope-based partitioning limited memory");
-        System.err.println("      - mixed-noslice   : mixed (r+delta, r, r) scope-based partitioning.");
-        System.err.println("      - mixed-slice     : mixed (r+delta, r+delta, r) scp + zero-decomposition.");
-        System.err.println("      - mixed-uslice    : mixed (inf, r+delta, r) scp + zero-decomposition.");
+        System.err.println("    Aliases for combined strategies, where strategy is one of:");
+        System.err.println("      - aamas-top-down  : -C top-down -M scope-based -S zero-tracking");
+        System.err.println("      - aamas-bottom-up : -C ulimited-bottom-up -M scope-based -S none");
+        System.err.println("      - dcr-bottom-up   : -C limited-bottom-up -M scope-based -S none");
+        System.err.println("      - mixed-noslice   : -C mixed-noslice -M scope-based -S none");
+        System.err.println("      - mixed-slice     : -C mixed-slice -M scope-based -S zerod");
+        System.err.println("      - mixed-uslice    : -C mixed-uslice -M scope-based -S zerod");
+        System.err.println("  -C strategy, --control-strategy=strategy (limited-bottom-up)");
+        System.err.println("    Uses the specified per-iteration bounds control strategy, where strategy is one of:");
+        System.err.println("      - limited-bottom-up   : bottom-up with limited computation");
+        System.err.println("      - unlimited-bottom-up : bottom-up with unlimited computation");
+        System.err.println("      - top-down            : top-down (requires unlimited computation)");
+        System.err.println("      - mixed-noslice       : mixed (r+delta, r, r)");
+        System.err.println("      - mixed-slice         : mixed (r+delta, r+delta, r)");
+        System.err.println("      - mixed-uslice        : mixed (inf, r+delta, r)");
+        System.err.println("  -i value, --figdl-r value (2)");
+        System.err.println("    Sets the 'r' to value in igdl.");
         System.err.println("  --delta=<value> (0)");
         System.err.println("    Sets the delta parameter for the mixed approximation strategies.");
-        System.err.println("  --probability=<value> (0.9)");
-        System.err.println("    Sets the probability parameter of both DSA algorithm and stochastical solution expansion.");
+        System.err.println("  -M strategy, --merge-strategy=strategy (limited-bottom-up)");
+        System.err.println("    Uses the specified message merging strategy, where strategy is one of:");
+        System.err.println("      - scope-based   : scope-based partitioning");
+        System.err.println("      - content-based : content-based partitioning");
+        System.err.println("  --metric=<metric> (norm1)");
+        System.err.println("    Uses the specified metric function, where metric is one of:");
+        System.err.println("      - norm0   : 0-norm of the gained information");
+        System.err.println("      - norm1   : 1-norm of the gained information (LRE)");
+        System.err.println("      - norm2   : 2-norm of the gained information (Max squared information gain)");
+        System.err.println("      - norminf : inf-norm of the gained information (LMRE)");
+        System.err.println("  -S strategy, --slice-strategy=strategy (dummy)");
+        System.err.println("    Uses the specified slicing strategy, where strategy is one of:");
+        System.err.println("      - none        : does not perform slicing (for *-bottom-up or mixed-noslice control strategies)");
+        System.err.println("      - brute-force : brute-force decomposition");
+        System.err.println("      - zerod       : zero-tracking decomposition");
         System.err.println("  --solution-expansion=strategy (root)");
         System.err.println("    Uses the specified solution expansion strategy, where strategy is one of: ");
         System.err.println("      - root        : root expands all solutions (up to its own maximum)");
         System.err.println("      - greedy      : each node expands as much solutions as possible");
         System.err.println("      - stochastic  : each solution is expanded with a probability (p=0.9)");
         System.err.println("      - information : expansion based on the information loss observed during utility propagation.");
+        System.err.println("  --probability=<value> (0.9)");
+        System.err.println("    Sets the probability value for stochastical solution expansion.");
         System.err.println("  --solution-solving=strategy (optimal)");
         System.err.println("    Uses the specified solution solving strategy, where strategy is one of: ");
         System.err.println("      - optimal     : solutions are computed optimaly");
@@ -198,15 +231,19 @@ public class Cli {
             new LongOpt("export-tree", LongOpt.OPTIONAL_ARGUMENT, null, 4),
             new LongOpt("evidence-file", LongOpt.OPTIONAL_ARGUMENT, null, 10),
             new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
-            new LongOpt("igdl-r", LongOpt.REQUIRED_ARGUMENT, null, 'i'),
+            new LongOpt("figdl-r", LongOpt.REQUIRED_ARGUMENT, null, 'i'),
             new LongOpt("jt-tries", LongOpt.REQUIRED_ARGUMENT, null, 'j'),
             new LongOpt("load-tree", LongOpt.REQUIRED_ARGUMENT, null, 'l'),
             new LongOpt("max-clique-size", LongOpt.REQUIRED_ARGUMENT, null, 'm'),
             new LongOpt("normalize", LongOpt.REQUIRED_ARGUMENT, null, 'n'),
             new LongOpt("nsols", LongOpt.REQUIRED_ARGUMENT, null, 1),
             new LongOpt("output-format", LongOpt.REQUIRED_ARGUMENT, null, 'o'),
-            new LongOpt("old-style-filtering", LongOpt.NO_ARGUMENT, null, 8),
             new LongOpt("approximation-strategy", LongOpt.REQUIRED_ARGUMENT, null, 'p'),
+            new LongOpt("control-strategy", LongOpt.REQUIRED_ARGUMENT, null, 'C'),
+            new LongOpt("merge-strategy", LongOpt.REQUIRED_ARGUMENT, null, 'M'),
+            new LongOpt("filter-strategy", LongOpt.REQUIRED_ARGUMENT, null, 'F'),
+            new LongOpt("slice-strategy", LongOpt.REQUIRED_ARGUMENT, null, 'S'),
+            new LongOpt("metric", LongOpt.REQUIRED_ARGUMENT, null, 8),
             new LongOpt("delta", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("probability", LongOpt.REQUIRED_ARGUMENT, null, 9),
             new LongOpt("random-noise", LongOpt.OPTIONAL_ARGUMENT, null, 'r'),
@@ -215,7 +252,7 @@ public class Cli {
             new LongOpt("solution-solving", LongOpt.REQUIRED_ARGUMENT, null, 7),
             new LongOpt("trace", LongOpt.OPTIONAL_ARGUMENT, null, 't'),
         };
-        Getopt g = new Getopt(programName, argv, "a:c:e:f::g::hi:j:l:m:n:o:p:r::s:t::", longopts);
+        Getopt g = new Getopt(programName, argv, "a:c:e:f::g::hi:j:l:m:n:o:p:C:M:F:S:r::s:t::", longopts);
 
         CliApp cli = new CliApp();
         int c=0;
@@ -280,6 +317,18 @@ public class Cli {
                     }
                     break;
 
+                case 8:
+                    arg = g.getOptarg().toUpperCase().replace('-','_');
+                    try {
+                        Metric metric = Metrics.valueOf(arg).getInstance();
+                        MergeStrategies.setMetric(metric);
+                        SliceStrategies.setMetric(metric);
+                    } catch (IllegalArgumentException e) {
+                        System.err.println("Error: invalid metric \"" + arg + "\"");
+                        System.exit(0);
+                    }
+                    break;
+                    
                 case 9:
                     arg = g.getOptarg();
                     double p = Double.parseDouble(arg);
@@ -422,13 +471,53 @@ public class Cli {
                 case 'p':
                     arg = g.getOptarg().toUpperCase().replace('-','_');
                     try {
-                        cli.setPartitionStrategy(ApproximationStrategies.valueOf(arg));
+                        ApproximationStrategies.valueOf(arg).apply(cli);
                     } catch (IllegalArgumentException e) {
                         System.err.println("Error: invalid heuristic \"" + arg + "\"");
                         System.exit(0);
                     }
                     break;
 
+                case 'C':
+                    arg = g.getOptarg().toUpperCase().replace('-','_');
+                    try {
+                        cli.setControlStrategy(ControlStrategies.valueOf(arg));
+                    } catch (IllegalArgumentException e) {
+                        System.err.println("Error: invalid control strategy \"" + arg + "\"");
+                        System.exit(0);
+                    }
+                    break;
+                
+                case 'M':
+                    arg = g.getOptarg().toUpperCase().replace('-','_');
+                    try {
+                        cli.setMergeStrategy(MergeStrategies.valueOf(arg));
+                    } catch (IllegalArgumentException e) {
+                        System.err.println("Error: invalid merge strategy \"" + arg + "\"");
+                        System.exit(0);
+                    }
+                    break;
+                
+                case 'F':
+                    arg = g.getOptarg().toUpperCase().replace('-','_');
+                    try {
+                        cli.setFilterStrategy(FilterStrategies.valueOf(arg));
+                    } catch (IllegalArgumentException e) {
+                        System.err.println("Error: invalid filtering strategy \"" + arg + "\"");
+                        System.exit(0);
+                    }
+                    break;
+                    
+                case 'S':
+                    arg = g.getOptarg().toUpperCase().replace('-','_');
+                    try {
+                        cli.setSliceStrategy(SliceStrategies.valueOf(arg));
+                    } catch (IllegalArgumentException e) {
+                        System.err.println("Error: invalid slice strategy \"" + arg + "\"");
+                        System.exit(0);
+                    }
+                    break;
+                    
                 case 'r':
                     arg = g.getOptarg();
                     if (arg == null) {

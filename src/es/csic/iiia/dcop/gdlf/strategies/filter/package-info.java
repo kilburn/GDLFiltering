@@ -36,23 +36,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.gdlf.strategies;
-
-import es.csic.iiia.dcop.CostFunction;
-import es.csic.iiia.dcop.Variable;
-import java.util.Collection;
-import java.util.List;
-
 /**
- *
- * @author Marc Pujol (mpujol at iiia.csic.es)
+ * Slicing strategies that define how to decompose an outgoing (list of)
+ * function(s) into functions that fit within the communication limit.
  */
+package es.csic.iiia.dcop.gdlf.strategies.filter;
 
-
-public interface MergeStrategy {
-    
-    public List<CostFunction> merge(List<CostFunction> fs, 
-            Collection<Variable> edgeVariables, int rComputation, 
-            int rCommunication);
-    
-}

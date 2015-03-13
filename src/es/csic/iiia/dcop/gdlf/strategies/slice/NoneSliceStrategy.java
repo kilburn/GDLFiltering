@@ -36,60 +36,20 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.gdlf.strategies;
+package es.csic.iiia.dcop.gdlf.strategies.slice;
 
+import es.csic.iiia.dcop.gdlf.strategies.slice.SliceStrategy;
 import es.csic.iiia.dcop.CostFunction;
-import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.gdlf.Limits;
-import java.util.Collection;
 import java.util.List;
 
 /**
  *
  * @author Marc Pujol (mpujol at iiia.csic.es)
  */
-public abstract class AbstractGdlFStrategy implements GdlFStrategy {
-    
-    private final ControlStrategy control;
-    private final MergeStrategy merge;
-    private final FilterStrategy filter;
-    private final SliceStrategy slice;
-    
-    public AbstractGdlFStrategy(ControlStrategy control,
-            MergeStrategy merge, FilterStrategy filter, SliceStrategy slice)
-    {
-        this.control = control;
-        this.merge = merge;
-        this.filter = filter;
-        this.slice = slice;
-    }
-    
-    protected ControlStrategy getControlStrategy() {
-        return control;
-    }
-
-    public boolean hasMoreElements() {
-        return control.hasMoreElements();
-    }
-
-    public Limits nextElement() {
-        return control.nextElement();
-    }
-
-    public List<CostFunction> merge(List<CostFunction> fs, Collection<Variable> edgeVariables, int rComputation, int rCommunication) {
-        return merge.merge(fs, edgeVariables, rComputation, rCommunication);
-    }
-
-    public List<CostFunction> filter(List<CostFunction> fs, List<CostFunction> pfs, double ub) {
-        return filter.filter(fs, pfs, ub);
-    }
+public class NoneSliceStrategy implements SliceStrategy {
 
     public List<CostFunction> slice(List<CostFunction> fs, int r) {
-        return slice.slice(fs, r);
+        return fs;
     }
-    
-    public void setMaxR(int r) {
-        control.setMaxR(r);
-    }
-    
+
 }

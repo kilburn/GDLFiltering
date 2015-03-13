@@ -36,7 +36,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.gdlf.strategies;
+package es.csic.iiia.dcop.gdlf.strategies.merge;
 
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.Variable;
@@ -50,7 +50,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * Combines functions by taking into account the resulting partition's arities,
+ * but disregarding their contents.
+ * 
  * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public class ScopeBasedMergeStrategy implements MergeStrategy {
@@ -162,7 +164,6 @@ public class ScopeBasedMergeStrategy implements MergeStrategy {
         }
         
         // And return a list after combining the functions inside each partition
-        // Now that we have all the parts, summarize and add them
         ArrayList<CostFunction> result = new ArrayList<CostFunction>();
         log.trace("-- Resulting partitions");
         for (int i=0, len=partitions.size(); i<len; i++) {

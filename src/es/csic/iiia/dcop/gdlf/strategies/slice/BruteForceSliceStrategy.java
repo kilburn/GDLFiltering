@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  * 
- * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
+ * Copyright (c) 2010, IIIA-CSIC, Artificial Intelligence Research Institute
  * All rights reserved.
  * 
  * Redistribution and use of this software in source and binary forms, with or
@@ -36,30 +36,55 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.gdlf.strategies;
+package es.csic.iiia.dcop.gdlf.strategies.slice;
+
+import es.csic.iiia.dcop.CostFunction;
+import es.csic.iiia.dcop.util.CostFunctionStats;
+import es.csic.iiia.dcop.util.metrics.Metric;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- *
+ * Brute force decomposition method.
+ * 
  * @author Marc Pujol (mpujol at iiia.csic.es)
  */
-
-
-public class AbstractMixedStrategy extends AbstractGdlFStrategy {
+public class BruteForceSliceStrategy implements SliceStrategy {
     
-    public AbstractMixedStrategy(AbstractMixedControlStrategy control,
-            MergeStrategy merge, FilterStrategy filter, SliceStrategy slice)
-    {
-        super(control,
-                new ScopeBasedMergeStrategy(), new TwoSidedFilterStrategy(),
-                new ZeroDecompositionSliceStrategy());
+    private final Metric metric;
+    
+    /**
+     * Builds a new brute force decompositioner.
+     * 
+     * @param metric metric to evaluate how informative the extracted functions
+     * are.
+     */
+    public BruteForceSliceStrategy(Metric metric) {
+        this.metric = metric;
     }
-    
-    public void setDelta(int delta) {
-        ControlStrategy control = getControlStrategy();
-        if (!(control instanceof AbstractMixedControlStrategy)) {
-            throw new RuntimeException("Invalid control strategy.");
+
+    public List<CostFunction> slice(List<CostFunction> fs, int r) {
+        List<CostFunction> res = new ArrayList<CostFunction>();
+        for (CostFunction f : fs) {
+            sliceFunction(f, r, res);
         }
-        ((AbstractMixedControlStrategy)control).setDelta(delta);
+
+        return res;
     }
-    
+
+    private void sliceFunction(CostFunction f, int r, List<CostFunction> fs) {
+        // Don't try to break a fitting message into smaller pieces
+        if (f.getVariableSet().size() <= r) {
+            fs.add(f);
+            return;
+        }
+        
+        // Obtain the projection approximation
+        CostFunction[] res = CostFunctionStats.getBestApproximation(
+                f, r, metric, Integer.MAX_VALUE);
+        for (int i=0; i<res.length-1; i++) {
+            fs.add(res[i]);
+        }
+    }
+
 }

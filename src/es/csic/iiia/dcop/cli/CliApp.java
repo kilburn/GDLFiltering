@@ -43,9 +43,7 @@ import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import es.csic.iiia.dcop.CostFunction;
 import es.csic.iiia.dcop.CostFunctionFactory;
-import es.csic.iiia.dcop.CostFunctionTypeFactory;
 import es.csic.iiia.dcop.FactorGraph;
-import es.csic.iiia.dcop.MapCostFunctionFactory;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.VariableAssignment;
 import es.csic.iiia.dcop.algo.JunctionTreeAlgo;
@@ -60,8 +58,14 @@ import es.csic.iiia.dcop.dsa.DSAResults;
 import es.csic.iiia.dcop.gdl.GdlFactory;
 import es.csic.iiia.dcop.gdlf.GdlFFactory;
 import es.csic.iiia.dcop.gdlf.GdlFGraph;
-import es.csic.iiia.dcop.gdlf.strategies.AbstractMixedStrategy;
-import es.csic.iiia.dcop.gdlf.strategies.GdlFStrategy;
+import es.csic.iiia.dcop.gdlf.strategies.control.ControlStrategies;
+import es.csic.iiia.dcop.gdlf.strategies.control.ControlStrategy;
+import es.csic.iiia.dcop.gdlf.strategies.filter.FilterStrategies;
+import es.csic.iiia.dcop.gdlf.strategies.filter.FilterStrategy;
+import es.csic.iiia.dcop.gdlf.strategies.merge.MergeStrategies;
+import es.csic.iiia.dcop.gdlf.strategies.merge.MergeStrategy;
+import es.csic.iiia.dcop.gdlf.strategies.slice.SliceStrategies;
+import es.csic.iiia.dcop.gdlf.strategies.slice.SliceStrategy;
 import es.csic.iiia.dcop.io.CliqueTreeSerializer;
 import es.csic.iiia.dcop.io.DatasetReader;
 import es.csic.iiia.dcop.io.EvidenceReader;
@@ -110,11 +114,20 @@ public class CliApp {
         log.info("[Info] Combine: " + combineOperation.toString());
         log.info("[Info] Normalize: " + normalization.toString());
         if (algorithm == Algorithm.GDLF) {
-            log.info("[Info] Approximation: " + approximationStrategy.toString());
-            if (approximationStrategy == ApproximationStrategies.MIXED_NOSLICE
-                    || approximationStrategy == ApproximationStrategies.MIXED_SLICE
-                    || approximationStrategy == ApproximationStrategies.MIXED_USLICE) {
+            log.info("[Info] Control-strategy: " + controlStrategy.toString());
+            if (controlStrategy == ControlStrategies.MIXED_NOSLICE
+                    || controlStrategy == ControlStrategies.MIXED_SLICE
+                    || controlStrategy == ControlStrategies.MIXED_USLICE) {
                 log.info("[Info] Delta: " + delta);
+            }
+            log.info("[Info] Merge-strategy: " + mergeStrategy.toString());
+            log.info("[Info] Filter-strategy: " + filterStrategy.toString());
+            log.info("[Info] Slice-strategy: " + sliceStrategy.toString());
+            if (sliceStrategy.usesMetric() || mergeStrategy.usesMetric()) {
+                if (sliceStrategy.usesMetric())
+                    log.info("[Info] Metric: " + sliceStrategy.getMetric());
+                else if (mergeStrategy.usesMetric())
+                    log.info("[Info] Metric: " + mergeStrategy.getMetric());
             }
             log.info("[Info] Number-of-solutions: " + VPStrategy.numberOfSolutions);
             log.info("[Info] Solution-expansion: " + expansionStrategy.toString());
@@ -165,7 +178,11 @@ public class CliApp {
     /**
      * Strategies to use for GDL with filtering
      */
-    private ApproximationStrategies approximationStrategy = ApproximationStrategies.DCR_BOTTOM_UP;
+    private ControlStrategies controlStrategy = ControlStrategies.LIMITED_BOTTOM_UP;
+    private MergeStrategies mergeStrategy = MergeStrategies.SCOPE_BASED;
+    private FilterStrategies filterStrategy = FilterStrategies.TWO_SIDED;
+    private SliceStrategies sliceStrategy = SliceStrategies.NONE;
+    
     private SolutionExpansionStrategies expansionStrategy = SolutionExpansionStrategies.GREEDY;
     private SolutionSolvingStrategies solvingStrategy = SolutionSolvingStrategies.OPTIMAL;
 
@@ -419,22 +436,23 @@ public class CliApp {
 
             case GDL:
             case GDLF:
-                UPFactory factory = null;
+                UPFactory factory;
                 if (algorithm == Algorithm.GDL) {
                     factory = new GdlFactory();
                     ((GdlFactory)factory).setMode(Modes.TREE_UP);
                 } else {
-                    GdlFStrategy pStrategy = approximationStrategy.getInstance(this.getIGdlR());
-                    if (pStrategy instanceof AbstractMixedStrategy) {
-                        ((AbstractMixedStrategy)pStrategy).setDelta(delta);
-                    }
+                    ControlStrategy cStrategy = controlStrategy.getInstance(this.getIGdlR());
+                    cStrategy.setDelta(delta);
+                    MergeStrategy mStrategy = mergeStrategy.getInstance();
+                    FilterStrategy fStrategy = filterStrategy.getInstance();
+                    SliceStrategy sStrategy = sliceStrategy.getInstance();
                     factory = new GdlFFactory(constant, 
                             summarizeOperation == CostFunction.Summarize.MAX,
-                            pStrategy);
+                            cStrategy, mStrategy, fStrategy, sStrategy);
                 }
-                int variables = 0;
-                JTResults results = null;
+                
 
+                JTResults results = null;
                 if (treeFile != null) {
                     TreeReader treeReader = new TreeReader();
                     treeReader.read(treeFile, factors);
@@ -442,7 +460,6 @@ public class CliApp {
                     cg.setRoot(treeReader.getRoot());
                     JunctionTree jt = new JunctionTree(cg);
                     results = jt.run(1000);
-                    variables = results.getMaxVariables();
                     if (algorithm == Algorithm.GDLF) {
                         int newRoot = jt.getLowestDecisionRoot();
                         cg.setRoot(newRoot);
@@ -457,7 +474,7 @@ public class CliApp {
                         candidateCg.setRoot(dfs.getRoot());
                         JunctionTree jt = new JunctionTree(candidateCg);
                         JTResults candidateResults = jt.run(10000);
-                        variables = candidateResults.getMaxVariables();
+                        int variables = candidateResults.getMaxVariables();
                         log.warn("Generated junction tree (tw=" + (variables-1) + ")");
                         
                         if (variables < minVariables) {
@@ -474,7 +491,6 @@ public class CliApp {
 
                 JunctionTree jt = new JunctionTree(cg);
                 results = jt.run(1000);
-                variables = results.getMaxVariables();
                 if (algorithm == Algorithm.GDLF) {
                     int newRoot = jt.getLowestDecisionRoot();
                     cg.setRoot(newRoot);
@@ -593,8 +609,20 @@ public class CliApp {
         }
     }
 
-    void setPartitionStrategy(ApproximationStrategies partitionStrategy) {
-        this.approximationStrategy = partitionStrategy;
+    public void setControlStrategy(ControlStrategies controlStrategy) {
+        this.controlStrategy = controlStrategy;
+    }
+
+    public void setMergeStrategy(MergeStrategies mergeStrategy) {
+        this.mergeStrategy = mergeStrategy;
+    }
+
+    public void setFilterStrategy(FilterStrategies filterStrategy) {
+        this.filterStrategy = filterStrategy;
+    }
+
+    public void setSliceStrategy(SliceStrategies sliceStrategy) {
+        this.sliceStrategy = sliceStrategy;
     }
 
     void setCompressionMethod(CompressionMethod method) {

@@ -36,20 +36,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.gdlf.strategies;
-
 /**
- *
- * @author Marc Pujol (mpujol at iiia.csic.es)
+ * Control strategies that define how to set computation and communication
+ * limits at each <em>r</em> iteration.
  */
+package es.csic.iiia.dcop.gdlf.strategies.slice;
 
-
-public class UnlimitedComputationBottomUp extends AbstractGdlFStrategy {
-    
-    public UnlimitedComputationBottomUp() {
-        super(  new UnlimitedComputationBottomUpControlStrategy(),
-                new ScopeBasedMergeStrategy(), new TwoSidedFilterStrategy(),
-                new DummySliceStrategy());
-    }
-    
-}

@@ -1,7 +1,7 @@
-/*
+ /*
  * Software License Agreement (BSD License)
  * 
- * Copyright (c) 2010, IIIA-CSIC, Artificial Intelligence Research Institute
+ * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
  * All rights reserved.
  * 
  * Redistribution and use of this software in source and binary forms, with or
@@ -35,49 +35,19 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package es.csic.iiia.dcop.gdlf.strategies.control;
 
-package es.csic.iiia.dcop.gdlf.strategies;
-
-import es.csic.iiia.dcop.CostFunction;
-import es.csic.iiia.dcop.Variable;
-import es.csic.iiia.dcop.util.CostFunctionStats;
-import java.util.ArrayList;
-import java.util.List;
+import es.csic.iiia.dcop.gdlf.Limits;
 
 /**
  *
  * @author Marc Pujol (mpujol at iiia.csic.es)
  */
-public class ZeroDecompositionSliceStrategy implements SliceStrategy {
+public class MixedWithSliceControlStrategy extends AbstractControlStrategy {
 
-    public List<CostFunction> slice(List<CostFunction> fs, int r) {
-        List<CostFunction> res = new ArrayList<CostFunction>();
-        for (CostFunction f : fs) {
-            sliceFunction(f, r, res);
-        }
-
-        return res;
+    public Limits nextElement() {
+        r++;
+        return new Limits(r+delta, r+delta, r);
     }
-
-    private void sliceFunction(CostFunction f, int r, List<CostFunction> fs) {
-        
-        // Don't try to break a fitting message into smaller pieces
-        if (f.getVariableSet().size() <= r) {
-            fs.add(f);
-            return;
-        }
-
-        // Remove the constant value (summarization to no variables)
-        CostFunction cst = f.summarize(new Variable[0]);
-        fs.add(cst);
-        f = f.combine(cst.negate());
-
-        // Obtain the projection approximation
-        CostFunction[] res =
-                CostFunctionStats.getZeroDecompositionApproximation(f, r);
-        for (int i=0; i<res.length-1; i++) {
-            fs.add(res[i]);
-        }
-    }
-
+    
 }

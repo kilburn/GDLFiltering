@@ -36,20 +36,63 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.gdlf.strategies;
+package es.csic.iiia.dcop.gdlf.strategies.filter;
+
+import es.csic.iiia.dcop.CostFunction;
+import es.csic.iiia.dcop.util.MemoryTracker;
+import java.util.ArrayList;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- *
+ * Improved (two-sided) filtering operation.
+ * 
+ * Implementation of two-sided filtering as presented in
+ * <span>
+ * Pujol-Gonzalez, M., Cerquides, J., Meseguer, P. and Rodriguez-Aguilar, 
+ * J. A. Two-sided Function Filtering. In 11th Workshop on Preferences and 
+ * Soft Constraints (p. 104).
+ * </span>
+ * 
  * @author Marc Pujol (mpujol at iiia.csic.es)
  */
-
-
-public class MixedWithUSlice extends AbstractMixedStrategy {
+public class TwoSidedFilterStrategy implements FilterStrategy {
     
-    public MixedWithUSlice() {
-        super( new MixedWithUSliceControlStrategy(),
-                new ScopeBasedMergeStrategy(), new TwoSidedFilterStrategy(),
-                new ZeroDecompositionSliceStrategy());
+    private static Logger log = LoggerFactory.getLogger(TwoSidedFilterStrategy.class);
+
+    // TODO: Memory tracking
+    public List<CostFunction> filter(List<CostFunction> fs, List<CostFunction> pfs, double ub) {
+        
+        if (Double.isNaN(ub)) {
+            return fs;
+        }
+
+        // Filtering requires copying the filtered function at each step,
+        // so we account for the biggest one.
+        long maxmem = Long.MIN_VALUE;
+        ArrayList<CostFunction> res = new ArrayList<CostFunction>();
+        for (int i=0, len=fs.size(); i<len; i++) {
+            ArrayList<CostFunction> filterers = new ArrayList<CostFunction>(pfs);
+            for (int j=0; j<len; j++) {
+                if (i!=j) filterers.add(fs.get(j));
+            }
+
+            final CostFunction outf = fs.get(i);
+            maxmem = Math.max(maxmem, MemoryTracker.getRequiredMemory(outf));
+            
+            final CostFunction filtered = outf.filter(filterers, ub);
+            if (log.isTraceEnabled()) {
+                log.trace("Input b:" + ub + " f:" + outf);
+                log.trace("Filtered: " + filtered);
+            }
+            res.add(filtered);
+        }
+
+        MemoryTracker.add(maxmem);
+        return res;        
     }
+
     
+
 }

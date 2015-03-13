@@ -36,20 +36,44 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.gdlf.strategies;
+package es.csic.iiia.dcop.gdlf.strategies.merge;
+
+import es.csic.iiia.dcop.CostFunction;
+import es.csic.iiia.dcop.Variable;
+import java.util.Collection;
+import java.util.List;
 
 /**
- *
+ * Incoming message combination strategy.
+ * 
+ * A combination strategy defines how to combine incoming messages into a list
+ * of "partitions". The combination may be limited by any of the two combination
+ * bounds, namely:
+ * 
+ * <ol>
+ * <li>The first stage bound, defining the maximum number of variables (of any
+ * kind) in any of the "partitions" (functions) outputted by this strategy</li>
+ * <li>The second-stage bound, defining the maximum number of separator
+ * variables in any of the output partitions</li>
+ * </ol>
+ * 
  * @author Marc Pujol (mpujol at iiia.csic.es)
  */
-
-
-public class MixedWithoutSlice extends AbstractMixedStrategy {
+public interface MergeStrategy {
     
-    public MixedWithoutSlice() {
-        super( new MixedWithoutSliceControlStrategy(),
-                new ScopeBasedMergeStrategy(), new TwoSidedFilterStrategy(),
-                new DummySliceStrategy());
-    }
+    /**
+     * Combines the given incoming messages, taking into account which variables
+     * are on the separator (edge variables) and the specified first and second 
+     * stage bounds.
+     * 
+     * @param messages messages received by this node.
+     * @param edgeVariables separator variables (with the destination node).
+     * @param rComputation first-stage bound.
+     * @param rCommunication second-stage bound.
+     * @return list of partitions (cost functions)
+     */
+    public List<CostFunction> merge(List<CostFunction> messages, 
+            Collection<Variable> edgeVariables, int rComputation, 
+            int rCommunication);
     
 }

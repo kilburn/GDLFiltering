@@ -35,15 +35,16 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package es.csic.iiia.dcop.gdlf.strategies;
+package es.csic.iiia.dcop.gdlf.strategies.control;
 
+import es.csic.iiia.dcop.gdlf.strategies.control.ControlStrategy;
 import es.csic.iiia.dcop.gdlf.Limits;
 
 /**
  *
  * @author Marc Pujol (mpujol at iiia.csic.es)
  */
-public abstract class AbstractMixedControlStrategy implements ControlStrategy {
+public abstract class AbstractControlStrategy implements ControlStrategy {
 
     protected int r = 1;
     protected int maxr;

@@ -36,20 +36,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.gdlf.strategies;
-
 /**
- *
- * @author Marc Pujol (mpujol at iiia.csic.es)
+ * Merging strategies that define how to combine incoming messages into
+ * larger functions without surpassing the computation limit.
  */
+package es.csic.iiia.dcop.gdlf.strategies.merge;
 
-
-public class LimitedComputationBottomUp extends AbstractGdlFStrategy {
-    
-    public LimitedComputationBottomUp() {
-        super(  new LimitedComputationBottomUpControlStrategy(),
-                new ScopeBasedMergeStrategy(), new TwoSidedFilterStrategy(),
-                new DummySliceStrategy());
-    }
-    
-}

@@ -35,20 +35,22 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package es.csic.iiia.dcop.gdlf.strategies.control;
 
-package es.csic.iiia.dcop.gdlf.strategies;
-
-import es.csic.iiia.dcop.CostFunction;
-import java.util.List;
+import es.csic.iiia.dcop.gdlf.Limits;
 
 /**
- *
+ * Bottom up strategy that limits the maximum amount of computation
+ * (first stage bound) to <em>r</em>.
+ * 
  * @author Marc Pujol (mpujol at iiia.csic.es)
  */
+public class LimitedComputationBottomUpControlStrategy extends AbstractControlStrategy {
 
-
-public interface SliceStrategy {
-    
-    public List<CostFunction> slice(List<CostFunction> fs, int r);
+    @Override
+    public Limits nextElement() {
+        r++;
+        return new Limits(r, r, r);
+    }
     
 }

@@ -1,4 +1,4 @@
- /*
+/*
  * Software License Agreement (BSD License)
  * 
  * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
@@ -35,19 +35,49 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package es.csic.iiia.dcop.gdlf.strategies;
+
+package es.csic.iiia.dcop.gdlf.strategies.control;
 
 import es.csic.iiia.dcop.gdlf.Limits;
+import java.util.Enumeration;
 
 /**
- *
+ * Filtering control strategy.
+ * 
+ * A strategy defines which limits to impose at each iteration and for each
+ * of the three stages of computation:
+ * <ol>
+ * <li>Combine computation limit (maximum number of variables of any kind in a
+ * single combined function</li>
+ * <li>Combine "communication" limit (maximum number of separator variables in a
+ * single combined function)</li>
+ * <li>Slice communication limit (maximum number of variables in a single 
+ * function to send)</li>
+ * </ol>
+ * 
  * @author Marc Pujol (mpujol at iiia.csic.es)
  */
-public class MixedWithUSliceControlStrategy extends AbstractMixedControlStrategy {
+public interface ControlStrategy extends Enumeration<Limits> {
     
-    public Limits nextElement() {
-        r++;
-        return new Limits(Integer.MAX_VALUE, r+delta, r);
-    }
+    /**
+     * Set the maximum <em>r</em> value (the algorithm stops if this r-value is 
+     * reached).
+     * 
+     * Typically <em>r</em> starts with value 2 and increases by 1 at each
+     * iteration. This enfoces a strict limit on the number of iterations
+     * (up and down passes on the tree) that the algorithm will perform.
+     * 
+     * @param maxR maximum r value.
+     */
+    public void setMaxR(int maxR);
     
+    /**
+     * Set the delta value.
+     * 
+     * Used only by mixed control strategies but defined here
+     * to homogenize the handling of strategies.
+     * 
+     * @param delta 
+     */
+    public void setDelta(int delta);
 }

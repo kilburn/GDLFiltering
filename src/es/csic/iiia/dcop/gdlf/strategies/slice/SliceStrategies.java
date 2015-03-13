@@ -36,55 +36,75 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.gdlf.strategies;
+package es.csic.iiia.dcop.gdlf.strategies.slice;
 
-import es.csic.iiia.dcop.CostFunction;
-import es.csic.iiia.dcop.util.MemoryTracker;
-import java.util.ArrayList;
-import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import es.csic.iiia.dcop.util.metrics.Metric;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- *
+ * Singleton control strategy builder.
+ * 
  * @author Marc Pujol (mpujol at iiia.csic.es)
  */
-public class TwoSidedFilterStrategy implements FilterStrategy {
+public enum SliceStrategies {
+    NONE (NoneSliceStrategy.class, false),
+    BRUTE_FORCE (BruteForceSliceStrategy.class, true),
+    ZEROD (ZeroDecompositionSliceStrategy.class, false),
+    ;
+    private static final Logger LOG = Logger.getLogger(SliceStrategies.class.getName());
+
+    private final Class<? extends SliceStrategy> strategy;
+    private final boolean usesMetric;
     
-    private static Logger log = LoggerFactory.getLogger(TwoSidedFilterStrategy.class);
-
-    // TODO: Memory tracking
-    public List<CostFunction> filter(List<CostFunction> fs, List<CostFunction> pfs, double ub) {
-        
-        if (Double.isNaN(ub)) {
-            return fs;
-        }
-
-        // Filtering requires copying the filtered function at each step,
-        // so we account for the biggest one.
-        long maxmem = Long.MIN_VALUE;
-        ArrayList<CostFunction> res = new ArrayList<CostFunction>();
-        for (int i=0, len=fs.size(); i<len; i++) {
-            ArrayList<CostFunction> filterers = new ArrayList<CostFunction>(pfs);
-            for (int j=0; j<len; j++) {
-                if (i!=j) filterers.add(fs.get(j));
-            }
-
-            final CostFunction outf = fs.get(i);
-            maxmem = Math.max(maxmem, MemoryTracker.getRequiredMemory(outf));
-            
-            final CostFunction filtered = outf.filter(filterers, ub);
-            if (log.isTraceEnabled()) {
-                log.trace("Input b:" + ub + " f:" + outf);
-                log.trace("Filtered: " + filtered);
-            }
-            res.add(filtered);
-        }
-
-        MemoryTracker.add(maxmem);
-        return res;        
+    private SliceStrategy instance;
+    private static Metric metric;
+    
+    SliceStrategies(Class<? extends SliceStrategy> c, boolean usesMetric) {
+        this.strategy = c;
+        this.usesMetric = usesMetric;
     }
 
-    
+    public boolean usesMetric() {
+        return usesMetric;
+    }
 
+    public Metric getMetric() {
+        return metric;
+    }
+    
+    public static void setMetric(Metric m) {
+        metric = m;
+    }
+    
+    public SliceStrategy getInstance() {
+        if (instance == null) {
+            instance = buildInstance();
+        }
+        
+        return instance;
+    }
+    
+    private SliceStrategy buildInstance() {
+        SliceStrategy result = null;
+        
+        if (usesMetric && metric == null) {
+            System.err.println("Error: you must specify a metric for the \""
+                    + toString().toLowerCase().replace('_', '-') + 
+                    "\" slice strategy.");
+            System.exit(1);
+        }
+        
+        try {
+            if (usesMetric) {
+                result = strategy.getDeclaredConstructor(Metric.class).newInstance(metric);
+            } else {
+                result = strategy.newInstance();
+            }
+        } catch (Exception ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
+        
+        return result;
+    }
 }

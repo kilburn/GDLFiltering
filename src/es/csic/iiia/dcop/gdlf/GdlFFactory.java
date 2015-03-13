@@ -38,9 +38,11 @@
 
 package es.csic.iiia.dcop.gdlf;
 
-import es.csic.iiia.dcop.gdlf.strategies.ControlStrategy;
+import es.csic.iiia.dcop.gdlf.strategies.control.ControlStrategy;
 import es.csic.iiia.dcop.CostFunction;
-import es.csic.iiia.dcop.gdlf.strategies.GdlFStrategy;
+import es.csic.iiia.dcop.gdlf.strategies.filter.FilterStrategy;
+import es.csic.iiia.dcop.gdlf.strategies.merge.MergeStrategy;
+import es.csic.iiia.dcop.gdlf.strategies.slice.SliceStrategy;
 import es.csic.iiia.dcop.mp.AbstractNode.Modes;
 import es.csic.iiia.dcop.up.UPResult;
 import es.csic.iiia.dcop.up.UPResults;
@@ -55,32 +57,43 @@ import es.csic.iiia.dcop.up.UPFactory;
 public class GdlFFactory implements UPFactory<GdlFGraph, GdlFNode, UPEdge<GdlFNode, GdlFMessage>,
     UPResult, UPResults> {
 
-    private Modes mode = Modes.TREE_UP;
+    private final Modes mode = Modes.TREE_UP;
     
-    private GdlFStrategy strategy;
+    private final ControlStrategy controlStrategy;
+    private final MergeStrategy mergeStrategy;
+    private final FilterStrategy filterStrategy;
+    private final SliceStrategy sliceStrategy;
     
     /*
      * Required to invert maximization problems to minimization ones, and
      * to handle negative values.
      */
-    private CostFunction constant;
-    private boolean inverted;
+    private final CostFunction constant;
+    private final boolean inverted;
 
-    public GdlFFactory(CostFunction constant, boolean inverted, GdlFStrategy strategy) {
+    public GdlFFactory(CostFunction constant, boolean inverted, 
+            ControlStrategy control, MergeStrategy merge, FilterStrategy filter,
+            SliceStrategy slice)
+    {
         this.constant = constant;
         this.inverted = inverted;
-        this.strategy = strategy;
+        this.controlStrategy = control;
+        this.mergeStrategy = merge;
+        this.filterStrategy = filter;
+        this.sliceStrategy = slice;
     }
 
     public GdlFGraph buildGraph() {
-        GdlFGraph g = new GdlFGraph(constant, inverted, strategy);
+        GdlFGraph g = new GdlFGraph(constant, inverted, controlStrategy);
         return g;
     }
 
     public GdlFNode buildNode() {
         GdlFNode n = new GdlFNode();
         n.setMode(mode);
-        n.setStrategy(strategy);
+        n.setMergeStrategy(mergeStrategy);
+        n.setFilterStrategy(filterStrategy);
+        n.setSliceStrategy(sliceStrategy);
         return n;
     }
 

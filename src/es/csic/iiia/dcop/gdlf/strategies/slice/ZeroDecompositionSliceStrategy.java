@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  * 
- * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
+ * Copyright (c) 2010, IIIA-CSIC, Artificial Intelligence Research Institute
  * All rights reserved.
  * 
  * Redistribution and use of this software in source and binary forms, with or
@@ -36,8 +36,49 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * GDL with function filtering
- */
-package es.csic.iiia.dcop.gdlf;
+package es.csic.iiia.dcop.gdlf.strategies.slice;
 
+import es.csic.iiia.dcop.gdlf.strategies.slice.SliceStrategy;
+import es.csic.iiia.dcop.CostFunction;
+import es.csic.iiia.dcop.Variable;
+import es.csic.iiia.dcop.util.CostFunctionStats;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ *
+ * @author Marc Pujol (mpujol at iiia.csic.es)
+ */
+public class ZeroDecompositionSliceStrategy implements SliceStrategy {
+
+    public List<CostFunction> slice(List<CostFunction> fs, int r) {
+        List<CostFunction> res = new ArrayList<CostFunction>();
+        for (CostFunction f : fs) {
+            sliceFunction(f, r, res);
+        }
+
+        return res;
+    }
+
+    private void sliceFunction(CostFunction f, int r, List<CostFunction> fs) {
+        
+        // Don't try to break a fitting message into smaller pieces
+        if (f.getVariableSet().size() <= r) {
+            fs.add(f);
+            return;
+        }
+
+        // Remove the constant value (summarization to no variables)
+        CostFunction cst = f.summarize(new Variable[0]);
+        fs.add(cst);
+        f = f.combine(cst.negate());
+
+        // Obtain the projection approximation
+        CostFunction[] res =
+                CostFunctionStats.getZeroDecompositionApproximation(f, r);
+        for (int i=0; i<res.length-1; i++) {
+            fs.add(res[i]);
+        }
+    }
+
+}

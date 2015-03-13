@@ -36,19 +36,39 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.gdlf.strategies;
+package es.csic.iiia.dcop.gdlf.strategies.control;
 
-import es.csic.iiia.dcop.CostFunction;
-import java.util.List;
+import es.csic.iiia.dcop.cli.*;
+import java.util.logging.Level;
 
 /**
- *
+ * Singleton control strategy builder.
+ * 
  * @author Marc Pujol (mpujol at iiia.csic.es)
  */
+public enum ControlStrategies {
+    TOP_DOWN (UnlimitedComputationTopDownControlStrategy.class),
+    LIMITED_BOTTOM_UP (LimitedComputationBottomUpControlStrategy.class),
+    UNLIMITED_BOTTOM_UP (UnlimitedComputationBottomUpControlStrategy.class),
+    MIXED_NOSLICE (MixedWithoutSliceControlStrategy.class),
+    MIXED_SLICE (MixedWithSliceControlStrategy.class),
+    MIXED_USLICE (MixedWithUSliceControlStrategy.class),
+    ;
 
-
-public interface FilterStrategy {
+    private ControlStrategy instance;
     
-    public List<CostFunction> filter(List<CostFunction> fs, List<CostFunction> pfs, double ub);
+    ControlStrategies(Class<? extends ControlStrategy> c) {
+        try {
+            instance = c.newInstance();
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
     
+    public ControlStrategy getInstance(int maxr) {
+        instance.setMaxR(maxr);
+        return instance;
+    }
 }

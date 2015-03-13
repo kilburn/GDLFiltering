@@ -35,29 +35,25 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package es.csic.iiia.dcop.gdlf.strategies;
+package es.csic.iiia.dcop.gdlf.strategies.control;
 
 import es.csic.iiia.dcop.gdlf.Limits;
 
 /**
- *
+ * Top down strategy that limits the maximum amount of actual communication 
+ * (third stage bound) to <em>r</em>.
+ * 
+ * The first and second stage bound are set to infinity, effectively disabling
+ * them.
+ * 
  * @author Marc Pujol (mpujol at iiia.csic.es)
  */
-public class UnlimitedComputationTopDownControlStrategy implements ControlStrategy {
-
-    private int r = 1;
-    private int maxr;
-
-    public boolean hasMoreElements() {
-        return r < maxr;
-    }
+public class UnlimitedComputationTopDownControlStrategy
+extends AbstractControlStrategy {
 
     public Limits nextElement() {
         r++;
         return new Limits(Integer.MAX_VALUE, Integer.MAX_VALUE, r);
     }
     
-    public void setMaxR(int r) {
-        this.maxr = r;
-    }
 }

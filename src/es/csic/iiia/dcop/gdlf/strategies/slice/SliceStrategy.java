@@ -1,4 +1,4 @@
-/*
+ /*
  * Software License Agreement (BSD License)
  * 
  * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
@@ -36,20 +36,25 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.gdlf.strategies;
+package es.csic.iiia.dcop.gdlf.strategies.slice;
+
+import es.csic.iiia.dcop.CostFunction;
+import java.util.List;
 
 /**
  *
  * @author Marc Pujol (mpujol at iiia.csic.es)
  */
-
-
-public class MixedWithSlice extends AbstractMixedStrategy {
-    
-    public MixedWithSlice() {
-        super( new MixedWithSliceControlStrategy(),
-                new ScopeBasedMergeStrategy(), new TwoSidedFilterStrategy(),
-                new ZeroDecompositionSliceStrategy());
-    }
+public interface SliceStrategy {
+   
+    /**
+     * Slice the input functions into a set of output functions of arity
+     * smaller than or equal to r.
+     * 
+     * @param fs input functions
+     * @param r arity limit
+     * @return list of output functions
+     */
+    public List<CostFunction> slice(List<CostFunction> fs, int r);
     
 }

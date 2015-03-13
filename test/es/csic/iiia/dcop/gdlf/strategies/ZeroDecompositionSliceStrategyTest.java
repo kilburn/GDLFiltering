@@ -1,5 +1,6 @@
 package es.csic.iiia.dcop.gdlf.strategies;
 
+import es.csic.iiia.dcop.gdlf.strategies.slice.ZeroDecompositionSliceStrategy;
 import java.util.ArrayList;
 import es.csic.iiia.dcop.Variable;
 import es.csic.iiia.dcop.CostFunction;

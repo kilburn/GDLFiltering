@@ -38,35 +38,62 @@
 
 package es.csic.iiia.dcop.cli;
 
-import es.csic.iiia.dcop.gdlf.strategies.GdlFStrategy;
-import java.util.logging.Level;
+import es.csic.iiia.dcop.gdlf.strategies.control.ControlStrategies;
+import es.csic.iiia.dcop.gdlf.strategies.merge.MergeStrategies;
+import es.csic.iiia.dcop.gdlf.strategies.slice.SliceStrategies;
 
 /**
  *
  * @author Marc Pujol (mpujol at iiia.csic.es)
  */
 public enum ApproximationStrategies {
-    AAMAS_TOP_DOWN (es.csic.iiia.dcop.gdlf.strategies.UnlimitedComputationTopDown.class),
-    AAMAS_BOTTOM_UP (es.csic.iiia.dcop.gdlf.strategies.UnlimitedComputationBottomUp.class),
-    DCR_BOTTOM_UP (es.csic.iiia.dcop.gdlf.strategies.LimitedComputationBottomUp.class),
-    MIXED_NOSLICE (es.csic.iiia.dcop.gdlf.strategies.MixedWithoutSlice.class),
-    MIXED_SLICE (es.csic.iiia.dcop.gdlf.strategies.MixedWithSlice.class),
-    MIXED_USLICE (es.csic.iiia.dcop.gdlf.strategies.MixedWithUSlice.class),
+    AAMAS_TOP_DOWN (
+            ControlStrategies.TOP_DOWN,
+            MergeStrategies.SCOPE_BASED,
+            SliceStrategies.ZEROD
+    ),
+    AAMAS_BOTTOM_UP (
+            ControlStrategies.UNLIMITED_BOTTOM_UP,
+            MergeStrategies.SCOPE_BASED,
+            SliceStrategies.NONE
+    ),
+    DCR_BOTTOM_UP (
+            ControlStrategies.LIMITED_BOTTOM_UP,
+            MergeStrategies.SCOPE_BASED,
+            SliceStrategies.NONE
+    ),
+    MIXED_NOSLICE (
+            ControlStrategies.MIXED_NOSLICE,
+            MergeStrategies.SCOPE_BASED,
+            SliceStrategies.NONE
+    ),
+    MIXED_SLICE (
+            ControlStrategies.MIXED_SLICE,
+            MergeStrategies.SCOPE_BASED,
+            SliceStrategies.ZEROD
+    ),
+    MIXED_USLICE (
+            ControlStrategies.MIXED_USLICE,
+            MergeStrategies.SCOPE_BASED,
+            SliceStrategies.ZEROD
+    )
     ;
 
-    private GdlFStrategy instance;
-    ApproximationStrategies(Class<? extends GdlFStrategy> c) {
-        try {
-            instance = c.newInstance();
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    private final ControlStrategies control;
+    private final MergeStrategies merge;
+    private final SliceStrategies slice;
+    
+    ApproximationStrategies(ControlStrategies control, MergeStrategies merge,
+            SliceStrategies slice)
+    {
+        this.control = control;
+        this.merge = merge;
+        this.slice = slice;
     }
     
-    GdlFStrategy getInstance(int maxr) {
-        instance.setMaxR(maxr);
-        return instance;
+    public void apply(CliApp cli) {
+        cli.setControlStrategy(control);
+        cli.setMergeStrategy(merge);
+        cli.setSliceStrategy(slice);
     }
 }

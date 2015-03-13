@@ -1,4 +1,4 @@
- /*
+/*
  * Software License Agreement (BSD License)
  * 
  * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
@@ -35,19 +35,10 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package es.csic.iiia.dcop.gdlf.strategies;
-
-import es.csic.iiia.dcop.gdlf.Limits;
 
 /**
- *
- * @author Marc Pujol (mpujol at iiia.csic.es)
+ * Filtering strategies that define how to detect (and remove) tuples known to 
+ * not be part of the optimal solution.
  */
-public class MixedWithSliceControlStrategy extends AbstractMixedControlStrategy {
+package es.csic.iiia.dcop.gdlf.strategies.control;
 
-    public Limits nextElement() {
-        r++;
-        return new Limits(r+delta, r+delta, r);
-    }
-    
-}

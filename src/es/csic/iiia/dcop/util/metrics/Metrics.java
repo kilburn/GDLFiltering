@@ -36,13 +36,36 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package es.csic.iiia.dcop.gdlf.strategies;
+package es.csic.iiia.dcop.util.metrics;
+
+import es.csic.iiia.dcop.cli.*;
+import java.util.logging.Level;
 
 /**
- *
+ * Singleton control strategy builder.
+ * 
  * @author Marc Pujol (mpujol at iiia.csic.es)
  */
+public enum Metrics {
+    NORM0 (Norm0.class),
+    NORM1 (Norm1.class),
+    NORM2 (Norm2.class),
+    NORMINF (NormInf.class),
+    ;
 
-
-public interface GdlFStrategy extends ControlStrategy, MergeStrategy, FilterStrategy, SliceStrategy {
+    private Metric instance;
+    
+    Metrics(Class<? extends Metric> c) {
+        try {
+            instance = c.newInstance();
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public Metric getInstance() {
+        return instance;
+    }
 }

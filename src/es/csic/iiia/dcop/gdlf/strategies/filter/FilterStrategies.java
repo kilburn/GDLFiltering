@@ -1,4 +1,4 @@
- /*
+/*
  * Software License Agreement (BSD License)
  * 
  * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
@@ -35,30 +35,35 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package es.csic.iiia.dcop.gdlf.strategies;
 
-import es.csic.iiia.dcop.gdlf.Limits;
+package es.csic.iiia.dcop.gdlf.strategies.filter;
+
+import es.csic.iiia.dcop.cli.*;
+import java.util.logging.Level;
 
 /**
- *
+ * Singleton control strategy builder.
+ * 
  * @author Marc Pujol (mpujol at iiia.csic.es)
  */
-public class UnlimitedComputationBottomUpControlStrategy implements ControlStrategy {
+public enum FilterStrategies {
+    ONE_SIDED (OneSidedFilterStrategy.class),
+    TWO_SIDED (TwoSidedFilterStrategy.class),
+    ;
 
-    private int r = 1;
-    private int maxr;
-
-    public boolean hasMoreElements() {
-        return r < maxr;
-    }
-
-    public Limits nextElement() {
-        r++;
-        return new Limits(Integer.MAX_VALUE, r, r);
+    private FilterStrategy instance;
+    
+    FilterStrategies(Class<? extends FilterStrategy> c) {
+        try {
+            instance = c.newInstance();
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(CliApp.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
-    public void setMaxR(int r) {
-        this.maxr = r;
+    public FilterStrategy getInstance() {
+        return instance;
     }
-    
 }

@@ -1,4 +1,4 @@
-/*
+ /*
  * Software License Agreement (BSD License)
  * 
  * Copyright (c) 2011, IIIA-CSIC, Artificial Intelligence Research Institute
@@ -35,18 +35,26 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
-package es.csic.iiia.dcop.gdlf.strategies;
+package es.csic.iiia.dcop.gdlf.strategies.control;
 
 import es.csic.iiia.dcop.gdlf.Limits;
-import java.util.Enumeration;
 
 /**
- *
+ * Bottom up strategy that limits the maximum amount of combination
+ * communication (second stage bound) to <em>r</em>.
+ * 
+ * The first stage bound is set to infinity, and the third stage bound is also
+ * set to <em>r</em> (although it could be anything larger than or equal to r
+ * and the end-result would be exactly the same).
+ * 
  * @author Marc Pujol (mpujol at iiia.csic.es)
  */
+public class UnlimitedComputationBottomUpControlStrategy
+extends AbstractControlStrategy {
 
-
-public interface ControlStrategy extends Enumeration<Limits> {
-    public void setMaxR(int r);
+    public Limits nextElement() {
+        r++;
+        return new Limits(Integer.MAX_VALUE, r, r);
+    }
+    
 }
